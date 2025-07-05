@@ -2,17 +2,18 @@
   "functions": {
     "source": ".output/server"
   },
-  "hosting": [
-    {
-      "site": "<your_project_id>",
-      "public": ".output/public",
-      "cleanUrls": true,
-      "rewrites": [
-        {
-          "source": "**",
-          "function": "server"
-        }
-      ]
-    }
-  ]
+  "hosting": {
+    "public": "https://github.com/settings/connections/applications/89cf50f02ac6aaed3484",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
 }
