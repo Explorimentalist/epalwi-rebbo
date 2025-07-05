@@ -1,0 +1,1 @@
+export { default } from "file:///Users/ngatyebrianoko/Documents/Design%20Projects/Explorimentalist/GPT_apps/epa%CC%80lwi-re%CC%80bbo/node_modules/@nuxt/vite-builder/dist/runtime/client.manifest.mjs"

@@ -1,0 +1,19 @@
+{
+  "date": "2025-07-04T19:13:22.602Z",
+  "preset": "firebase",
+  "framework": {
+    "name": "nuxt",
+    "version": "3.17.6"
+  },
+  "versions": {
+    "nitro": "2.11.13"
+  },
+  "commands": {
+    "deploy": "npx firebase-tools deploy"
+  },
+  "config": {
+    "firebase": {
+      "gen": 1
+    }
+  }
+}

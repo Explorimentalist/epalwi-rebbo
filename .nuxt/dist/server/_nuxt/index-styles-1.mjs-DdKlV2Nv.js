@@ -1,0 +1,5 @@
+const index_vue_vue_type_style_index_0_scoped_c77377e8_lang = ".dictionary-page[data-v-c77377e8]{animation:fadeIn-c77377e8 .6s ease-out}.hero[data-v-c77377e8]{padding:var(--space-12) 0}.search-container[data-v-c77377e8]{position:relative}.features[data-v-c77377e8]{margin-bottom:var(--space-12)}.grid[data-v-c77377e8]{display:grid;gap:var(--space-8)}@media (min-width:768px){.grid-cols-1.md\\:grid-cols-3[data-v-c77377e8]{grid-template-columns:repeat(3,1fr)}}.install-prompt[data-v-c77377e8]{animation:slideUp-c77377e8 .5s ease-out}@keyframes fadeIn-c77377e8{0%{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes slideUp-c77377e8{0%{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}";
+export {
+  index_vue_vue_type_style_index_0_scoped_c77377e8_lang as default
+};
+//# sourceMappingURL=index-styles-1.mjs-DdKlV2Nv.js.map

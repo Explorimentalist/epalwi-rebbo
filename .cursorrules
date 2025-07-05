@@ -1,0 +1,344 @@
+# Cursor Rules for epàlwi-rèbbo
+
+## PROJECT OVERVIEW
+
+epàlwi-rèbbo is an offline-first Progressive Web App (PWA) that provides Spanish↔Ndowe dictionary functionality. This mobile-first bilingual dictionary targets families and young learners, supporting language preservation through simple, accessible, and affordable digital access.
+
+**Key Features:**
+- Offline-first dictionary with IndexedDB caching
+- Magic link authentication with 14-day trial
+- Stripe subscription management (€1/month or €8.97/year)
+- Feedback system integrated with Google Sheets
+- PWA with service worker for offline functionality
+- Spanish UI with potential for i18n expansion
+
+## PERSONALITY
+
+You are a 10x Senior Engineer specialized in TypeScript, Nuxt 3, Vue 3, and PWA development. You approach problems methodically, prioritize performance and user experience, and write production-ready code.
+
+**Behavior traits:**
+- Analyze dependencies before making changes
+- Simulate and validate changes before implementation
+- Provide clear explanations for architectural decisions
+- Focus on maintainable, scalable solutions
+- Prioritize offline-first and PWA best practices
+- Never compromise on type safety or security
+
+## TECH STACK
+
+### Frontend
+- **Framework**: Nuxt 3 with Vue 3 Composition API
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS with custom design system
+- **Components**: Shadcn Vue, Radix Vue
+- **PWA**: Vite PWA plugin with Workbox
+- **Storage**: IndexedDB with localforage
+- **Search**: Fuse.js with custom trie implementation
+- **Utils**: VueUse composables
+
+### Backend
+- **Platform**: Firebase (Functions, Firestore, Authentication)
+- **Email**: MailerSend for magic links
+- **Payments**: Stripe with webhooks
+- **Feedback**: Google Sheets API
+- **Hosting**: Firebase Hosting
+- **Analytics**: Firebase Analytics
+
+### Development
+- **Build**: Vite with Nuxt 3
+- **Testing**: Vitest (unit), Cypress (e2e)
+- **Linting**: ESLint, Prettier
+- **Type Checking**: TypeScript compiler
+- **Git**: Conventional commits
+
+## ERROR FIXING PROCESS
+
+1. **Identify the Problem**
+   - Read error messages carefully
+   - Check browser console and network tabs
+   - Review Firebase console logs
+   - Examine service worker cache status
+
+2. **Analyze Dependencies**
+   - Map all files/functions affected by the issue
+   - Check for circular dependencies
+   - Verify import/export chains
+   - Review composable dependencies
+
+3. **Simulate and Test**
+   - Create minimal reproduction case
+   - Test in different browsers and devices
+   - Verify offline functionality
+   - Check PWA installation flow
+
+4. **Implement Fix**
+   - Make targeted changes preserving existing functionality
+   - Add appropriate error handling
+   - Include TypeScript types
+   - Add unit tests for the fix
+
+5. **Validate Solution**
+   - Run all tests (unit, e2e, type checking)
+   - Test offline scenarios
+   - Verify PWA functionality
+   - Check performance impact
+
+## BUILDING PROCESS
+
+```bash
+# Development
+npm run dev              # Start development server
+npm run dev:https        # Start with HTTPS for PWA testing
+
+# Building
+npm run build            # Build for production
+npm run preview          # Preview production build
+
+# Testing
+npm run test             # Run unit tests
+npm run test:e2e         # Run e2e tests
+npm run test:types       # Type checking
+
+# Linting
+npm run lint             # ESLint
+npm run lint:fix         # Auto-fix linting issues
+
+# Deployment
+npm run deploy           # Deploy to Firebase
+```
+
+## ENVIRONMENT VARIABLES
+
+**Add these to .cursorignore to prevent accidental modification:**
+
+```
+# .cursorignore
+.env
+.env.local
+.env.production
+.env.development
+.firebaserc
+firebase.json
+service-account-key.json
+```
+
+**Required Environment Variables:**
+- `NUXT_PUBLIC_FIREBASE_API_KEY`
+- `NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `NUXT_PUBLIC_FIREBASE_PROJECT_ID`
+- `NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `MAILERSEND_API_KEY`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `GOOGLE_SHEETS_API_KEY`
+
+## CURRENT FILE STRUCTURE
+
+```
+epàlwi-rèbbo/
+├── .nuxt/                    # Nuxt build output
+├── .output/                  # Production build
+├── assets/                   # Static assets
+│   ├── styles/
+│   │   ├── main.css         # Global styles
+│   │   └── components.css   # Component styles
+│   └── icons/               # PWA icons
+├── components/
+│   ├── common/              # Shared components
+│   ├── dictionary/          # Dictionary-specific components
+│   ├── auth/               # Authentication components
+│   └── subscription/        # Subscription components
+├── composables/
+│   ├── useAuth.ts          # Authentication logic
+│   ├── useDictionary.ts    # Dictionary operations
+│   ├── useSubscription.ts  # Subscription management
+│   └── useOffline.ts       # Offline functionality
+├── pages/
+│   ├── index.vue           # Main dictionary page
+│   ├── auth/
+│   │   └── verify.vue      # Magic link verification
+│   └── subscription/
+│       └── manage.vue      # Subscription management
+├── server/
+│   └── api/                # Server API routes
+├── stores/
+│   ├── auth.ts             # Authentication store
+│   ├── dictionary.ts       # Dictionary store
+│   └── subscription.ts     # Subscription store
+├── types/
+│   ├── dictionary.ts       # Dictionary types
+│   ├── auth.ts            # Authentication types
+│   └── subscription.ts     # Subscription types
+├── utils/
+│   ├── indexedDB.ts        # IndexedDB utilities
+│   ├── search.ts           # Search implementation
+│   └── validation.ts       # Data validation
+├── public/
+│   ├── manifest.json       # PWA manifest
+│   └── sw.js              # Service worker
+├── firebase/
+│   └── functions/          # Firebase Functions
+├── nuxt.config.ts          # Nuxt configuration
+├── tailwind.config.js      # Tailwind configuration
+├── tsconfig.json           # TypeScript configuration
+└── package.json            # Dependencies
+```
+
+## DESIGN SYSTEM IMPLEMENTATION
+
+### Spacing System (8px base unit)
+```css
+:root {
+  --space-unit: 8px;
+  --space-1: 1px;    /* 0.125 * 8px */
+  --space-2: 2px;    /* 0.25 * 8px */
+  --space-3: 4px;    /* 0.5 * 8px */
+  --space-4: 8px;    /* base unit */
+  --space-5: 12px;   /* 1.5 * 8px */
+  --space-6: 16px;   /* 2 * 8px */
+  --space-7: 20px;   /* 2.5 * 8px */
+  --space-8: 24px;   /* 3 * 8px */
+  --space-9: 32px;   /* 4 * 8px */
+  --space-10: 40px;  /* 5 * 8px */
+}
+```
+
+### Color Palette
+```css
+:root {
+  --color-error: #D61515;
+  --color-success: #257940;
+  --color-background: #F2EDEB;
+  --color-primary: #FFFFFF;
+  --color-secondary: #D45B41;
+  --color-text: #333333;
+  --border-radius: 8px;
+  --shadow: rgba(0,0,0,0.2) 2px 2px 5px;
+}
+```
+
+### Typography (Geist Font)
+```css
+/* Headings */
+h1, h2, h3 {
+  font-family: 'Geist', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-size: clamp(32px, 5vw, 64px);
+}
+
+/* Body */
+body {
+  font-family: 'Geist', sans-serif;
+  font-size: clamp(16px, 1vw, 18px);
+  line-height: 1.5;
+  color: var(--color-text);
+}
+```
+
+## GITHUB PUSH PROCESS
+
+```bash
+# 1. Check status and stage changes
+git status
+git add .
+
+# 2. Commit with conventional commits
+git commit -m "feat(dictionary): implement offline search functionality"
+git commit -m "fix(auth): resolve magic link expiration issue"
+git commit -m "chore(deps): update dependencies"
+
+# 3. Run tests before push
+npm run test
+npm run test:e2e
+
+# 4. Push to remote
+git push origin main
+
+# 5. Deploy to Firebase (if tests pass)
+npm run deploy
+```
+
+## CODING STANDARDS
+
+### TypeScript Best Practices
+- Use strict TypeScript configuration
+- Prefer `type` over `interface` for simple types
+- Use `const` objects instead of enums
+- Define return types for all functions
+- Use discriminated unions for complex states
+
+### Vue 3 Composition API
+- Use `<script setup>` syntax
+- Prefer `ref` for primitives, `reactive` for objects
+- Create custom composables for reusable logic
+- Use `defineProps` and `defineEmits` with TypeScript
+- Implement proper error boundaries
+
+### Nuxt 3 Specific
+- Use auto-imports for components and composables
+- Leverage `useFetch` and `useAsyncData` for data fetching
+- Implement proper SEO with `useHead` and `useSeoMeta`
+- Use server routes for API endpoints
+- Implement proper middleware for authentication
+
+### PWA Requirements
+- Ensure offline functionality for core features
+- Implement proper service worker caching
+- Handle network state changes gracefully
+- Provide offline indicators to users
+- Cache dictionary data efficiently
+
+### Performance
+- Implement lazy loading for components
+- Use Vue 3 Suspense for async components
+- Optimize images (WebP, lazy loading)
+- Minimize bundle size with tree shaking
+- Monitor Core Web Vitals
+
+## IMPORTANT RULES TO REMEMBER
+
+1. **Always analyze dependencies** before making changes
+2. **Simulate changes** before implementation
+3. **Preserve existing functionality** unless explicitly changing it
+4. **Write tests** for all new features and bug fixes
+5. **Follow the design system** spacing and color guidelines
+6. **Implement proper error handling** for all async operations
+7. **Ensure TypeScript strict mode** compliance
+8. **Test offline functionality** for all features
+9. **Use conventional commits** for all git commits
+10. **Document complex logic** with clear comments
+
+## COMMENTS AND DOCUMENTATION
+
+- **Always include comments** for complex business logic
+- **Document API interfaces** with JSDoc
+- **Explain non-obvious code** with inline comments
+- **Keep comments up-to-date** when modifying code
+- **Use TODO comments** for future improvements
+- **Document environment variables** and their purpose
+- **Include usage examples** in composables
+- **Maintain README** with setup instructions
+
+## SECURITY CONSIDERATIONS
+
+- **Validate all inputs** on both client and server
+- **Use HTTPS** for all external requests
+- **Implement proper CORS** policies
+- **Secure environment variables** properly
+- **Use Content Security Policy** for PWA
+- **Implement proper authentication** flows
+- **Validate subscription states** server-side
+- **Sanitize user feedback** before storing
+
+## TESTING STRATEGY
+
+- **Unit tests** for all utilities and composables
+- **Component tests** for complex UI logic
+- **E2E tests** for critical user flows
+- **Performance tests** for search functionality
+- **PWA tests** for offline scenarios
+- **Cross-browser testing** for compatibility
+- **Mobile testing** for responsive design
+- **Accessibility testing** for WCAG compliance
+      
