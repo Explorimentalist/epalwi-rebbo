@@ -144,8 +144,8 @@ async function createOrGetUserProfile(email: string): Promise<UserProfile> {
       const userData = userDoc.data()!
       
       // Calculate current trial status
-      const trialStart = userData.trial?.startDate?.toDate() || userData.createdAt.toDate()
-      const trialEnd = userData.trial?.endDate?.toDate() || new Date(trialStart.getTime() + (14 * 24 * 60 * 60 * 1000))
+      const trialStart = userData['trial']?.startDate?.toDate() || userData['createdAt'].toDate()
+      const trialEnd = userData['trial']?.endDate?.toDate() || new Date(trialStart.getTime() + (14 * 24 * 60 * 60 * 1000))
       const daysRemaining = Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)))
       const isExpired = now > trialEnd
       

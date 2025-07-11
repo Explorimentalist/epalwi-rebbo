@@ -3,7 +3,7 @@
     "source": ".output/server"
   },
   "hosting": {
-    "public": "https://github.com/settings/connections/applications/89cf50f02ac6aaed3484",
+    "public": ".output/public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -12,7 +12,7 @@
     "rewrites": [
       {
         "source": "**",
-        "destination": "/index.html"
+        "function": "server"
       }
     ]
   }

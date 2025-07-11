@@ -121,74 +121,55 @@ firebase functions:config:set \
 
 ## Development Environment Setup
 
-1. Install dependencies:
-```bash
-npm install
-```
+### ⚠️ IMPORTANT: Development vs Production Workflow
 
-2. Start development server:
+**For Development (localhost):**
 ```bash
+# 1. Start the Nuxt development server
 npm run dev
+
+# 2. Open your browser to:
+http://localhost:3000
+
+# ✅ This serves your actual Nuxt application
+# ❌ Do NOT use Firebase hosting/emulator for development
 ```
 
-3. For HTTPS (needed for PWA testing):
+**For Production Deployment:**
 ```bash
-npm run dev:https
+# 1. Install dependencies and build
+npm ci && npm run build
+
+# 2. Deploy to Firebase
+firebase deploy
+
+# 3. Access your production site at:
+# https://your-project-id.web.app
 ```
 
-## Production Environment
+### Common Issues and Solutions
 
-Create a separate `.env.production` file with production values:
-- Use live Stripe keys (pk_live_*, sk_live_*)
-- Use production Firebase project
-- Set proper domain URLs
-- Use production MailerSend domain
+#### Issue: Seeing Firebase Welcome Page
+- **Cause**: Wrong firebase.json configuration or Firebase emulator running
+- **Solution**: 
+  1. Use `npm run dev` for development (not Firebase hosting)
+  2. Ensure firebase.json points to `.output/public` for production builds
+  3. Kill any stray Firebase processes: `pkill -f firebase`
 
-## Security Notes
+#### Issue: Port Conflicts
+- **Cause**: Multiple development servers running
+- **Solution**:
+  ```bash
+  # Kill all node processes
+  pkill -f "nuxt dev"
+  
+  # Start fresh
+  npm run dev
+  ```
 
-- Never commit `.env` files to version control
-- Use different keys for development and production
-- Rotate keys regularly
-- Monitor usage in respective dashboards
-- Set up proper CORS policies for production
+#### Issue: Wrong Port in Browser
+- **Development**: Always use `http://localhost:3000`
+- **Production**: Use your Firebase hosting URL
 
-## Troubleshooting
-
-### Common Issues:
-
-1. **Firebase Auth Domain Error**
-   - Make sure auth domain matches your project ID
-   - Check if Firebase Auth is enabled
-
-2. **Stripe Webhook Not Working**
-   - Verify webhook URL is accessible
-   - Check webhook secret matches
-   - Ensure proper event types are selected
-
-3. **MailerSend Not Sending**
-   - Verify domain is authenticated
-   - Check API key permissions
-   - Ensure template IDs are correct
-
-4. **Google Sheets Access Denied**
-   - Verify API key has Sheets API access
-   - Check sheet sharing permissions
-   - Ensure Sheet ID is correct
-
-## Next Steps
-
-Once all environment variables are set up:
-
-1. Test authentication flow
-2. Test Stripe integration in test mode
-3. Verify MailerSend email delivery
-4. Test Google Sheets feedback submission
-5. Run development server and check console for errors
-
-## Support
-
-If you encounter issues:
-1. Check the respective service dashboards for errors
-2. Review Firebase Console logs
-3. Check browser console for client-side errors
-4. Verify all services are properly configured 
+1. Install dependencies:
+```

@@ -89,70 +89,27 @@ async function sendMagicLinkEmail(email: string, token: string, redirectUrl: str
 
   const magicLink = `${redirectUrl}?token=${token}`
   
-  const sentFrom = new Sender("noreply@epalwi-rebbo.com", "epàlwi-rèbbo")
+  const sentFrom = new Sender("noreply@test-eqvygm0jevwl0p7w.mlsender.net", "epàlwi-rèbbo")
   const recipients = [new Recipient(email, email)]
+
+  // Load email template
+  const { loadEmailTemplate, getPlainTextVersion } = await import('~/server/utils/email-templates')
+  const htmlTemplate = await loadEmailTemplate('magic-link', {
+    MAGIC_LINK: magicLink,
+    USER_EMAIL: email
+  })
 
   const emailParams = new EmailParams()
     .setFrom(sentFrom)
     .setTo(recipients)
     .setSubject('Tu enlace de acceso - epàlwi-rèbbo')
-    .setHtml(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Tu enlace de acceso</title>
-        </head>
-        <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #F2EDEB;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <div style="background-color: #D45B41; padding: 32px; text-align: center;">
-              <h1 style="color: #FFFFFF; margin: 0; font-size: 28px; font-weight: bold;">epàlwi-rèbbo</h1>
-              <p style="color: #FFFFFF; margin: 8px 0 0 0; opacity: 0.9;">Diccionario Español ↔ Ndowe</p>
-            </div>
-            <div style="padding: 32px;">
-              <h2 style="color: #333333; margin: 0 0 16px 0; font-size: 24px;">¡Accede a tu cuenta!</h2>
-              <p style="color: #666666; margin: 0 0 24px 0; line-height: 1.5;">
-                Hola, hemos recibido una solicitud para acceder a tu cuenta en epàlwi-rèbbo. 
-                Haz clic en el botón de abajo para acceder:
-              </p>
-              <div style="text-align: center; margin: 32px 0;">
-                <a href="${magicLink}" style="display: inline-block; background-color: #D45B41; color: #FFFFFF; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: bold; font-size: 16px;">
-                  Acceder a mi cuenta
-                </a>
-              </div>
-              <p style="color: #999999; margin: 24px 0 0 0; font-size: 14px; line-height: 1.5;">
-                Este enlace es válido por 15 minutos. Si no solicitaste este acceso, puedes ignorar este correo.
-              </p>
-              <div style="border-top: 1px solid #E0E0E0; margin: 24px 0 0 0; padding: 16px 0 0 0;">
-                <p style="color: #999999; margin: 0; font-size: 12px;">
-                  © 2024 epàlwi-rèbbo - Preservando el idioma Ndowe
-                </p>
-              </div>
-            </div>
-          </div>
-        </body>
-      </html>
-    `)
-    .setText(`
-      ¡Accede a tu cuenta en epàlwi-rèbbo!
-      
-      Hola, hemos recibido una solicitud para acceder a tu cuenta.
-      
-      Copia y pega este enlace en tu navegador para acceder:
-      ${magicLink}
-      
-      Este enlace es válido por 15 minutos.
-      
-      Si no solicitaste este acceso, puedes ignorar este correo.
-      
-      © 2024 epàlwi-rèbbo - Preservando el idioma Ndowe
-    `)
+    .setHtml(htmlTemplate)
+    .setText(getPlainTextVersion(magicLink))
 
   try {
     await mailerSend.email.send(emailParams)
     console.log(`✅ Magic link sent to ${email}`)
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Failed to send magic link email:', error)
     throw new Error('Failed to send email')
   }

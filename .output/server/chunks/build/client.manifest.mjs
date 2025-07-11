@@ -1,4 +1,15 @@
 const client_manifest = {
+  "_CY414whd.js": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "CY414whd.js",
+    "name": "nuxt-link",
+    "imports": [
+      "node_modules/nuxt/dist/app/entry.js"
+    ]
+  },
   "_DlAUqK2U.js": {
     "resourceType": "script",
     "module": true,
@@ -7,18 +18,47 @@ const client_manifest = {
     "file": "DlAUqK2U.js",
     "name": "_plugin-vue_export-helper"
   },
+  "composables/useDictionary.ts": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "D0yo-Dyq.js",
+    "name": "useDictionary",
+    "src": "composables/useDictionary.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "services/indexedDB.ts",
+      "services/search.ts",
+      "node_modules/nuxt/dist/app/entry.js"
+    ]
+  },
+  "node_modules/@nuxt/icon/dist/runtime/components/index.js": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "zOTdjhko.js",
+    "name": "index",
+    "src": "node_modules/@nuxt/icon/dist/runtime/components/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/nuxt/dist/app/entry.js"
+    ]
+  },
   "node_modules/nuxt/dist/app/components/error-404.vue": {
     "resourceType": "script",
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "B6ddCFZE.js",
+    "file": "DMS1F9PT.js",
     "name": "error-404",
     "src": "node_modules/nuxt/dist/app/components/error-404.vue",
     "isDynamicEntry": true,
     "imports": [
-      "node_modules/nuxt/dist/app/entry.js",
-      "_DlAUqK2U.js"
+      "_CY414whd.js",
+      "_DlAUqK2U.js",
+      "node_modules/nuxt/dist/app/entry.js"
     ],
     "css": []
   },
@@ -33,7 +73,7 @@ const client_manifest = {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "Bd_4U9R1.js",
+    "file": "BxOmnLGR.js",
     "name": "error-500",
     "src": "node_modules/nuxt/dist/app/components/error-500.vue",
     "isDynamicEntry": true,
@@ -54,7 +94,7 @@ const client_manifest = {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "CGMbpcXZ.js",
+    "file": "3I7QIE0l.js",
     "name": "entry",
     "src": "node_modules/nuxt/dist/app/entry.js",
     "isEntry": true,
@@ -64,12 +104,12 @@ const client_manifest = {
       "node_modules/nuxt/dist/app/components/error-500.vue"
     ],
     "css": [
-      "entry.CD0XRk33.css"
+      "entry.B10hg7yE.css"
     ],
     "_globalCSS": true
   },
-  "entry.CD0XRk33.css": {
-    "file": "entry.CD0XRk33.css",
+  "entry.B10hg7yE.css": {
+    "file": "entry.B10hg7yE.css",
     "resourceType": "style",
     "prefetch": true,
     "preload": true
@@ -89,7 +129,7 @@ const client_manifest = {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "fC-iv6gd.js",
+    "file": "Ch2FTtjU.js",
     "name": "index",
     "src": "pages/index.vue",
     "isDynamicEntry": true,
@@ -104,6 +144,89 @@ const client_manifest = {
     "resourceType": "style",
     "prefetch": true,
     "preload": true
+  },
+  "pages/test.vue": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "ChLUf2I3.js",
+    "name": "test",
+    "src": "pages/test.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/nuxt/dist/app/entry.js"
+    ]
+  },
+  "pages/test/components.vue": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "BQolqaDi.js",
+    "name": "components",
+    "src": "pages/test/components.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_CY414whd.js",
+      "node_modules/@nuxt/icon/dist/runtime/components/index.js",
+      "node_modules/nuxt/dist/app/entry.js",
+      "_DlAUqK2U.js"
+    ],
+    "css": []
+  },
+  "components.CEEtG82Y.css": {
+    "file": "components.CEEtG82Y.css",
+    "resourceType": "style",
+    "prefetch": true,
+    "preload": true
+  },
+  "pages/test/index.vue": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "B8JMYVHN.js",
+    "name": "index",
+    "src": "pages/test/index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "node_modules/nuxt/dist/app/entry.js",
+      "_CY414whd.js",
+      "_DlAUqK2U.js"
+    ],
+    "dynamicImports": [
+      "services/indexedDB.ts",
+      "services/search.ts",
+      "composables/useDictionary.ts"
+    ],
+    "css": []
+  },
+  "index.YSMlvAwA.css": {
+    "file": "index.YSMlvAwA.css",
+    "resourceType": "style",
+    "prefetch": true,
+    "preload": true
+  },
+  "services/indexedDB.ts": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "DsNt8I1Z.js",
+    "name": "indexedDB",
+    "src": "services/indexedDB.ts",
+    "isDynamicEntry": true
+  },
+  "services/search.ts": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "gbLrkHdn.js",
+    "name": "search",
+    "src": "services/search.ts",
+    "isDynamicEntry": true
   }
 };
 

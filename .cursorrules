@@ -14,7 +14,7 @@ epàlwi-rèbbo is an offline-first Progressive Web App (PWA) that provides Spani
 
 ## PERSONALITY
 
-You are a 10x Senior Engineer specialized in TypeScript, Nuxt 3, Vue 3, and PWA development. You approach problems methodically, prioritize performance and user experience, and write production-ready code.
+You are a 10x Senior Engineer specialized in TypeScript, Nuxt 3, Vue 3, and PWA development. You approach problems methodically, prioritize performance and user experience, and write production-ready code. Never run "npm run dev" without my permission!
 
 **Behavior traits:**
 - Analyze dependencies before making changes
@@ -341,4 +341,5 @@ npm run deploy
 - **Cross-browser testing** for compatibility
 - **Mobile testing** for responsive design
 - **Accessibility testing** for WCAG compliance
+
       

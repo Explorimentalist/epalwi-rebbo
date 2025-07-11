@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getApps, initializeApp } from 'firebase-admin/app';
+import 'fs/promises';
+import 'path';
 import 'node:http';
 import 'node:https';
 import 'node:events';
@@ -10,6 +12,8 @@ import 'node:buffer';
 import 'node:fs';
 import 'node:path';
 import 'node:crypto';
+import '@iconify/utils';
+import 'consola';
 import 'firebase-functions';
 
 function initFirebaseAdmin() {
@@ -108,8 +112,8 @@ async function createOrGetUserProfile(email) {
       return newUserProfile;
     } else {
       const userData = userDoc.data();
-      const trialStart = ((_b = (_a = userData.trial) == null ? void 0 : _a.startDate) == null ? void 0 : _b.toDate()) || userData.createdAt.toDate();
-      const trialEnd = ((_d = (_c = userData.trial) == null ? void 0 : _c.endDate) == null ? void 0 : _d.toDate()) || new Date(trialStart.getTime() + 14 * 24 * 60 * 60 * 1e3);
+      const trialStart = ((_b = (_a = userData["trial"]) == null ? void 0 : _a.startDate) == null ? void 0 : _b.toDate()) || userData["createdAt"].toDate();
+      const trialEnd = ((_d = (_c = userData["trial"]) == null ? void 0 : _c.endDate) == null ? void 0 : _d.toDate()) || new Date(trialStart.getTime() + 14 * 24 * 60 * 60 * 1e3);
       const daysRemaining = Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / (24 * 60 * 60 * 1e3)));
       const isExpired = now > trialEnd;
       const updatedProfile = {
