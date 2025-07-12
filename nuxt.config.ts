@@ -17,19 +17,24 @@ export default defineNuxtConfig({
   
   // Icon configuration
   icon: {
-    size: '24px', // default size
-    class: 'icon', // default class
-    mode: 'svg', // use SVG mode for better performance
+    size: '24px',
+    class: 'icon',
+    mode: 'svg',
     aliases: {
       'nuxt': 'logos:nuxt-icon',
     },
-    // Enable client bundle scanning for automatic icon inclusion
+    // Server-side rendering configuration
+    serverBundle: {
+      collections: ['heroicons', 'lucide', 'mdi']
+    },
+    // Client-side configuration  
     clientBundle: {
-      scan: true, // scan all components and include used icons
+      scan: true,
+      sizeLimitKb: 256,
+      // Force include commonly used icons
       icons: [
-        // Explicitly include commonly used icons
         'heroicons:magnifying-glass',
-        'heroicons:bars-3',
+        'heroicons:bars-3', 
         'heroicons:user',
         'heroicons:cog-6-tooth',
         'heroicons:heart',
@@ -44,13 +49,8 @@ export default defineNuxtConfig({
         'heroicons:x-mark',
         'heroicons:arrow-left',
         'heroicons:arrow-right',
-        'lucide:loader-2'
-      ],
-      sizeLimitKb: 256 // bundle size guard
-    },
-    // Configure server bundle for better performance
-    serverBundle: {
-      collections: ['heroicons', 'lucide', 'mdi'] // only load the collections we need
+        'heroicons:arrow-path'
+      ]
     }
   },
   

@@ -1,4 +1,4 @@
-<template>
+  <template>
   <div class="test-page">
     <div class="container mx-auto p-6">
       <div class="flex items-center justify-between mb-6">
@@ -199,20 +199,24 @@ async function testIndexedDB() {
     // Import the IndexedDB service
     const { indexedDBService } = await import('~/services/indexedDB')
     
-    // Test initialization
-    await indexedDBService.init()
+    // Test initialization (correct method name)
+    await indexedDBService.initialize()
     
-    // Test cache status
-    const cacheStatus = await indexedDBService.checkCacheStatus()
-    const entriesCount = await indexedDBService.getEntriesCount()
+    // Test cache metadata and validation
+    const cacheMetadata = await indexedDBService.getCacheMetadata()
+    const isValid = await indexedDBService.isCacheValid()
+    
+    // Get enhanced entries count
+    const enhancedEntries = await indexedDBService.getEnhancedEntries()
     
     const endTime = performance.now()
     
     indexedDBResult.value = {
       success: true,
-      entriesCount,
-      cacheValid: cacheStatus.isValid,
-      lastUpdate: cacheStatus.lastUpdate
+      entriesCount: enhancedEntries.length,
+      cacheValid: isValid,
+      lastUpdate: cacheMetadata?.lastUpdated ? new Date(cacheMetadata.lastUpdated).toLocaleString() : 'N/A',
+      cacheSize: cacheMetadata?.sizeBytes || 0
     }
     
     if (!performanceResults.value) performanceResults.value = {}
@@ -238,12 +242,15 @@ async function testSearch() {
     // Import the search service
     const { searchService } = await import('~/services/search')
     
-    // Perform search
-    const results = await searchService.search({
+    // Perform search with proper SearchQuery object
+    const searchQueryObj: SearchQuery = {
       query: searchQuery.value,
-      language: searchLanguage.value,
+      language: searchLanguage.value === 'spanish' ? 'español' : 'ndowe',
+      mode: 'hybrid',
       limit: 10
-    })
+    }
+    
+    const results = await searchService.search(searchQueryObj)
     
     const endTime = performance.now()
     
@@ -267,18 +274,25 @@ async function testComposable() {
   try {
     // Import and use the dictionary composable
     const { useDictionary } = await import('~/composables/useDictionary')
-    const { isReady, search, currentLanguage, toggleLanguage, init } = useDictionary()
+    const { isReady, search, currentLanguage, totalEntries, initialize } = useDictionary()
     
-    // Test initialization
-    await init()
+    // Test initialization (correct method name)
+    await initialize()
     
-    // Test search functionality
-    const testResults = await search('casa')
+    // Test search functionality with proper SearchQuery
+    const searchQueryObj: SearchQuery = {
+      query: 'casa',
+      language: 'español',
+      mode: 'hybrid',
+      limit: 5
+    }
+    
+    const testResults = await search(searchQueryObj)
     
     composableResult.value = {
       success: true,
       isReady: isReady.value,
-      entriesCount: testResults.length,
+      entriesCount: totalEntries.value,
       currentLanguage: currentLanguage.value,
       searchResults: testResults.slice(0, 3) // Show first 3 results
     }
