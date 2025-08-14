@@ -77,8 +77,8 @@ export const useAuthStore = defineStore('auth', () => {
       displayName: firebaseUser.displayName || undefined,
       photoURL: firebaseUser.photoURL || undefined,
       role: 'user' as UserRole,
-      createdAt: now,
-      lastLoginAt: now,
+      createdAt: new Date(now.getTime()), // Ensure plain Date object for serialization
+      lastLoginAt: new Date(now.getTime()), // Ensure plain Date object for serialization
       subscription: {
         status: 'trial' as SubscriptionStatus
       },
@@ -173,15 +173,16 @@ export const useAuthStore = defineStore('auth', () => {
       if (docSnap.exists()) {
         const data = docSnap.data()
         
-        // Update trial information
-        const trial = calculateTrialInfo(data['createdAt'].toDate())
+        // Update trial information - ensure dates are plain Date objects for serialization
+        const createdAt = data['createdAt'].toDate() 
+        const trial = calculateTrialInfo(createdAt)
         
         const userProfile: UserProfile = {
           ...data,
           uid: firebaseUser.uid,
           email: firebaseUser.email!,
-          createdAt: data['createdAt'].toDate(),
-          lastLoginAt: new Date(),
+          createdAt: new Date(createdAt.getTime()), // Convert to plain Date object
+          lastLoginAt: new Date(), // Plain Date object
           trial,
           emailVerified: firebaseUser.emailVerified
         } as UserProfile
@@ -339,10 +340,11 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     // State  
     user,
-    firebaseUser,
     isLoading,
     error,
     initialized,
+    // Note: firebaseUser is intentionally excluded from the store return
+    // Firebase User objects contain circular references that break SSR serialization
     
     // Computed
     isAuthenticated,
