@@ -1,10 +1,20 @@
 <template>
+  <!-- Try both NuxtIcon and fallback -->
   <NuxtIcon 
+    v-if="mappedIconName"
     :name="mappedIconName" 
     :size="iconSize"
     :class="computedClasses"
     :style="computedStyle"
   />
+  <!-- Fallback for debugging -->
+  <span 
+    v-else
+    :class="computedClasses"
+    :style="computedStyle"
+  >
+    [{{ props.name }}]
+  </span>
 </template>
 
 <script setup lang="ts">
@@ -33,8 +43,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 // Icon name mapping from generic names to heroicons
+// Using both formats to test which one works
 const iconNameMap: Record<string, string> = {
-  // Common icons
+  // Common icons - trying different naming conventions
   'search': 'heroicons:magnifying-glass',
   'menu': 'heroicons:bars-3',
   'user': 'heroicons:user',
@@ -75,10 +86,23 @@ const sizeMap = {
 // Computed properties
 const mappedIconName = computed(() => {
   if (!props.name) return ''
+  
+  let iconName = props.name
+  
+  // If it already includes a collection prefix, use as-is
   if (props.name.includes(':')) {
-    return props.name
+    iconName = props.name
+  } else {
+    // Map generic names to specific icons
+    iconName = iconNameMap[props.name] || `heroicons:${props.name}`
   }
-  return iconNameMap[props.name] || `heroicons:${props.name}`
+  
+  // Debug logging in development
+  if (process.dev) {
+    console.log(`Icon mapping: "${props.name}" -> "${iconName}"`)
+  }
+  
+  return iconName
 })
 
 const iconSize = computed(() => sizeMap[props.size])

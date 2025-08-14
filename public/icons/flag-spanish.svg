@@ -1,1 +1,24 @@
- 
+<svg width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Yellow middle stripe (larger) -->
+  <rect width="16" height="12" fill="#FFD60A"/>
+  
+  <!-- Red top stripe -->
+  <rect x="0" y="0" width="16" height="3" fill="#E63946"/>
+  
+  <!-- Red bottom stripe -->
+  <rect x="0" y="9" width="16" height="3" fill="#E63946"/>
+  
+  <!-- Simplified coat of arms (castle and lion simplified for small size) -->
+  <g transform="translate(5,6)">
+    <!-- Shield background -->
+    <rect x="0" y="-2" width="6" height="4" rx="0.5" fill="#FFFFFF" stroke="#333333" stroke-width="0.2"/>
+    
+    <!-- Simplified castle (left) -->
+    <rect x="0.5" y="-1" width="2" height="2" fill="#E63946"/>
+    <rect x="1" y="-1.5" width="1" height="0.5" fill="#E63946"/>
+    
+    <!-- Simplified lion (right) -->
+    <rect x="3.5" y="-1" width="2" height="2" fill="#FFD60A"/>
+    <circle cx="4.5" cy="-0.5" r="0.3" fill="#E63946"/>
+  </g>
+</svg> 

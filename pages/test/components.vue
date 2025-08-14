@@ -128,23 +128,23 @@ useSeoMeta({
           <h3 class="text-lg font-medium mb-4">Size Variants</h3>
           <div class="flex items-center gap-6 flex-wrap">
             <div class="flex flex-col items-center gap-2">
-              <Icon name="search" size="sm" />
+              <AppIcon name="search" size="sm" />
               <span class="text-xs">sm (12px)</span>
             </div>
             <div class="flex flex-col items-center gap-2">
-              <Icon name="search" size="base" />
+              <AppIcon name="search" size="base" />
               <span class="text-xs">base (16px)</span>
             </div>
             <div class="flex flex-col items-center gap-2">
-              <Icon name="search" size="md" />
+              <AppIcon name="search" size="md" />
               <span class="text-xs">md (20px)</span>
             </div>
             <div class="flex flex-col items-center gap-2">
-              <Icon name="search" size="lg" />
+              <AppIcon name="search" size="lg" />
               <span class="text-xs">lg (24px)</span>
             </div>
             <div class="flex flex-col items-center gap-2">
-              <Icon name="search" size="xl" />
+              <AppIcon name="search" size="xl" />
               <span class="text-xs">xl (32px)</span>
             </div>
           </div>
@@ -160,7 +160,7 @@ useSeoMeta({
               class="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
               @click="testStates.selectedIcon = iconName"
             >
-              <Icon :name="iconName" size="md" class="text-gray-700" />
+              <AppIcon :name="iconName" size="md" class="text-gray-700" />
               <span class="text-xs text-center text-gray-600">{{ iconName }}</span>
             </div>
           </div>
@@ -180,7 +180,7 @@ useSeoMeta({
               </option>
             </select>
             <div class="flex items-center gap-2">
-              <Icon :name="testStates.selectedIcon" size="md" class="text-blue-600" />
+              <AppIcon :name="testStates.selectedIcon" size="md" class="text-blue-600" />
               <span class="text-sm text-gray-600">← Live Preview</span>
             </div>
           </div>

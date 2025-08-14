@@ -1,1 +1,27 @@
- 
+<svg width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blue background quarters -->
+  <rect width="16" height="12" fill="#4F9BFF"/>
+  
+  <!-- Red cross - horizontal bar -->
+  <rect x="0" y="4" width="16" height="4" fill="#E63946"/>
+  
+  <!-- Red cross - vertical bar -->
+  <rect x="6" y="0" width="4" height="12" fill="#E63946"/>
+  
+  <!-- Yellow stars in corners (simplified for small size) -->
+  <polygon points="2,2 2.5,3 1.5,3" fill="#FFD60A"/>
+  <polygon points="14,2 14.5,3 13.5,3" fill="#FFD60A"/>
+  <polygon points="2,10 2.5,9 1.5,9" fill="#FFD60A"/>
+  <polygon points="14,10 14.5,9 13.5,9" fill="#FFD60A"/>
+  
+  <!-- Simplified coat of arms in center (tree symbol) -->
+  <g transform="translate(8,6)">
+    <!-- Tree trunk -->
+    <rect x="-0.5" y="1" width="1" height="1.5" fill="#8B4513"/>
+    <!-- Tree crown (simplified) -->
+    <circle cx="0" cy="0" r="1.2" fill="#228B22"/>
+    <!-- Small highlights for detail -->
+    <circle cx="-0.3" cy="-0.3" r="0.3" fill="#32CD32"/>
+    <circle cx="0.3" cy="0.2" r="0.2" fill="#32CD32"/>
+  </g>
+</svg> 
