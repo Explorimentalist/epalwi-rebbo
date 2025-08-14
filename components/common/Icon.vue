@@ -26,6 +26,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  // name is required, do not provide a default
   size: 'base',
   class: '',
   color: ''
@@ -73,11 +74,10 @@ const sizeMap = {
 
 // Computed properties
 const mappedIconName = computed(() => {
-  // If already in heroicons format, use as-is
+  if (!props.name) return ''
   if (props.name.includes(':')) {
     return props.name
   }
-  // Map generic name to heroicons format
   return iconNameMap[props.name] || `heroicons:${props.name}`
 })
 
