@@ -4,7 +4,7 @@
  */
 
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, readonly } from 'vue'
 import { onAuthStateChanged, signOut as firebaseSignOut, type User as FirebaseUser } from 'firebase/auth'
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { getFirebaseAuth, getFirebaseDb } from '~/services/firebase'
@@ -337,12 +337,12 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
-    // State
-    user: readonly(user),
-    firebaseUser: readonly(firebaseUser),
-    isLoading: readonly(isLoading),
-    error: readonly(error),
-    initialized: readonly(initialized),
+    // State  
+    user,
+    firebaseUser,
+    isLoading,
+    error,
+    initialized,
     
     // Computed
     isAuthenticated,
