@@ -4,21 +4,46 @@
     <NavigationBar current-page="/" />
     
     <!-- Hero Section -->
-    <section class="hero text-center">
-      <h1 class="hero-title">
-        Bienvenido al Diccionario Español-Ndowe
-      </h1>
-      <p class="hero-subtitle">
-        Preserva y aprende el idioma Ndowe con nuestro diccionario offline. 
-        Traduce palabras entre español y ndowe sin necesidad de conexión a internet.
-      </p>
-      
-
-      <!-- Hero Subtitle (Moved below CTA buttons) -->
-      <p class="hero-subtitle-moved">
-        Preserva y aprende el idioma Ndowe con nuestro diccionario offline. 
-        Traduce palabras entre español y ndowe sin necesidad de conexión a internet.
-      </p>
+    <section class="hero">
+      <div class="hero-container">
+        <!-- Content Column -->
+        <div class="hero-content">
+          <h1 class="hero-headline">
+            Preserva y aprende en Ndowe, palabra por palabra
+          </h1>
+          
+          <p class="hero-subheading">
+            El primer diccionario online que traduce palabras del español al Ndowe sin esfuerzo. 
+            Funciona offline y preserva tu herencia cultural.
+          </p>
+          
+          <!-- CTA Buttons -->
+          <div class="hero-actions">
+            <button class="hero-cta hero-cta--primary" @click="handlePrimaryCTA">
+              <Icon name="play" class="hero-cta__icon" />
+              Prueba Epàlwi‑Rèbbo gratis
+            </button>
+            
+            <button class="hero-cta hero-cta--secondary" @click="handleSecondaryCTA">
+              <Icon name="book-open" class="hero-cta__icon" />
+              Ver diccionario
+            </button>
+          </div>
+        </div>
+        
+        <!-- Image Column -->
+        <div class="hero-visual">
+          <div class="hero-mockup">
+            <img 
+              src="/icons/icon-512x512.png" 
+              alt="Epàlwi-Rèbbo Dictionary App - Spanish to Ndowe translation interface showing search results and language toggle"
+              class="hero-mockup__image"
+              loading="lazy"
+            />
+            <div class="hero-mockup__glow"></div>
+          </div>
+        </div>
+      </div>
     </section>
     
     <!-- Features Section -->
@@ -197,6 +222,18 @@ const handlePlanSelection = (plan: any) => {
   navigateTo('/subscription/plans')
 }
 
+// Handle primary CTA (free trial)
+const handlePrimaryCTA = () => {
+  // Navigate to signup or subscription page
+  navigateTo('/auth/signup')
+}
+
+// Handle secondary CTA (view dictionary)
+const handleSecondaryCTA = () => {
+  // Navigate to dictionary page
+  navigateTo('/dictionary')
+}
+
 // Log for development
 onMounted(() => {
   if (process.dev) {
@@ -216,60 +253,72 @@ onMounted(() => {
 .hero {
   padding: var(--space-16) var(--space-6) var(--space-12);
   background: linear-gradient(135deg, var(--color-background) 0%, var(--color-primary) 100%);
-  text-align: center;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
 }
 
-.hero-title {
-  font-size: var(--font-size-5xl);
+.hero-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-12);
+  align-items: center;
+}
+
+.hero-content {
+  text-align: center;
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.hero-headline {
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
   margin-bottom: var(--space-6);
   line-height: var(--line-height-tight);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.hero-subtitle {
-  font-size: var(--font-size-xl);
+.hero-subheading {
+  font-size: var(--font-size-base);
   color: var(--color-text-muted);
-  max-width: 800px;
-  margin: 0 auto var(--space-10);
-  line-height: var(--line-height-normal);
-}
-
-.hero-subtitle-moved {
-  font-size: var(--font-size-lg);
-  color: var(--color-text-muted);
-  max-width: 800px;
-  margin: var(--space-8) auto 0;
-  line-height: var(--line-height-normal);
-  text-align: center;
+  max-width: 500px;
+  margin: 0 auto var(--space-8);
+  line-height: var(--line-height-relaxed);
 }
 
 .hero-actions {
   display: flex;
   gap: var(--space-4);
   justify-content: center;
-  margin-bottom: var(--space-12);
   flex-wrap: wrap;
+  animation: fadeInUp 0.8s ease-out 0.4s both;
 }
 
-.hero-button {
+.hero-cta {
   height: var(--space-12);
-  padding: 0 var(--space-8);
-  border-radius: var(--border-radius-lg);
-  font-size: var(--font-size-lg);
+  padding: 0 var(--space-6);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
-  text-decoration: none;
+  border: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  transition: all 0.15s ease-in-out;
+  transition: all var(--transition-normal) var(--ease-out);
+  text-decoration: none;
   
-  .button-icon {
+  &__icon {
     width: 20px;
     height: 20px;
   }
   
-  &.primary {
+  &--primary {
     background: var(--color-secondary);
     color: white;
     
@@ -278,9 +327,14 @@ onMounted(() => {
       transform: translateY(-2px);
       box-shadow: var(--shadow-lg);
     }
+    
+    &:focus-visible {
+      outline: 3px solid var(--color-border-focus);
+      outline-offset: 2px;
+    }
   }
   
-  &.secondary {
+  &--secondary {
     background: transparent;
     color: var(--color-secondary);
     border: 2px solid var(--color-secondary);
@@ -290,6 +344,50 @@ onMounted(() => {
       color: white;
       transform: translateY(-2px);
     }
+    
+    &:focus-visible {
+      outline: 3px solid var(--color-border-focus);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.hero-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeInUp 0.8s ease-out 0.6s both;
+}
+
+.hero-mockup {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  &__image {
+    width: 280px;
+    height: 280px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-xl);
+    transition: transform var(--transition-slow) var(--ease-out);
+    
+    &:hover {
+      transform: scale(1.05) rotate(2deg);
+    }
+  }
+  
+  &__glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(212, 91, 65, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: pulse 3s ease-in-out infinite;
   }
 }
 
@@ -502,8 +600,98 @@ onMounted(() => {
 }
 
 /* Responsive Design */
+@media (min-width: 768px) {
+  .hero {
+    padding: var(--space-20) var(--space-8) var(--space-16);
+  }
+  
+  .hero-headline {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .hero-subheading {
+    font-size: var(--font-size-lg);
+  }
+  
+  .hero-actions {
+    gap: var(--space-6);
+  }
+  
+  .hero-cta {
+    height: var(--space-13);
+    padding: 0 var(--space-8);
+    font-size: var(--font-size-lg);
+  }
+  
+  .hero-mockup__image {
+    width: 320px;
+    height: 320px;
+  }
+  
+  .hero-mockup__glow {
+    width: 360px;
+    height: 360px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-container {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-16);
+  }
+  
+  .hero-content {
+    text-align: left;
+    order: 1;
+  }
+  
+  .hero-visual {
+    order: 2;
+  }
+  
+  .hero-headline {
+    font-size: var(--font-size-3xl);
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
+  .hero-subheading {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
+  .hero-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hero-headline {
+    font-size: var(--font-size-4xl);
+  }
+  
+  .hero-mockup__image {
+    width: 400px;
+    height: 400px;
+  }
+  
+  .hero-mockup__glow {
+    width: 440px;
+    height: 440px;
+  }
+}
+
 @media (max-width: 768px) {
-  .hero-title {
+  .hero-container {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  
+  .hero-content {
+    padding-right: 0;
+  }
+  
+  .hero-headline {
     font-size: var(--font-size-4xl);
   }
   
@@ -511,7 +699,7 @@ onMounted(() => {
     flex-direction: column;
     align-items: center;
     
-    .hero-button {
+    .hero-cta {
       width: 100%;
       max-width: 300px;
     }
@@ -540,6 +728,17 @@ onMounted(() => {
   }
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -548,6 +747,17 @@ onMounted(() => {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.2;
+    transform: translate(-50%, -50%) scale(1.1);
   }
 }
 </style> 
