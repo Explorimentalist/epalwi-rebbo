@@ -49,6 +49,7 @@
     "mailersend": "^2.6.0",
     "nuxt": "^3.17.6",
     "pinia": "^2.2.0",
+    "stripe": "^18.4.0",
     "workbox-window": "^7.0.0"
   },
   "type": "module",

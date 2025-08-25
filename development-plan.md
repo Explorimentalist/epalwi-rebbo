@@ -316,7 +316,24 @@ defineEmits<{
 
 ### Phase 5: Stripe Integration (Week 5)
 
-#### 5.1 Subscription Service
+#### 5.1 Stripe Products & Prices Setup
+**Required Stripe Dashboard Configuration:**
+
+1. **Monthly Plan**
+   - Product: "epàlwi-rèbbo Monthly"
+   - Price: €1.00/month (recurring)
+   - Price ID: `price_monthly_xxx`
+
+2. **Annual Plan** 
+   - Product: "epàlwi-rèbbo Annual"
+   - Price: €8.97/year (recurring)
+   - Price ID: `price_annual_xxx`
+
+3. **Free Trial Configuration**
+   - 14-day trial period for all new subscriptions
+   - Trial ends automatically, converts to paid subscription
+
+#### 5.2 Subscription Service
 ```typescript
 // services/subscription.ts
 import { loadStripe } from '@stripe/stripe-js'
@@ -343,7 +360,7 @@ export class SubscriptionService {
 }
 ```
 
-#### 5.2 Subscription Cloud Functions
+#### 5.3 Subscription Cloud Functions
 ```typescript
 // functions/src/subscription.ts
 import { stripe } from './stripe-config'
@@ -356,15 +373,27 @@ export const createCheckoutSession = onRequest(async (req, res) => {
     mode: 'subscription',
     payment_method_types: ['card'],
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${process.env.APP_URL}/subscription/success`,
+    success_url: `${process.env.APP_URL}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.APP_URL}/subscription/cancel`,
     client_reference_id: userId,
     subscription_data: {
-      trial_period_days: 14
+      trial_period_days: 14,
+      billing_mode: { type: 'flexible' }
     }
   })
   
   res.json({ sessionId: session.id })
+})
+
+export const createPortalSession = onRequest(async (req, res) => {
+  const { customerId } = req.body
+  
+  const session = await stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: `${process.env.APP_URL}/subscription/manage`
+  })
+  
+  res.json({ url: session.url })
 })
 
 export const handleWebhook = onRequest(async (req, res) => {
@@ -377,8 +406,14 @@ export const handleWebhook = onRequest(async (req, res) => {
   
   // Handle subscription events
   switch (event.type) {
-    case 'customer.subscription.created':
+    case 'checkout.session.completed':
       await updateUserSubscription(event.data.object)
+      break
+    case 'invoice.paid':
+      await updateUserSubscription(event.data.object)
+      break
+    case 'invoice.payment_failed':
+      await handlePaymentFailure(event.data.object)
       break
     case 'customer.subscription.updated':
       await updateUserSubscription(event.data.object)
@@ -391,6 +426,18 @@ export const handleWebhook = onRequest(async (req, res) => {
   res.json({ received: true })
 })
 ```
+
+#### 5.4 Subscription Components Integration
+**PricingCard.vue** - Displays plans and triggers Stripe Checkout
+**PaymentConfirmation.vue** - Shows post-payment status and subscription details
+
+**Simplified Payment Flow:**
+1. User selects plan in PricingCard.vue
+2. Component calls backend to create Stripe Checkout Session
+3. User redirected to Stripe Checkout (handles all payment details)
+4. Stripe redirects back to success page
+5. PaymentConfirmation.vue displays subscription status
+6. Webhook updates user subscription status in database
 
 ### Phase 6: Feedback System (Week 6)
 
@@ -592,23 +639,46 @@ export class AnalyticsService {
 }
 ```
 
+## Product Requirements Summary
+
+### Core Features
+- **Language Toggle**: ÍNdowe ↔ Español
+- **Offline Search**: IndexedDB + trie/inverted index for fast lookup
+- **Result Cards**: Translations with tags and examples
+- **Magic Link Auth**: MailerSend + JWT + HttpOnly cookies
+- **Stripe Subscriptions**: 14-day trial → €1/month or €8.97/year
+- **Offline Dictionary**: Service Worker caching with delta sync
+- **Feedback System**: Google Sheets integration with email alerts
+
+### Subscription Flow
+1. **Trial Period**: 14 days free access for new users
+2. **Payment Options**: €1/month or €8.97/year (annual savings)
+3. **Stripe Integration**: Checkout Sessions for secure payments
+4. **Customer Portal**: Manage subscriptions and payment methods
+5. **Webhook Handling**: Real-time subscription status updates
+
+### Technical Architecture
+- **Frontend**: Vue 3 PWA with TypeScript
+- **Backend**: Firebase Functions + Firestore
+- **Payments**: Stripe with webhook integration
+- **Email**: MailerSend for magic links
+- **Storage**: IndexedDB for offline dictionary
+- **Caching**: Service Worker with Workbox
+
 ### Release Checklist
 
 - [ ] All core features implemented and tested
 - [ ] PWA installable with proper manifest
 - [ ] Service worker caching dictionary data
 - [ ] Auth flow with magic links working
-- [ ] Stripe subscription flow tested
-- [ ] Feedback form submitting to Google Sheets
-- [ ] Error handling and user feedback
-- [ ] Performance optimization
-- [ ] Accessibility compliance (WCAG 2.1)
-- [ ] Cross-browser testing
-- [ ] Mobile responsiveness verified
-- [ ] Analytics and monitoring setup
-- [ ] Security headers and HTTPS
-- [ ] Content Security Policy configured
-- [ ] Database backups and recovery plan
+- [ ] Stripe subscription flow tested (trial → payment)
+- [ ] Feedback mechanism functional
+- [ ] PWA installable, offline, responsive
+- [ ] Error handling and logs in place
+- [ ] KPI hooks embedded
+- [ ] Stripe webhooks configured and tested
+- [ ] Customer portal accessible
+- [ ] Subscription lifecycle events handled
 
 ### Post-Launch Optimization
 
@@ -628,4 +698,4 @@ export class AnalyticsService {
    - Admin dashboard
    - Push notifications
 
-This development plan follows a systematic approach, ensuring each phase builds upon the previous one while maintaining code quality and user experience standards. 
+This development plan follows a systematic approach, ensuring each phase builds upon the previous one while maintaining code quality and user experience standards. The Stripe integration follows best practices using Checkout Sessions instead of custom payment forms, reducing PCI compliance burden and improving security. 

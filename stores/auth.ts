@@ -4,7 +4,7 @@
  */
 
 import { defineStore } from 'pinia'
-import { ref, computed, readonly } from 'vue'
+import { ref, computed, shallowRef } from 'vue'
 import { onAuthStateChanged, signOut as firebaseSignOut, type User as FirebaseUser } from 'firebase/auth'
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { getFirebaseAuth, getFirebaseDb } from '~/services/firebase'
@@ -19,12 +19,14 @@ import type {
 } from '~/types/auth'
 
 export const useAuthStore = defineStore('auth', () => {
-  // State
+  // State - Only serializable data for SSR
   const user = ref<UserProfile | null>(null)
-  const firebaseUser = ref<FirebaseUser | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const initialized = ref(false)
+
+  // Client-only state (not serialized) - use shallowRef for complex objects
+  const firebaseUser = shallowRef<FirebaseUser | null>(null)
 
   // Computed properties
   const isAuthenticated = computed(() => !!user.value)
@@ -77,8 +79,8 @@ export const useAuthStore = defineStore('auth', () => {
       displayName: firebaseUser.displayName || undefined,
       photoURL: firebaseUser.photoURL || undefined,
       role: 'user' as UserRole,
-      createdAt: new Date(now.getTime()), // Ensure plain Date object for serialization
-      lastLoginAt: new Date(now.getTime()), // Ensure plain Date object for serialization
+      createdAt: now,
+      lastLoginAt: now,
       subscription: {
         status: 'trial' as SubscriptionStatus
       },
@@ -173,16 +175,15 @@ export const useAuthStore = defineStore('auth', () => {
       if (docSnap.exists()) {
         const data = docSnap.data()
         
-        // Update trial information - ensure dates are plain Date objects for serialization
-        const createdAt = data['createdAt'].toDate() 
-        const trial = calculateTrialInfo(createdAt)
+        // Update trial information
+        const trial = calculateTrialInfo(data['createdAt'].toDate())
         
         const userProfile: UserProfile = {
           ...data,
           uid: firebaseUser.uid,
           email: firebaseUser.email!,
-          createdAt: new Date(createdAt.getTime()), // Convert to plain Date object
-          lastLoginAt: new Date(), // Plain Date object
+          createdAt: data['createdAt'].toDate(),
+          lastLoginAt: new Date(),
           trial,
           emailVerified: firebaseUser.emailVerified
         } as UserProfile
@@ -305,6 +306,26 @@ export const useAuthStore = defineStore('auth', () => {
   // Initialize auth state listener
   const initializeAuth = (): Promise<void> => {
     return new Promise((resolve) => {
+      // Only run on client-side to prevent SSR issues
+      if (process.server) {
+        initialized.value = true
+        resolve()
+        return
+      }
+
+      // Guard against multiple initializations
+      if (initialized.value) {
+        resolve()
+        return
+      }
+
+      // Ensure we're on the client side
+      if (!process.client) {
+        initialized.value = true
+        resolve()
+        return
+      }
+
       const auth = getFirebaseAuth()
       
       const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
@@ -331,20 +352,19 @@ export const useAuthStore = defineStore('auth', () => {
       })
 
       // Store unsubscribe function for cleanup
-      if (process.client) {
-        window.addEventListener('beforeunload', unsubscribe)
-      }
+      window.addEventListener('beforeunload', unsubscribe)
     })
   }
 
   return {
-    // State  
-    user,
-    isLoading,
-    error,
-    initialized,
-    // Note: firebaseUser is intentionally excluded from the store return
-    // Firebase User objects contain circular references that break SSR serialization
+    // State - Only serializable data
+    user: readonly(user),
+    isLoading: readonly(isLoading),
+    error: readonly(error),
+    initialized: readonly(initialized),
+    
+    // Client-only state (not serialized)
+    firebaseUser: readonly(firebaseUser),
     
     // Computed
     isAuthenticated,

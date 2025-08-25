@@ -99,11 +99,11 @@ export class IndexedDBService {
       // Update cache metadata
       const cacheMetadata: CacheMetadata = {
         lastUpdated: Date.now(),
-        version: data.metadata.version,
+        version: `${data.metadata.version}-comma-fix-v3`, // Force cache refresh for comma fix
         entriesCount: data.metadata.total_entries,
         sizeBytes: this.estimateDataSize(data),
         indexBuilt: false,
-        dataHash: 'default-hash' // Simple hash for now
+        dataHash: 'comma-fix-v3-hash' // Force cache refresh
       }
 
       await this.metadataStore.setItem(STORAGE_KEYS.CACHE_METADATA, cacheMetadata)
@@ -334,12 +334,12 @@ export class IndexedDBService {
       español: entry.español,
       españolNormalized: this.normalizeText(entry.español),
       ndowe: entry.ndowe || [],
-      ndoweText: entry.ndowe?.join(' ') || '',
-      explicación: entry.explicación,
-      ver: entry.ver,
+      ndoweText: entry.ndowe?.join(', ') || '', // Use commas instead of spaces
+      explicación: entry.explicación || [],
+      ver: entry.ver || [],
       tags: [], // Default empty tags
       category: 'general', // Default category
-      searchableText: `${entry.español} ${entry.ndowe?.join(' ') || ''} ${entry.explicación?.join(' ') || ''}`,
+      searchableText: `${entry.español} ${entry.ndowe?.join(', ') || ''} ${entry.explicación?.join(' ') || ''}`,
       hasTranslations: Boolean(entry.ndowe?.length),
       hasExamples: Boolean(entry.explicación?.length),
       hasCrossReferences: Boolean(entry.ver?.length)
@@ -384,9 +384,11 @@ export class IndexedDBService {
    */
   private createError(code: DictionaryError['code'], message: string, originalError?: any): DictionaryError {
     return {
-      code,
+      name: 'IndexedDBError',
       message,
-      details: originalError?.message || originalError?.toString()
+      code,
+      originalError,
+      timestamp: Date.now()
     }
   }
 }

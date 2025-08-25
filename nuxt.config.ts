@@ -3,6 +3,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
   
+  // SSR configuration
+  ssr: true,
+  
   // TypeScript configuration
   typescript: {
     strict: true,
@@ -31,9 +34,37 @@ export default defineNuxtConfig({
     size: '24px',
     class: 'icon',
     mode: 'svg',
-    // Simplified configuration - let the module handle defaults
+    aliases: {
+      'nuxt': 'logos:nuxt-icon',
+    },
+    // Server-side rendering configuration
     serverBundle: {
       collections: ['heroicons', 'lucide', 'mdi']
+    },
+    // Client-side configuration  
+    clientBundle: {
+      scan: true,
+      sizeLimitKb: 256,
+      // Force include commonly used icons
+      icons: [
+        'heroicons:magnifying-glass',
+        'heroicons:bars-3', 
+        'heroicons:user',
+        'heroicons:cog-6-tooth',
+        'heroicons:heart',
+        'heroicons:star',
+        'heroicons:envelope',
+        'heroicons:bell',
+        'heroicons:home',
+        'heroicons:bookmark',
+        'heroicons:share',
+        'heroicons:arrow-down-tray',
+        'heroicons:check',
+        'heroicons:x-mark',
+        'heroicons:arrow-left',
+        'heroicons:arrow-right',
+        'heroicons:arrow-path'
+      ]
     }
   },
   
@@ -103,6 +134,8 @@ export default defineNuxtConfig({
       firebaseAuthDomain: process.env['NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN'] || '',
       firebaseProjectId: process.env['NUXT_PUBLIC_FIREBASE_PROJECT_ID'] || '',
       stripePublishableKey: process.env['NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'] || '',
+      stripeMonthlyPriceId: process.env['NUXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID'] || '',
+      stripeAnnualPriceId: process.env['NUXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID'] || '',
       appUrl: process.env['NUXT_PUBLIC_APP_URL'] || 'http://localhost:3000'
     }
   },
@@ -124,8 +157,7 @@ export default defineNuxtConfig({
   // Components auto-import configuration
   components: {
     dirs: [
-      { path: '~/components', pathPrefix: false },
-      { path: '~/node_modules/@nuxt/ui/dist/runtime/components', prefix: 'Nuxt' }
+      { path: '~/components', pathPrefix: false }
     ],
     global: true
   }

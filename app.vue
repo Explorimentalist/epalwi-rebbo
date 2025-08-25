@@ -5,31 +5,10 @@
       Saltar al contenido principal
     </a>
     
-    <!-- Header -->
-    <header class="bg-primary shadow-sm border-b border-border">
-      <div class="max-w-4xl mx-auto px-6 py-8">
-        <h1 class="text-3xl font-bold text-secondary">
-          epàlwi-rèbbo
-        </h1>
-        <p class="text-muted mt-2">
-          Diccionario Español ↔ Ndowe
-        </p>
-      </div>
-    </header>
-    
     <!-- Main content -->
-    <main id="main-content" class="max-w-4xl mx-auto px-6 py-8">
+    <main id="main-content">
       <NuxtPage />
     </main>
-    
-    <!-- Footer -->
-    <footer class="bg-card border-t border-border mt-auto">
-      <div class="max-w-4xl mx-auto px-6 py-8">
-        <p class="text-muted text-sm text-center">
-          © 2024 epàlwi-rèbbo. Preservando el idioma Ndowe.
-        </p>
-      </div>
-    </footer>
   </div>
 </template>
 
@@ -97,4 +76,4 @@ main {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-secondary);
 }
-</style> 
+</style>

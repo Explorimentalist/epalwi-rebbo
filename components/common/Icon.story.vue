@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import AppIcon from './AppIcon.vue'
+import Icon from './Icon.vue'
 
 // Define the story meta
 const meta = {
-  title: 'Common/AppIcon',
-  component: AppIcon,
+  title: 'Common/Icon',
+  component: Icon,
   tags: ['autodocs'],
 }
 
 // Define the available sizes and icons for controls
 const sizes = ['sm', 'base', 'md', 'lg', 'xl'] as const
-const commonAppIcons = [
+const commonIcons = [
   'search', 'menu', 'user', 'settings', 'heart', 'star', 
   'mail', 'bell', 'home', 'bookmark', 'share', 'download',
   'check', 'x', 'arrow-left', 'arrow-right', 'loader',
@@ -23,46 +23,46 @@ const commonAppIcons = [
     :meta="meta"
     :layout="{ type: 'grid', width: '100%' }"
   >
-    <!-- Default AppIcon -->
+    <!-- Default Icon -->
     <Variant title="Default">
-      <AppIcon name="search" />
+      <Icon name="search" />
     </Variant>
 
     <!-- Size Variants -->
     <Variant title="Sizes">
       <div class="flex items-center gap-4">
         <div class="flex flex-col items-center gap-2">
-          <AppIcon name="search" size="sm" />
+          <Icon name="search" size="sm" />
           <span class="text-xs">sm (12px)</span>
         </div>
         <div class="flex flex-col items-center gap-2">
-          <AppIcon name="search" size="base" />
+          <Icon name="search" size="base" />
           <span class="text-xs">base (16px)</span>
         </div>
         <div class="flex flex-col items-center gap-2">
-          <AppIcon name="search" size="md" />
+          <Icon name="search" size="md" />
           <span class="text-xs">md (20px)</span>
         </div>
         <div class="flex flex-col items-center gap-2">
-          <AppIcon name="search" size="lg" />
+          <Icon name="search" size="lg" />
           <span class="text-xs">lg (24px)</span>
         </div>
         <div class="flex flex-col items-center gap-2">
-          <AppIcon name="search" size="xl" />
+          <Icon name="search" size="xl" />
           <span class="text-xs">xl (32px)</span>
         </div>
       </div>
     </Variant>
 
-    <!-- AppIcon Gallery -->
-    <Variant title="AppIcon Gallery">
+    <!-- Icon Gallery -->
+    <Variant title="Icon Gallery">
       <div class="grid grid-cols-6 gap-4">
         <div 
-          v-for="iconName in commonAppIcons" 
+          v-for="iconName in commonIcons" 
           :key="iconName"
           class="flex flex-col items-center gap-2 p-2 border rounded hover:bg-gray-50"
         >
-          <AppIcon :name="iconName" size="md" />
+          <Icon :name="iconName" size="md" />
           <span class="text-xs">{{ iconName }}</span>
         </div>
       </div>
@@ -73,15 +73,15 @@ const commonAppIcons = [
       <div class="space-y-4">
         <div class="flex items-center gap-4">
           <span class="text-sm font-medium">Hover Effects:</span>
-          <AppIcon name="heart" size="md" class="hover:text-red-500 cursor-pointer transition-colors" />
-          <AppIcon name="star" size="md" class="hover:text-yellow-500 cursor-pointer transition-colors" />
-          <AppIcon name="bookmark" size="md" class="hover:text-blue-500 cursor-pointer transition-colors" />
+          <Icon name="heart" size="md" class="hover:text-red-500 cursor-pointer transition-colors" />
+          <Icon name="star" size="md" class="hover:text-yellow-500 cursor-pointer transition-colors" />
+          <Icon name="bookmark" size="md" class="hover:text-blue-500 cursor-pointer transition-colors" />
         </div>
         
         <div class="flex items-center gap-4">
           <span class="text-sm font-medium">Loading:</span>
-          <AppIcon name="loader" size="md" class="animate-spin" />
-          <AppIcon name="refresh-cw" size="md" class="animate-spin" />
+          <Icon name="loader" size="md" class="animate-spin" />
+          <Icon name="refresh-cw" size="md" class="animate-spin" />
         </div>
       </div>
     </Variant>
@@ -90,9 +90,9 @@ const commonAppIcons = [
     <Variant title="Playground" :init-state="{ iconName: 'search', size: 'md' }">
       <template #default="{ state }">
         <div class="flex flex-col items-center gap-4">
-          <AppIcon :name="state.iconName" :size="state.size" />
+          <Icon :name="state.iconName" :size="state.size" />
           <code class="text-sm bg-gray-100 px-2 py-1 rounded">
-            &lt;AppIcon name="{{ state.iconName }}" size="{{ state.size }}" /&gt;
+            &lt;Icon name="{{ state.iconName }}" size="{{ state.size }}" /&gt;
           </code>
         </div>
       </template>
@@ -100,8 +100,8 @@ const commonAppIcons = [
       <template #controls="{ state }">
         <HstSelect
           v-model="state.iconName"
-          title="AppIcon"
-          :options="commonAppIcons"
+          title="Icon"
+          :options="commonIcons"
         />
         <HstSelect
           v-model="state.size"

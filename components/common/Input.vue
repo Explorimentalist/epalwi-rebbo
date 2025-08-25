@@ -12,7 +12,7 @@
     <!-- Input Wrapper -->
     <div class="input-wrapper" :class="wrapperClasses">
       <!-- Leading Icon -->
-      <AppIcon 
+      <Icon 
         v-if="leadingIcon" 
         :name="leadingIcon"
         size="base"
@@ -45,7 +45,7 @@
       </label>
       
       <!-- Trailing Icon -->
-      <AppIcon 
+      <Icon 
         v-if="trailingIcon && !loading" 
         :name="trailingIcon" 
         size="base"
@@ -53,7 +53,7 @@
       />
       
       <!-- Loading Spinner -->
-      <AppIcon 
+      <Icon 
         v-if="loading" 
         name="loader" 
         size="base"
@@ -61,7 +61,7 @@
       />
       
       <!-- Validation Icon -->
-      <AppIcon 
+      <Icon 
         v-if="showValidationIcon"
         :name="validationIcon"
         size="base"
