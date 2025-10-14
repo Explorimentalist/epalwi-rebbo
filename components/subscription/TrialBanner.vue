@@ -191,35 +191,35 @@ const bannerClasses = computed(() => {
 <style scoped>
 .trial-banner {
   position: sticky;
-  top: var(--space-13); /* 64px - below navigation */
+  top: 64px; /* 64px - below navigation */
   left: 0;
   right: 0;
-  background: linear-gradient(135deg, var(--color-secondary), #E6613D);
+  background: linear-gradient(135deg, var(--ds-primary), #E6613D);
   color: white;
   z-index: var(--z-sticky);
-  transition: transform var(--transition-normal);
+  transition: transform var(--ds-duration);
   
   /* Desktop layout */
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--space-8); /* 24px */
-  height: var(--space-12); /* 56px */
+  padding: 0 var(--ds-spacing-3); /* 24px */
+  height: var(--ds-spacing-6); /* 56px */
   
   /* Mobile adjustments */
   @media (max-width: 767px) {
     flex-direction: column;
     align-items: flex-start;
-    padding: var(--space-5) var(--space-6); /* 12px 16px */
+    padding: var(--ds-spacing-1) var(--ds-spacing-2); /* 12px 16px */
     height: auto;
-    min-height: var(--space-14); /* 72px */
-    gap: var(--space-3); /* 4px */
+    min-height: 72px; /* 72px */
+    gap: var(--ds-spacing-05); /* 4px */
   }
 }
 
 /* Banner state variants */
 .trial-banner--critical {
-  background: linear-gradient(135deg, var(--color-error), #B91C1C);
+  background: linear-gradient(135deg, var(--ds-destructive), #B91C1C);
 }
 
 .trial-banner--warning {
@@ -227,14 +227,14 @@ const bannerClasses = computed(() => {
 }
 
 .trial-banner--info {
-  background: linear-gradient(135deg, var(--color-secondary), #E6613D);
+  background: linear-gradient(135deg, var(--ds-primary), #E6613D);
 }
 
 /* Content area */
 .trial-banner__content {
   display: flex;
   align-items: center;
-  gap: var(--space-4); /* 8px */
+  gap: var(--ds-spacing-1); /* 8px */
   flex: 1;
   
   @media (max-width: 767px) {
@@ -252,12 +252,12 @@ const bannerClasses = computed(() => {
 }
 
 .trial-banner__message {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  font-size: 0.875rem;
+  font-weight: var(--ds-font-weight-medium);
   line-height: 1.4;
   
   @media (min-width: 768px) {
-    font-size: var(--font-size-base);
+    font-size: 1rem;
   }
 }
 
@@ -265,7 +265,7 @@ const bannerClasses = computed(() => {
 .trial-banner__actions {
   display: flex;
   align-items: center;
-  gap: var(--space-4); /* 8px */
+  gap: var(--ds-spacing-1); /* 8px */
   
   @media (max-width: 767px) {
     width: 100%;
@@ -275,20 +275,20 @@ const bannerClasses = computed(() => {
 
 /* Upgrade CTA button */
 .trial-banner__cta {
-  height: var(--space-9); /* 32px */
-  padding: 0 var(--space-5); /* 12px horizontal */
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  height: var(--ds-spacing-3); /* 32px */
+  padding: 0 var(--ds-spacing-1); /* 12px horizontal */
+  font-size: 0.875rem;
+  font-weight: var(--ds-font-weight-medium);
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: var(--border-radius);
+  border-radius: var(--ds-radius);
   color: white;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--ds-duration);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3); /* 4px */
+  gap: var(--ds-spacing-05); /* 4px */
   min-width: 80px;
   
   &:hover:not(:disabled) {
@@ -317,8 +317,8 @@ const bannerClasses = computed(() => {
 
 /* Close button */
 .trial-banner__close {
-  width: var(--space-9); /* 32px */
-  height: var(--space-9); /* 32px */
+  width: var(--ds-spacing-3); /* 32px */
+  height: var(--ds-spacing-3); /* 32px */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -326,8 +326,8 @@ const bannerClasses = computed(() => {
   border: none;
   color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  border-radius: var(--border-radius);
-  transition: all var(--transition-fast);
+  border-radius: var(--ds-radius);
+  transition: all var(--ds-duration);
   flex-shrink: 0;
   
   &:hover {
@@ -344,7 +344,7 @@ const bannerClasses = computed(() => {
 /* Transition animations */
 .trial-banner-enter-active,
 .trial-banner-leave-active {
-  transition: transform var(--transition-normal), opacity var(--transition-normal);
+  transition: transform var(--ds-duration), opacity var(--ds-duration);
 }
 
 .trial-banner-enter-from {

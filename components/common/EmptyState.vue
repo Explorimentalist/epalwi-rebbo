@@ -10,7 +10,7 @@
     </div>
     
     <!-- Title -->
-    <h3 class="empty-state__title">
+    <h3 class="ds-text-display-xs">
       {{ title }}
     </h3>
     
@@ -129,26 +129,26 @@ const ctaButtonClasses = computed(() => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  max-width: var(--space-15); /* 400px max width */
+  max-width: 400px; /* 400px max width */
   margin: 0 auto;
-  padding: var(--space-11); /* 48px padding */
+  padding: 48px; /* 48px padding */
 }
 
 /* Size variants */
 .empty-state--small {
   max-width: 300px;
-  padding: var(--space-9); /* 32px */
+  padding: var(--ds-spacing-3); /* 32px */
 }
 
 .empty-state--large {
   max-width: 500px;
-  padding: var(--space-12); /* 56px */
+  padding: var(--ds-spacing-6); /* 56px */
 }
 
 /* Icon */
 .empty-state__icon {
-  margin-bottom: var(--space-8); /* 24px gap */
-  color: var(--color-text-muted);
+  margin-bottom: var(--ds-spacing-3); /* 24px gap */
+  color: var(--ds-muted-foreground);
 }
 
 .empty-state__icon-graphic {
@@ -157,61 +157,61 @@ const ctaButtonClasses = computed(() => {
 
 /* Variant icon colors */
 .empty-state--error .empty-state__icon {
-  color: var(--color-error);
+  color: var(--ds-destructive);
 }
 
 .empty-state--success .empty-state__icon {
-  color: var(--color-success);
+  color: var(--ds-accent);
 }
 
 .empty-state--info .empty-state__icon {
-  color: var(--color-secondary);
+  color: var(--ds-primary);
 }
 
 /* Title */
 .empty-state__title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
-  margin: 0 0 var(--space-6) 0; /* 16px gap */
-  line-height: var(--line-height-tight);
+  font-size: 1.25rem;
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-foreground);
+  margin: 0 0 var(--ds-spacing-2) 0; /* 16px gap */
+  line-height: var(--ds-line-height-tight);
 }
 
 .empty-state--small .empty-state__title {
-  font-size: var(--font-size-lg);
+  font-size: 1.125rem;
 }
 
 .empty-state--large .empty-state__title {
-  font-size: var(--font-size-2xl);
+  font-size: 1.5rem;
 }
 
 /* Description */
 .empty-state__description {
-  font-size: var(--font-size-base);
-  color: var(--color-text-muted);
+  font-size: 1rem;
+  color: var(--ds-muted-foreground);
   margin: 0;
-  line-height: var(--line-height-normal);
+  line-height: var(--ds-line-height-normal);
   max-width: 350px; /* Prevent text from being too wide */
 }
 
 .empty-state--small .empty-state__description {
-  font-size: var(--font-size-sm);
+  font-size: 0.875rem;
   max-width: 280px;
 }
 
 .empty-state--large .empty-state__description {
-  font-size: var(--font-size-lg);
+  font-size: 1.125rem;
   max-width: 420px;
 }
 
 /* Call to Action Button */
 .empty-state__cta {
-  margin-top: var(--space-8); /* 24px gap */
+  margin-top: var(--ds-spacing-3); /* 24px gap */
   min-width: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3); /* 4px gap between icon and text */
+  gap: var(--ds-spacing-05); /* 4px gap between icon and text */
 }
 
 .empty-state--small .empty-state__cta {
@@ -224,35 +224,35 @@ const ctaButtonClasses = computed(() => {
 
 /* Additional Content */
 .empty-state__content {
-  margin-top: var(--space-8); /* 24px gap */
+  margin-top: var(--ds-spacing-3); /* 24px gap */
   width: 100%;
 }
 
 /* Responsive adjustments */
 @media (max-width: 767px) {
   .empty-state {
-    padding: var(--space-8); /* 24px on mobile */
+    padding: var(--ds-spacing-3); /* 24px on mobile */
     max-width: none; /* Full width on mobile */
   }
   
   .empty-state--small {
-    padding: var(--space-6); /* 16px */
+    padding: var(--ds-spacing-2); /* 16px */
   }
   
   .empty-state--large {
-    padding: var(--space-9); /* 32px */
+    padding: var(--ds-spacing-3); /* 32px */
   }
   
   .empty-state__title {
-    font-size: var(--font-size-lg);
+    font-size: 1.125rem;
   }
   
   .empty-state--large .empty-state__title {
-    font-size: var(--font-size-xl);
+    font-size: 1.25rem;
   }
   
   .empty-state__description {
-    font-size: var(--font-size-sm);
+    font-size: 0.875rem;
     max-width: none;
   }
   
@@ -279,7 +279,7 @@ const ctaButtonClasses = computed(() => {
 
 /* Focus styles */
 .empty-state__cta:focus-visible {
-  outline: 2px solid var(--color-border-focus);
+  outline: 2px solid var(--ds-ring);
   outline-offset: 2px;
 }
 
@@ -290,7 +290,7 @@ const ctaButtonClasses = computed(() => {
   }
   
   .empty-state__title {
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--ds-font-weight-bold);
   }
 }
 
@@ -312,7 +312,7 @@ const ctaButtonClasses = computed(() => {
 /* Print styles */
 @media print {
   .empty-state {
-    padding: var(--space-6);
+    padding: var(--ds-spacing-2);
   }
   
   .empty-state__cta {

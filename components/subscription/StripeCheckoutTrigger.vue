@@ -187,58 +187,58 @@ const triggerStripeCheckout = async () => {
 
 <style scoped>
 .stripe-checkout-trigger {
-  background: var(--color-primary);
-  border-radius: var(--border-radius-lg);
-  padding: var(--space-8); /* 24px */
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border);
+  background: var(--ds-card);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-spacing-3); /* 24px */
+  box-shadow: var(--ds-shadow-sm);
+  border: 1px solid var(--ds-border);
 }
 
 .summary-title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
-  margin-bottom: var(--space-6); /* 16px */
+  font-size: 1.125rem;
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-foreground);
+  margin-bottom: var(--ds-spacing-2); /* 16px */
   display: flex;
   align-items: center;
-  gap: var(--space-3); /* 8px */
+  gap: var(--ds-spacing-05); /* 8px */
   
   .summary-icon {
     width: 20px;
     height: 20px;
-    color: var(--color-secondary);
+    color: var(--ds-primary);
   }
 }
 
 .plan-details {
-  background: var(--color-background);
-  padding: var(--space-6); /* 16px */
-  border-radius: var(--border-radius);
-  margin-bottom: var(--space-8); /* 24px */
+  background: var(--ds-background);
+  padding: var(--ds-spacing-2); /* 16px */
+  border-radius: var(--ds-radius);
+  margin-bottom: var(--ds-spacing-3); /* 24px */
   
   .plan-name {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--space-2); /* 4px */
+    font-size: 1.125rem;
+    font-weight: var(--ds-font-weight-semibold);
+    color: var(--ds-foreground);
+    margin-bottom: var(--ds-spacing-025); /* 4px */
   }
   
   .plan-price {
-    font-size: var(--font-size-base);
-    color: var(--color-text-muted);
-    margin-bottom: var(--space-4); /* 8px */
+    font-size: 1rem;
+    color: var(--ds-muted-foreground);
+    margin-bottom: var(--ds-spacing-1); /* 8px */
   }
   
   .plan-features {
     list-style: none;
     padding: 0;
-    margin: 0 0 var(--space-6) 0; /* 0 0 16px 0 */
+    margin: 0 0 var(--ds-spacing-2) 0; /* 0 0 16px 0 */
     
     .feature-item {
       display: flex;
       align-items: center;
-      gap: var(--space-3); /* 8px */
-      margin-bottom: var(--space-3); /* 8px */
+      gap: var(--ds-spacing-05); /* 8px */
+      margin-bottom: var(--ds-spacing-05); /* 8px */
       
       &:last-child {
         margin-bottom: 0;
@@ -247,44 +247,43 @@ const triggerStripeCheckout = async () => {
       .checkmark {
         width: 16px;
         height: 16px;
-        color: var(--color-success);
+        color: var(--ds-accent);
         flex-shrink: 0;
       }
     }
   }
   
   .total-amount {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-secondary);
+    font-size: 1.25rem;
+    font-weight: var(--ds-font-weight-bold);
+    color: var(--ds-primary);
     text-align: center;
-    padding: var(--space-4); /* 8px */
-    background: var(--color-primary);
-    border-radius: var(--border-radius);
-    border: 2px solid var(--color-secondary);
+    padding: var(--ds-spacing-1); /* 8px */
+    background: var(--ds-card);
+    border-radius: var(--ds-radius);
+    border: 2px solid var(--ds-primary);
   }
 }
 
 .checkout-button {
   width: 100%;
-  height: var(--space-11); /* 48px */
-  background: var(--color-secondary);
+  height: 48px; /* 48px */
+  background: var(--ds-primary);
   color: white;
   border: none;
-  border-radius: var(--border-radius);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
+  border-radius: var(--ds-radius);
+  font-size: 1rem;
+  font-weight: var(--ds-font-weight-semibold);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--ds-duration);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3); /* 8px */
-  margin-bottom: var(--space-6); /* 16px */
+  gap: var(--ds-spacing-05); /* 8px */
+  margin-bottom: var(--ds-spacing-2); /* 16px */
   
   &:hover:not(:disabled) {
-    background: var(--color-secondary-dark);
-    transform: translateY(-1px);
+    background: var(--ds-primary-dark);
   }
   
   &:disabled {
@@ -300,23 +299,23 @@ const triggerStripeCheckout = async () => {
 }
 
 .checkout-info {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  color: var(--ds-muted-foreground);
   text-align: center;
-  line-height: var(--line-height-normal);
-  margin-bottom: var(--space-6); /* 16px */
+  line-height: var(--ds-line-height-normal);
+  margin-bottom: var(--ds-spacing-2); /* 16px */
 }
 
 .error-message {
-  background: var(--color-error-light);
-  border: 1px solid var(--color-error);
-  border-radius: var(--border-radius);
-  padding: var(--space-4); /* 8px */
-  color: var(--color-error);
-  font-size: var(--font-size-sm);
+  background: hsl(var(--ds-destructive) / 0.1);
+  border: 1px solid var(--ds-destructive);
+  border-radius: var(--ds-radius);
+  padding: var(--ds-spacing-1); /* 8px */
+  color: var(--ds-destructive);
+  font-size: 0.875rem;
   display: flex;
   align-items: center;
-  gap: var(--space-3); /* 8px */
+  gap: var(--ds-spacing-05); /* 8px */
   
   .error-icon {
     width: 16px;
@@ -329,41 +328,4 @@ const triggerStripeCheckout = async () => {
   to { transform: rotate(360deg); }
 }
 
-/* CSS Variables for design system */
-:root {
-  --space-2: 4px;
-  --space-3: 8px;
-  --space-4: 16px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-11: 48px;
-  
-  --color-primary: #FFFFFF;
-  --color-secondary: #D45B41;
-  --color-secondary-dark: #B8412F;
-  --color-background: #F2EDEB;
-  --color-text: #333333;
-  --color-text-muted: #6B7280;
-  --color-border: #E5E7EB;
-  --color-success: #257940;
-  --color-error: #D61515;
-  --color-error-light: #FEF2F2;
-  
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
-  
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  
-  --line-height-normal: 1.5;
-  
-  --border-radius: 8px;
-  --border-radius-lg: 12px;
-  
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  
-  --transition-fast: 0.15s ease-in-out;
-}
 </style>

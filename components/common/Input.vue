@@ -274,7 +274,7 @@ const validationIconClasses = computed(() => {
 }
 
 .input-field {
-  @apply w-full px-4 py-3 bg-gray-100 text-gray-800 border border-gray-300 rounded-lg transition-all duration-200 placeholder-gray-500;
+  @apply w-full px-4 py-3 bg-white text-gray-800 border border-gray-300 rounded-lg transition-all duration-200 placeholder-gray-500;
   @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
 }
 
@@ -349,7 +349,7 @@ const validationIconClasses = computed(() => {
 
 /* Hover effects */
 .input-field:hover:not(:disabled):not(:focus) {
-  @apply border-gray-400 bg-white;
+  @apply border-gray-300 bg-white;
 }
 
 /* Loading animation for spinner */

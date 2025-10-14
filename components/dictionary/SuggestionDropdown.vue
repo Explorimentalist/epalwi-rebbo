@@ -66,10 +66,9 @@ const setItemRef = (el: HTMLElement | null, index: number) => {
 
 // Calculate dropdown position
 const calculatePosition = () => {
-  if (!props.targetElement || !dropdownRef.value) return
+  if (!props.targetElement) return
   
   const targetRect = props.targetElement.getBoundingClientRect()
-  const dropdownRect = dropdownRef.value.getBoundingClientRect()
   const viewportHeight = window.innerHeight
   const viewportWidth = window.innerWidth
   
@@ -81,9 +80,10 @@ const calculatePosition = () => {
   const spaceAbove = targetRect.top
   const showAbove = spaceBelow < neededHeight && spaceAbove > spaceBelow
   
-  // Calculate horizontal position
+  // Calculate horizontal position using target width (dropdown will match this width)
   let left = targetRect.left
-  const maxLeft = viewportWidth - dropdownRect.width
+  const dropdownWidth = targetRect.width
+  const maxLeft = viewportWidth - dropdownWidth
   if (left > maxLeft) {
     left = maxLeft
   }
@@ -111,7 +111,7 @@ const calculatePosition = () => {
     position: 'fixed',
     top: `${top}px`,
     left: `${left}px`,
-    width: `${targetRect.width}px`,
+    width: `${dropdownWidth}px`,
     maxHeight: `${props.maxHeight}px`,
     zIndex: 'var(--z-dropdown)'
   }
@@ -245,10 +245,10 @@ defineExpose({
 
 <style scoped>
 .suggestion-dropdown {
-  background: var(--color-primary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-lg);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-lg);
   overflow-y: auto;
   min-width: 200px;
 }
@@ -256,13 +256,13 @@ defineExpose({
 .suggestion-item {
   display: flex;
   align-items: center;
-  gap: var(--space-3); /* 12px */
+  gap: var(--ds-spacing-05); /* 12px */
   height: 40px;
-  padding: var(--space-2) var(--space-3); /* 8px 12px */
+  padding: var(--ds-spacing-025) var(--ds-spacing-05); /* 8px 12px */
   cursor: pointer;
-  transition: all var(--transition-fast) var(--ease-in-out);
-  color: var(--color-text);
-  border-bottom: 1px solid var(--color-border);
+  transition: all var(--ds-duration) var(--ds-ease);
+  color: var(--ds-foreground);
+  border-bottom: 1px solid var(--ds-border);
   user-select: none;
 }
 
@@ -272,26 +272,26 @@ defineExpose({
 
 .suggestion-item:hover,
 .suggestion-item--active {
-  background: var(--color-background);
+  background: var(--ds-background);
 }
 
 .suggestion-item--active {
   background: rgba(212, 91, 65, 0.1);
-  color: var(--color-secondary);
+  color: var(--ds-primary);
 }
 
 .suggestion-icon {
-  color: var(--color-text-light);
+  color: var(--ds-muted-foreground);
   flex-shrink: 0;
 }
 
 .suggestion-item--active .suggestion-icon {
-  color: var(--color-secondary);
+  color: var(--ds-primary);
 }
 
 .suggestion-text {
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-normal);
+  font-size: 1rem;
+  line-height: var(--ds-line-height-normal);
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -308,23 +308,23 @@ defineExpose({
 }
 
 .suggestion-dropdown::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--ds-border);
   border-radius: 2px;
 }
 
 .suggestion-dropdown::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-light);
+  background: var(--ds-muted-foreground);
 }
 
 /* Focus styles for accessibility */
 .suggestion-item:focus {
-  outline: 2px solid var(--color-border-focus);
+  outline: 2px solid var(--ds-ring);
   outline-offset: -2px;
 }
 
 /* Animation for dropdown appearance */
 .suggestion-dropdown {
-  animation: dropdown-appear var(--transition-fast) var(--ease-out);
+  animation: dropdown-appear var(--ds-duration) var(--ease-out);
 }
 
 @keyframes dropdown-appear {
@@ -342,11 +342,11 @@ defineExpose({
 @media (max-width: 768px) {
   .suggestion-dropdown {
     min-width: 0;
-    border-radius: var(--border-radius);
+    border-radius: var(--ds-radius);
   }
   
   .suggestion-item {
-    padding: var(--space-3) var(--space-4); /* 12px 16px on mobile */
+    padding: var(--ds-spacing-05) var(--ds-spacing-1); /* 12px 16px on mobile */
     height: 44px; /* Slightly taller for better touch targets */
   }
 }

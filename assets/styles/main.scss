@@ -1,10 +1,10 @@
 // Main Stylesheet for epàlwi-rèbbo
 // Progressive Web App for Spanish↔Ndowe dictionary
 
-// Import design system components
-@use 'variables';
-@use 'spacing';
-@use 'components';
+// Import Design System V2 - Primary system
+@use 'design-system-v2';
+
+// Import interactions (compatible with V2)
 @use 'interactions';
 
 // Global reset and base styles
@@ -34,11 +34,11 @@ html {
 }
 
 body {
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-normal);
-  color: var(--color-text);
-  background-color: var(--color-background);
+  font-family: var(--ds-font-sans);
+  font-size: var(--ds-font-size-copy-16);
+  line-height: 1.5;
+  color: var(--ds-foreground);
+  background-color: var(--ds-background);
   min-height: 100vh;
   
   // Prevent horizontal scroll
@@ -52,74 +52,74 @@ body {
 
 // Typography
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-family-base);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-tight);
+  font-family: var(--ds-font-display);
+  font-weight: 500;
+  line-height: 1.2;
   letter-spacing: -0.02em;
-  margin-bottom: var(--space-6);
-  color: var(--color-text);
+  margin-bottom: var(--ds-spacing-1);
+  color: var(--ds-foreground);
 }
 
 h1 {
-  font-size: var(--font-size-4xl);
-  font-weight: var(--font-weight-bold);
-  margin-bottom: var(--space-8);
+  font-size: var(--ds-font-size-l);
+  font-weight: 500;
+  margin-bottom: var(--ds-spacing-2);
 }
 
 h2 {
-  font-size: var(--font-size-3xl);
-  margin-bottom: var(--space-7);
+  font-size: var(--ds-font-size-m);
+  margin-bottom: var(--ds-spacing-1);
 }
 
 h3 {
-  font-size: var(--font-size-2xl);
-  margin-bottom: var(--space-6);
+  font-size: var(--ds-font-size-s);
+  margin-bottom: var(--ds-spacing-1);
 }
 
 h4 {
-  font-size: var(--font-size-xl);
-  margin-bottom: var(--space-5);
+  font-size: var(--ds-font-size-xs);
+  margin-bottom: var(--ds-spacing-05);
 }
 
 h5 {
-  font-size: var(--font-size-lg);
-  margin-bottom: var(--space-4);
+  font-size: var(--ds-font-size-copy-18);
+  margin-bottom: var(--ds-spacing-05);
 }
 
 h6 {
-  font-size: var(--font-size-base);
-  margin-bottom: var(--space-4);
+  font-size: var(--ds-font-size-copy-16);
+  margin-bottom: var(--ds-spacing-05);
 }
 
 p {
-  margin-bottom: var(--space-6);
-  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--ds-spacing-1);
+  line-height: 1.6;
 }
 
 // Links
 a {
-  color: var(--color-secondary);
+  color: var(--ds-primary);
   text-decoration: none;
-  transition: color var(--transition-fast) var(--ease-in-out);
+  transition: color var(--ds-duration) var(--ds-ease);
   
   &:hover {
-    color: #C04132;
+    opacity: 0.8;
     text-decoration: underline;
   }
   
   &:focus {
-    outline: 2px solid var(--color-border-focus);
+    outline: 2px solid var(--ds-ring);
     outline-offset: 2px;
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--ds-radius-sm);
   }
 }
 
 // Forms
 label {
   display: block;
-  font-weight: var(--font-weight-medium);
-  margin-bottom: var(--space-3);
-  color: var(--color-text);
+  font-weight: 500;
+  margin-bottom: var(--ds-spacing-025);
+  color: var(--ds-foreground);
 }
 
 // Mobile-first responsive utilities
@@ -129,15 +129,15 @@ label {
   }
   
   h1 {
-    font-size: var(--font-size-3xl);
+    font-size: var(--ds-font-size-m);
   }
   
   h2 {
-    font-size: var(--font-size-2xl);
+    font-size: var(--ds-font-size-s);
   }
   
   h3 {
-    font-size: var(--font-size-xl);
+    font-size: var(--ds-font-size-xs);
   }
 }
 

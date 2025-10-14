@@ -37,16 +37,18 @@
       </li>
     </ul>
     
-    <!-- Plan CTA -->
+    <!-- Plan CTA - Design System V2 -->
     <div class="plan-cta">
-      <button
-        class="cta-button"
-        :class="{ loading: loading }"
-        :disabled="disabled || loading"
+      <ButtonV2
+        :variant="plan.popular ? 'primary' : 'secondary'"
+        size="lg"
+        :loading="loading"
+        :disabled="disabled"
+        full-width
         @click="handlePlanSelection"
       >
         {{ ctaText }}
-      </button>
+      </ButtonV2>
     </div>
   </div>
 </template>
@@ -92,31 +94,45 @@ const handlePlanSelection = () => {
 
 <style scoped>
 .pricing-card {
-  background: var(--color-primary);
-  border: 2px solid var(--color-border);
-  border-radius: var(--border-radius-lg);
-  padding: var(--space-8); /* 24px */
-  transition: all var(--transition-normal);
+  /* Design System V2 - Modern card styling */
+  background: white;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-2xl);
+  padding: var(--ds-spacing-2); /* 2rem = 32px */
+  transition: all var(--ds-duration) var(--ds-ease);
   position: relative;
+  box-shadow: var(--ds-shadow-sm);
   
   /* Vertical layout on all screen sizes */
   display: flex;
   flex-direction: column;
   height: 100%; /* Ensure full height for space-between to work */
   justify-content: space-between; /* Push button to bottom */
-  gap: var(--space-6); /* 16px between sections */
+  gap: var(--ds-spacing-1); /* 1rem = 16px between sections */
   
   &:hover {
-    border-color: var(--color-secondary);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    border-color: var(--ds-primary);
+    box-shadow: var(--ds-shadow-2xl);
   }
   
   &.selected {
-    border-color: var(--color-secondary);
-    background: var(--color-primary);
+    border-color: var(--ds-primary);
+    background: white;
+    box-shadow: var(--ds-shadow-lg);
     
-    /* Remove the pseudo-element that was creating the red background */
+    /* Add a subtle glow effect for selected state */
+    &::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, var(--ds-primary), var(--ds-accent));
+      border-radius: var(--ds-radius-2xl);
+      z-index: -1;
+      opacity: 0.1;
+    }
   }
   
   .plan-header {
@@ -125,18 +141,18 @@ const handlePlanSelection = () => {
     justify-content: flex-start;
     
     .plan-title {
-      font-size: var(--font-size-lg);
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-text);
+      font-size: 1.25rem; /* 20px */
+      font-weight: var(--ds-font-weight-semibold);
+      color: var(--ds-foreground);
       text-align: left;
       
       .popular-badge {
-        background: var(--color-secondary);
-        color: white;
-        font-size: var(--font-size-xs);
-        padding: var(--space-1) var(--space-3);
-        border-radius: var(--border-radius);
-        margin-left: var(--space-3);
+        background: var(--ds-secondary);
+        color: var(--ds-secondary-foreground);
+        font-size: 0.75rem; /* 12px */
+        padding: var(--ds-spacing-025) var(--ds-spacing-1);
+        border-radius: var(--ds-radius-md);
+        margin-left: var(--ds-spacing-1);
       }
     }
   }
@@ -144,27 +160,27 @@ const handlePlanSelection = () => {
   .plan-pricing {
     display: flex;
     align-items: baseline;
-    gap: var(--space-2); /* 4px between price and period */
+    gap: var(--ds-spacing-025);
     
     .price {
-      font-size: var(--font-size-3xl);
-      font-weight: var(--font-weight-bold);
-      color: var(--color-text);
+      font-size: 2rem; /* 32px */
+      font-weight: var(--ds-font-weight-bold);
+      color: var(--ds-foreground);
       line-height: 1;
     }
     
     .period {
-      font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
+      font-size: 0.875rem; /* 14px */
+      color: var(--ds-muted-foreground);
     }
     
     .savings {
-      background: var(--color-success);
-      color: white;
-      font-size: var(--font-size-xs);
-      padding: var(--space-1) var(--space-3);
-      border-radius: var(--border-radius);
-      margin-left: var(--space-3);
+      background: var(--ds-accent);
+      color: var(--ds-accent-foreground);
+      font-size: 0.75rem; /* 12px */
+      padding: var(--ds-spacing-025) var(--ds-spacing-1);
+      border-radius: var(--ds-radius-md);
+      margin-left: var(--ds-spacing-1);
     }
   }
   
@@ -176,8 +192,8 @@ const handlePlanSelection = () => {
     .feature-item {
       display: flex;
       align-items: center;
-      gap: var(--space-3); /* 8px between checkmark and text */
-      margin-bottom: var(--space-4); /* 16px between features */
+      gap: var(--ds-spacing-05);
+      margin-bottom: var(--ds-spacing-1);
       
       &:last-child {
         margin-bottom: 0;
@@ -186,105 +202,22 @@ const handlePlanSelection = () => {
       .checkmark {
         width: 16px;
         height: 16px;
-        color: var(--color-success);
+        color: var(--ds-accent);
         flex-shrink: 0;
       }
       
       .feature-text {
-        font-size: var(--font-size-base);
-        color: var(--color-text);
-        line-height: var(--line-height-normal);
+        font-size: 1rem; /* 16px */
+        color: var(--ds-foreground);
+        line-height: var(--ds-line-height-normal);
       }
     }
   }
   
   .plan-cta {
     width: 100%;
-    margin-top: auto; /* Push to bottom if space-between doesn't work */
-    
-    .cta-button {
-      width: 100%;
-      height: var(--space-11); /* 48px */
-      background: #D45B41;
-      color: white;
-      border: none;
-      border-radius: var(--border-radius);
-      font-size: var(--font-size-base);
-      font-weight: var(--font-weight-semibold);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      
-      &:hover:not(:disabled) {
-        background: #B8412F;
-        transform: translateY(-1px);
-      }
-      
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      
-      &.loading {
-        position: relative;
-        color: transparent;
-        
-        &::after {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 20px;
-          height: 20px;
-          margin: -10px 0 0 -10px;
-          border: 2px solid transparent;
-          border-top-color: white;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-      }
-    }
+    margin-top: auto;
   }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* CSS Variables for design system */
-:root {
-  --space-1: 2px;
-  --space-2: 4px;
-  --space-3: 8px;
-  --space-4: 16px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-11: 48px;
-  
-  --color-primary: #FFFFFF;
-  --color-secondary: #D45B41;
-  --color-secondary-dark: #B8412F;
-  --color-text: #333333;
-  --color-text-muted: #6B7280;
-  --color-border: #E5E7EB;
-  --color-success: #257940;
-  
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-3xl: 1.875rem;
-  
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  
-  --line-height-normal: 1.5;
-  
-  --border-radius: 8px;
-  --border-radius-lg: 12px;
-  
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  
-  --transition-fast: 0.15s ease-in-out;
-  --transition-normal: 0.3s ease-in-out;
-}
 </style>

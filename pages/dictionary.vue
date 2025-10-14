@@ -1,22 +1,24 @@
 <template>
   <div class="dictionary-page">
     <!-- Navigation Bar -->
-    <NavigationBar current-page="/dictionary" />
+    <nav-bar />
     
     <!-- Header -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">Diccionario Español-Ndowe</h1>
+        <h1 class="ds-text-display-lg">Diccionario Español-Ndowe</h1>
         <p class="page-subtitle">
           Traduce palabras entre español y ndowe
         </p>
       </div>
       
       <!-- Language Toggle -->
-      <LanguageToggle
-        :current-language="(currentLanguage?.value || 'español') === 'español' ? 'spanish' : 'ndowe'"
-        @language-change="handleLanguageChange"
-      />
+      <div class="language-toggle-wrapper">
+        <LanguageToggle
+          :current-language="(currentLanguage?.value || 'español') === 'español' ? 'spanish' : 'ndowe'"
+          @language-change="handleLanguageChange"
+        />
+      </div>
     </div>
 
     <!-- Search Section -->
@@ -32,6 +34,22 @@
         @focus="handleSearchFocus"
         @blur="handleSearchBlur"
       />
+    </div>
+
+    <!-- Recent Searches -->
+    <div v-if="recentSearches.length > 0" class="recent-searches">
+      <h4 class="ds-text-display-xs">Búsquedas Recientes</h4>
+      <div class="recent-list">
+        <button
+          v-for="search in recentSearches"
+          :key="search.id"
+          @click="repeatSearch(search.query)"
+          class="recent-item"
+        >
+          <span class="recent-query">{{ search.query }}</span>
+          <span class="recent-time">{{ formatTimeAgo(search.timestamp) }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- Results Section -->
@@ -100,60 +118,9 @@
       <Icon name="wifi" class="offline-icon" />
       <span class="offline-text">Modo Offline - Datos locales</span>
     </div>
-
-    <!-- Recent Searches -->
-    <div v-if="recentSearches.length > 0" class="recent-searches">
-      <h3 class="recent-title">Búsquedas Recientes</h3>
-      <div class="recent-list">
-        <button
-          v-for="search in recentSearches"
-          :key="search.id"
-          @click="repeatSearch(search.query)"
-          class="recent-item"
-        >
-          <Icon name="clock" class="recent-icon" />
-          <span class="recent-query">{{ search.query }}</span>
-          <span class="recent-time">{{ formatTimeAgo(search.timestamp) }}</span>
-        </button>
-      </div>
-    </div>
     
     <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h4 class="footer-title">epàlwi-rèbbo</h4>
-          <p class="footer-description">
-            Preservando el idioma Ndowe para las futuras generaciones
-          </p>
-        </div>
-        
-        <div class="footer-section">
-          <h4 class="footer-title">Enlaces Rápidos</h4>
-          <div class="footer-links">
-            <NuxtLink to="/" class="footer-link">Inicio</NuxtLink>
-            <NuxtLink to="/subscription/plans" class="footer-link">Planes</NuxtLink>
-            <NuxtLink to="/auth/signup" class="footer-link">Crear Cuenta</NuxtLink>
-            <NuxtLink to="/auth/login" class="footer-link">Iniciar Sesión</NuxtLink>
-          </div>
-        </div>
-        
-        <div class="footer-section">
-          <h4 class="footer-title">Soporte</h4>
-          <div class="footer-links">
-            <NuxtLink to="/help" class="footer-link">Centro de Ayuda</NuxtLink>
-            <NuxtLink to="/contact" class="footer-link">Contacto</NuxtLink>
-            <NuxtLink to="/privacy" class="footer-link">Privacidad</NuxtLink>
-          </div>
-        </div>
-      </div>
-      
-      <div class="footer-bottom">
-        <p class="footer-copyright">
-          © 2024 epàlwi-rèbbo. Todos los derechos reservados.
-        </p>
-      </div>
-    </footer>
+    <Footer />
   </div>
 </template>
 
@@ -368,9 +335,9 @@ const addToRecentSearches = (query: string) => {
     timestamp: Date.now()
   })
   
-  // Keep only last 10 searches
-  if (recentSearches.value.length > 10) {
-    recentSearches.value = recentSearches.value.slice(0, 10)
+  // Keep only last 5 searches
+  if (recentSearches.value.length > 5) {
+    recentSearches.value = recentSearches.value.slice(0, 5)
   }
 }
 
@@ -432,86 +399,99 @@ onMounted(() => {
 <style lang="scss" scoped>
 .dictionary-page {
   min-height: 100vh;
-  background: var(--color-background);
-  padding: var(--space-6) 0;
+  background: var(--ds-background);
+  /* Padding-top now handled globally in app.vue */
 }
 
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-8);
-  padding: 0 var(--space-6);
+  max-width: 800px;
+  margin: 0 auto var(--ds-spacing-6);
+  padding: var(--ds-spacing-8) var(--ds-spacing-3) 0;
+  text-align: center;
   
   .header-content {
-    .page-title {
-      font-size: var(--font-size-3xl);
-      font-weight: var(--font-weight-bold);
-      color: var(--color-text);
-      margin-bottom: var(--space-2);
+    margin-bottom: var(--ds-spacing-3);
+    
+    .page-title,
+    h1 {
+      margin-bottom: var(--ds-spacing-075);
+      text-align: center;
     }
     
     .page-subtitle {
-      font-size: var(--font-size-base);
-      color: var(--color-text-muted);
-      line-height: var(--line-height-normal);
+      font-size: 1rem;
+      color: var(--ds-muted-foreground);
+      line-height: var(--ds-line-height-normal);
     }
+  }
+  
+  .language-toggle-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
   }
 }
 
+
 .search-section {
-  margin-bottom: var(--space-8);
-  padding: 0 var(--space-6);
+  max-width: 600px;
+  margin: 0 auto var(--ds-spacing-3);
+  padding: 0 var(--ds-spacing-3);
+}
+
+.recent-searches + .results-section {
+  margin-top: var(--ds-spacing-3);
 }
 
 .results-section {
-  padding: 0 var(--space-6);
-  margin-bottom: var(--space-8);
+  max-width: 600px;
+  margin: 0 auto var(--ds-spacing-3);
+  padding: 0 var(--ds-spacing-3);
 }
 
 .loading-state {
   text-align: center;
-  padding: var(--space-12) 0;
+  padding: 48px 0;
   
   .loading-icon {
     width: 48px;
     height: 48px;
-    color: var(--color-secondary);
+    color: var(--ds-primary);
     animation: spin 1s linear infinite;
-    margin-bottom: var(--space-4);
+    margin-bottom: 16px;
   }
   
   .loading-text {
-    font-size: var(--font-size-base);
-    color: var(--color-text-muted);
+    font-size: 1rem;
+    color: var(--ds-muted-foreground);
   }
 }
 
 .results-grid {
   display: grid;
-  gap: var(--space-6);
+  gap: 24px;
 }
 
 .quick-actions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: var(--space-4);
-  margin-top: var(--space-6);
+  gap: 16px;
+  margin-top: 24px;
   
   .quick-action-button {
-    height: var(--space-10);
-    background: var(--color-primary);
-    color: var(--color-text);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
+    height: 40px;
+    background: var(--ds-card);
+    color: var(--ds-foreground);
+    border: 1px solid var(--ds-border);
+    border-radius: var(--ds-radius);
+    font-size: 0.875rem;
+    font-weight: var(--ds-font-weight-medium);
     cursor: pointer;
-    transition: all 0.15s ease-in-out;
+    transition: all var(--ds-duration);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-2);
+    gap: 8px;
     
     .action-icon {
       width: 16px;
@@ -519,28 +499,28 @@ onMounted(() => {
     }
     
     &:hover {
-      border-color: var(--color-secondary);
-      color: var(--color-secondary);
+      border-color: var(--ds-primary);
+      color: var(--ds-primary);
     }
   }
 }
 
 .offline-banner {
   position: fixed;
-  bottom: var(--space-6);
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--color-warning);
+  background: #f59e0b;
   color: white;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--border-radius);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  padding: 12px 16px;
+  border-radius: var(--ds-radius);
+  font-size: 0.875rem;
+  font-weight: var(--ds-font-weight-medium);
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  box-shadow: var(--shadow-lg);
-  z-index: var(--z-toast);
+  gap: 8px;
+  box-shadow: var(--ds-shadow-lg);
+  z-index: 1000;
   
   .offline-icon {
     width: 16px;
@@ -549,72 +529,65 @@ onMounted(() => {
 }
 
 .recent-searches {
-  padding: 0 var(--space-6);
+  max-width: 600px;
+  margin: 0 auto var(--ds-spacing-3);
+  padding: 0 var(--ds-spacing-3);
   
-  .recent-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--space-4);
+  h4 {
+    margin-bottom: 16px;
   }
   
   .recent-list {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-3);
+    gap: 12px;
     
     .recent-item {
-      height: var(--space-8);
-      padding: 0 var(--space-4);
-      background: var(--color-primary);
-      color: var(--color-text);
-      border: 1px solid var(--color-border);
-      border-radius: var(--border-radius);
-      font-size: var(--font-size-sm);
-      font-weight: var(--font-weight-medium);
+      height: 32px;
+      padding: 0 16px;
+      background: var(--ds-card);
+      color: var(--ds-foreground);
+      border: 1px solid var(--ds-border);
+      border-radius: var(--ds-radius);
+      font-size: 0.875rem;
+      font-weight: var(--ds-font-weight-medium);
       cursor: pointer;
-      transition: all 0.15s ease-in-out;
+      transition: all var(--ds-duration);
       display: flex;
       align-items: center;
-      gap: var(--space-3);
-      
-      .recent-icon {
-        width: 14px;
-        height: 14px;
-        color: var(--color-text-muted);
-      }
+      gap: 12px;
       
       .recent-query {
-        font-weight: var(--font-weight-medium);
+        font-weight: var(--ds-font-weight-medium);
       }
       
       .recent-time {
-        color: var(--color-text-muted);
-        font-size: var(--font-size-xs);
+        color: var(--ds-muted-foreground);
+        font-size: 0.75rem;
       }
       
       &:hover {
-        border-color: var(--color-secondary);
-        color: var(--color-secondary);
+        border-color: var(--ds-primary);
+        color: var(--ds-primary);
       }
     }
   }
 }
 
 .clear-search-button {
-  height: var(--space-10);
-  padding: 0 var(--space-6);
-  background: var(--color-secondary);
+  height: 40px;
+  padding: 0 24px;
+  background: var(--ds-primary);
   color: white;
   border: none;
-  border-radius: var(--border-radius);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
+  border-radius: var(--ds-radius);
+  font-size: 1rem;
+  font-weight: var(--ds-font-weight-semibold);
   cursor: pointer;
-  transition: all 0.15s ease-in-out;
+  transition: all var(--ds-duration);
   
   &:hover {
-    background: var(--color-secondary-dark);
+    background: hsl(var(--ds-primary-dark));
     transform: translateY(-1px);
   }
 }
@@ -623,68 +596,16 @@ onMounted(() => {
   to { transform: rotate(360deg); }
 }
 
-/* Footer */
-.footer {
-  background: var(--color-text);
-  color: white;
-  padding: var(--space-12) var(--space-6) var(--space-6);
-  margin-top: var(--space-16);
-}
-
-.footer-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--space-8);
-  max-width: 1200px;
-  margin: 0 auto var(--space-8);
-}
-
-.footer-section {
-  .footer-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    margin-bottom: var(--space-4);
-  }
-  
-  .footer-description {
-    color: rgba(255, 255, 255, 0.8);
-    line-height: var(--line-height-normal);
-  }
-  
-  .footer-links {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    
-    .footer-link {
-      color: rgba(255, 255, 255, 0.8);
-      text-decoration: none;
-      transition: color 0.15s ease-in-out;
-      
-      &:hover {
-        color: white;
-      }
-    }
-  }
-}
-
-.footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  padding-top: var(--space-6);
-  text-align: center;
-  
-  .footer-copyright {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: var(--font-size-sm);
-  }
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .page-header {
-    flex-direction: column;
-    gap: var(--space-4);
-    text-align: center;
+    padding: 24px 16px 0;
+  }
+  
+  .search-section,
+  .results-section,
+  .recent-searches {
+    padding: 0 16px;
   }
   
   .quick-actions {
@@ -692,16 +613,16 @@ onMounted(() => {
   }
   
   .recent-list {
-    flex-direction: column;
+    justify-content: flex-start;
     
     .recent-item {
-      width: 100%;
-      justify-content: space-between;
+      flex: 0 0 auto;
     }
   }
   
   .page-title {
-    font-size: var(--font-size-2xl);
+    font-size: 1.5rem;
   }
 }
 </style>
+

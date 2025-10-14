@@ -177,9 +177,9 @@ const longWordsEntry: TranslationResult = {
 
 <style scoped>
 .story-container {
-  background: var(--color-background);
+  background: var(--ds-background);
   min-height: 100vh;
-  padding: var(--space-6);
+  padding: var(--ds-spacing-6);
 }
 
 .story-layout {
@@ -192,14 +192,14 @@ const longWordsEntry: TranslationResult = {
 }
 
 .size-label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-muted);
-  margin: var(--space-4) 0 var(--space-2) 0;
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-primary);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--color-border);
+  font-size: 0.875rem;
+  font-weight: var(--ds-font-weight-medium);
+  color: var(--ds-muted-foreground);
+  margin: var(--ds-spacing-4) 0 var(--ds-spacing-2) 0;
+  padding: var(--ds-spacing-2) var(--ds-spacing-3);
+  background: var(--ds-card);
+  border-radius: var(--ds-radius);
+  border: 1px solid var(--ds-border);
 }
 
 /* Responsive size demonstrations */
@@ -218,18 +218,18 @@ const longWordsEntry: TranslationResult = {
 }
 
 .accessibility-info {
-  background: var(--color-primary);
-  padding: var(--space-6);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--color-border);
-  margin-bottom: var(--space-6);
+  background: var(--ds-card);
+  padding: var(--ds-spacing-6);
+  border-radius: var(--ds-radius);
+  border: 1px solid var(--ds-border);
+  margin-bottom: var(--ds-spacing-6);
 }
 
 .accessibility-info h3 {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
-  margin-bottom: var(--space-4);
+  font-size: 1.125rem;
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-foreground);
+  margin-bottom: var(--ds-spacing-4);
 }
 
 .accessibility-info ul {
@@ -239,10 +239,10 @@ const longWordsEntry: TranslationResult = {
 }
 
 .accessibility-info li {
-  padding: var(--space-2) 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-text);
-  border-bottom: 1px solid var(--color-border);
+  padding: var(--ds-spacing-2) 0;
+  font-size: 0.875rem;
+  color: var(--ds-foreground);
+  border-bottom: 1px solid var(--ds-border);
 }
 
 .accessibility-info li:last-child {
@@ -251,7 +251,7 @@ const longWordsEntry: TranslationResult = {
 
 /* Focus styles for accessibility demo */
 .result-card:focus-visible {
-  outline: 3px solid var(--color-border-focus);
+  outline: 3px solid var(--ds-ring);
   outline-offset: 4px;
 }
 </style>

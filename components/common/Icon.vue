@@ -1,17 +1,10 @@
 <template>
-  <!-- Try NuxtIcon first, fallback to SvgIcon -->
+  <!-- Nuxt Icon as the renderer; names are mapped below -->
   <NuxtIcon 
-    v-if="false"
-    :name="mappedIconName" 
+    :name="mappedIconName"
     :size="iconSize"
     :class="computedClasses"
     :style="computedStyle"
-  />
-  <SvgIcon 
-    :name="props.name"
-    :size="props.size"
-    :class="props.class"
-    :color="props.color"
   />
 </template>
 
@@ -26,7 +19,7 @@ interface Props {
   /** Icon name (generic or heroicons format) */
   name: string
   /** Icon size using design system scale */
-  size?: 'sm' | 'base' | 'md' | 'lg' | 'xl'
+  size?: 'sm' | 'base' | 'md' | 'lg' | 'xl' | number | string
   /** Additional CSS classes */
   class?: string | string[]
   /** Custom color override */
@@ -40,7 +33,8 @@ const props = withDefaults(defineProps<Props>(), {
   color: ''
 })
 
-// Icon name mapping from generic names to heroicons
+// Icon name mapping from generic names to iconify collections
+// Prefer heroicons; map lucide names explicitly where used
 const iconNameMap: Record<string, string> = {
   // Common icons
   'search': 'heroicons:magnifying-glass',
@@ -68,7 +62,35 @@ const iconNameMap: Record<string, string> = {
   'info': 'heroicons:information-circle',
   'warning': 'heroicons:exclamation-triangle',
   'error': 'heroicons:x-circle',
-  'success': 'heroicons:check-circle'
+  'success': 'heroicons:check-circle',
+
+  // Frequently used additional icons in the app
+  'chevron-down': 'heroicons:chevron-down',
+  'academic-cap': 'heroicons:academic-cap',
+  'book': 'heroicons:book-open',
+  'book-open': 'heroicons:book-open',
+  'document-text': 'heroicons:document-text',
+  'question-mark-circle': 'heroicons:question-mark-circle',
+  'shield-check': 'heroicons:shield-check',
+  'arrow-right-on-rectangle': 'heroicons:arrow-right-on-rectangle',
+  'arrow-up': 'heroicons:arrow-up',
+  'clock': 'heroicons:clock',
+  'globe': 'heroicons:globe-alt',
+  'moon': 'heroicons:moon',
+  'wifi': 'heroicons:wifi',
+  'building-library': 'heroicons:building-library',
+  'swap': 'heroicons:arrows-right-left',
+
+  // Lucide-specific names used in components
+  'alert-circle': 'lucide:alert-circle',
+  'alert-triangle': 'lucide:alert-triangle',
+  'loader-2': 'lucide:loader-2',
+  'message-circle': 'lucide:message-circle',
+  'credit-card': 'lucide:credit-card',
+  'log-out': 'lucide:log-out',
+  'log-in': 'lucide:log-in',
+  'file-text': 'lucide:file-text',
+  'bar-chart-3': 'lucide:bar-chart-3'
 }
 
 // Size mapping to pixel values
@@ -89,7 +111,16 @@ const mappedIconName = computed(() => {
   return iconNameMap[props.name] || `heroicons:${props.name}`
 })
 
-const iconSize = computed(() => sizeMap[props.size])
+const iconSize = computed(() => {
+  const s = props.size as any
+  if (typeof s === 'number') return `${s}px`
+  if (typeof s === 'string') {
+    // numeric string
+    if (/^\d+$/.test(s)) return `${s}px`
+    return sizeMap[s as keyof typeof sizeMap] || s
+  }
+  return sizeMap.base
+})
 
 const computedClasses = computed(() => {
   const classes = ['nuxt-icon']
@@ -103,9 +134,7 @@ const computedClasses = computed(() => {
   return classes
 })
 
-const computedStyle = computed(() => {
-  return props.color ? { color: props.color } : {}
-})
+const computedStyle = computed(() => (props.color ? { color: props.color } : {}))
 </script>
 
 <style scoped>

@@ -1,12 +1,7 @@
 <template>
   <div id="app" class="min-h-screen bg-background">
-    <!-- Skip link for accessibility -->
-    <a href="#main-content" class="skip-link">
-      Saltar al contenido principal
-    </a>
-    
     <!-- Main content -->
-    <main id="main-content">
+    <main>
       <NuxtPage />
     </main>
   </div>
@@ -37,6 +32,24 @@ useHead({
 // PWA install prompt (simplified for Phase 1)
 const showInstallPrompt = ref(false)
 
+// Initialize authentication and subscription systems
+const authStore = useAuthStore()
+const subscriptionStore = useSubscriptionStore()
+
+onMounted(async () => {
+  try {
+    // Initialize subscription plans with price IDs from environment
+    subscriptionStore.initializePlans()
+    
+    // Initialize authentication listener
+    await authStore.initializeAuth()
+    
+    console.log('✅ Application initialized successfully')
+  } catch (error) {
+    console.error('❌ Application initialization failed:', error)
+  }
+})
+
 // Log for development
 if (process.dev) {
   console.log('Application loaded in development mode')
@@ -65,15 +78,15 @@ main {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-background);
+  background: var(--ds-background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--border-radius);
+  background: var(--ds-border);
+  border-radius: var(--ds-radius);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-secondary);
+  background: var(--ds-secondary);
 }
 </style>

@@ -192,11 +192,45 @@ export class SearchService {
     
     return entryIds.map(id => {
       const entry = this.searchIndex!.entryMap.get(id)!
+      // Compute cross-reference display override for Spanish exact lookups
+      let sourceOverride: string | undefined
+      let crossRefFrom: string | undefined
+      let crossRefTarget: string | undefined
+
+      if (query.language === 'español') {
+        const headwordMap: Map<string, string[]> | undefined = (this.searchIndex as any)?.normalizedMap
+        const queryIds = headwordMap?.get(normalizedQuery) || []
+        if (queryIds.length > 0) {
+          // Aggregate all "ver" synonyms for this query headword (preserve original accents/casing)
+          const synonyms: string[] = []
+          let displayHeadword = query.query
+          for (const qid of queryIds) {
+            const qEntry = this.searchIndex!.entryMap.get(qid)
+            if (!qEntry) continue
+            displayHeadword = qEntry.español || displayHeadword
+            if (qEntry.ver && qEntry.ver.length > 0) {
+              for (const s of qEntry.ver) {
+                if (!synonyms.includes(s)) synonyms.push(s)
+              }
+            }
+          }
+
+          if (synonyms.length > 0) {
+            const SP = '\u00A0' // non-breaking space to keep visible spacing
+            const list = synonyms.join(', ')
+            sourceOverride = `${displayHeadword}${SP}${SP}SIN${SP}${SP}${list}`
+            crossRefFrom = displayHeadword
+            crossRefTarget = list
+          }
+        }
+      }
+
       return {
         entry,
         score: 1.0, // Perfect match
         matchType: 'exact' as const,
-        matchedFields: [query.language]
+        matchedFields: [query.language],
+        ...(sourceOverride ? { sourceOverride, crossRefFrom, crossRefTarget } : {})
       }
     })
   }
@@ -323,16 +357,76 @@ export class SearchService {
     }
 
     // Build entry map and process each entry
+    // Also track a map from normalized Spanish headword -> entry IDs to resolve cross-references ("ver")
+    const headwordToEntryIds = new Map<string, string[]>()
+
     for (const entry of entries) {
       searchIndex.entryMap.set(entry.id, entry)
-      
+
+      // Track headword mapping for cross-ref resolution
+      const headword = entry.españolNormalized
+      if (!headwordToEntryIds.has(headword)) headwordToEntryIds.set(headword, [])
+      headwordToEntryIds.get(headword)!.push(entry.id)
+
       // Index Spanish words
       this.indexWords(entry.españolNormalized, entry.id, searchIndex.españolTrie, searchIndex.españolIndex)
-      
+
       // Index Ndowe words
       if (entry.ndoweText) {
         const normalizedNdowe = this.normalizeText(entry.ndoweText)
         this.indexWords(normalizedNdowe, entry.id, searchIndex.ndoweTrie, searchIndex.ndoweIndex)
+      }
+    }
+
+    // Persist headword mapping for use during exactSearch display overrides
+    ;(searchIndex as any).normalizedMap = headwordToEntryIds
+
+    // Helper to resolve cross-reference targets transitively to entries that actually have translations
+    const resolveCrossRefTargets = (termNormalized: string, visited: Set<string>): string[] => {
+      if (visited.has(termNormalized)) return []
+      visited.add(termNormalized)
+
+      const resultIds: string[] = []
+      const candidateIds = headwordToEntryIds.get(termNormalized) || []
+
+      for (const id of candidateIds) {
+        const refEntry = searchIndex.entryMap.get(id)
+        if (!refEntry) continue
+        if (refEntry.ndowe && refEntry.ndowe.length > 0) {
+          // Terminal entry with translations
+          resultIds.push(refEntry.id)
+        } else if (refEntry.ver && refEntry.ver.length > 0) {
+          // Follow chained cross-references
+          for (const next of refEntry.ver) {
+            const nextNorm = this.normalizeText(next)
+            const downstream = resolveCrossRefTargets(nextNorm, visited)
+            for (const did of downstream) {
+              if (!resultIds.includes(did)) resultIds.push(did)
+            }
+          }
+        }
+      }
+
+      return resultIds
+    }
+
+    // Inject cross-reference targets into the Spanish exact index so searching a redirect word returns the target entries
+    for (const entry of entries) {
+      if (entry.ver && entry.ver.length > 0) {
+        const fromKey = entry.españolNormalized // the redirect headword (e.g., "dirimir")
+        for (const target of entry.ver) {
+          const targetKey = this.normalizeText(target)
+          const targetIds = resolveCrossRefTargets(targetKey, new Set<string>())
+          if (targetIds.length === 0) continue
+
+          if (!searchIndex.españolIndex.has(fromKey)) {
+            searchIndex.españolIndex.set(fromKey, [])
+          }
+          const list = searchIndex.españolIndex.get(fromKey)!
+          for (const tid of targetIds) {
+            if (!list.includes(tid)) list.push(tid)
+          }
+        }
       }
     }
 

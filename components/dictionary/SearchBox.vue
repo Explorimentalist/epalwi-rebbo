@@ -100,6 +100,14 @@ const internalValue = ref(props.modelValue)
 const isFocused = ref(false)
 const debounceTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const internalShowSuggestions = ref(props.showSuggestions)
+const blurTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
+
+const clearBlurTimeout = () => {
+  if (blurTimeout.value) {
+    clearTimeout(blurTimeout.value)
+    blurTimeout.value = null
+  }
+}
 
 // Sync external model value
 watch(() => props.modelValue, (newValue) => {
@@ -145,6 +153,7 @@ const handleInput = (event: Event) => {
 }
 
 const handleFocus = (event: FocusEvent) => {
+  clearBlurTimeout()
   isFocused.value = true
   emit('focus', event)
   if (internalValue.value && props.suggestions.length > 0) {
@@ -154,9 +163,11 @@ const handleFocus = (event: FocusEvent) => {
 
 const handleBlur = (event: FocusEvent) => {
   // Allow click on dropdown before closing
-  setTimeout(() => {
+  clearBlurTimeout()
+  blurTimeout.value = setTimeout(() => {
     isFocused.value = false
     internalShowSuggestions.value = false
+    blurTimeout.value = null
   }, 150)
   emit('blur', event)
 }
@@ -173,6 +184,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 }
 
 const handleSuggestionSelect = (suggestion: string) => {
+  clearBlurTimeout()
   internalValue.value = suggestion
   internalShowSuggestions.value = false
   emit('suggestion-select', suggestion)
@@ -184,6 +196,7 @@ const closeSuggestions = () => {
 }
 
 const clearSearch = () => {
+  clearBlurTimeout()
   internalValue.value = ''
   internalShowSuggestions.value = false
   emit('clear')
@@ -205,49 +218,49 @@ defineExpose({ focus, blur, select, showSuggestions: showSuggestionsMethod, hide
 <style scoped>
 .search-box {
   position: relative;
-  height: var(--space-12); /* 48px */
+  height: 48px;
   width: 100%;
-  background: var(--color-input-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius);
-  transition: all var(--transition-normal) var(--ease-in-out);
+  background: white;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  transition: all var(--ds-duration) var(--ds-ease);
 }
 
 .search-box:focus-within {
-  border-color: var(--color-border-focus);
+  border-color: var(--ds-ring);
   box-shadow: 0 0 0 3px rgba(212, 91, 65, 0.1);
 }
 
 .search-input {
   width: 100%;
   height: 100%;
-  padding: 0 var(--space-10) 0 var(--space-12); /* right: 40px, left: 48px */
+  padding: 0 40px 0 48px;
   border: none;
   background: transparent;
-  font-size: var(--font-size-base);
-  font-family: var(--font-family-base);
-  color: var(--color-text);
-  line-height: var(--line-height-normal);
-  transition: all var(--transition-normal) var(--ease-in-out);
+  font-size: 1rem;
+  font-family: var(--ds-font-sans);
+  color: var(--ds-foreground);
+  line-height: var(--ds-line-height-normal);
+  transition: all var(--ds-duration) var(--ds-ease);
   outline: none;
 }
 
 .search-input::placeholder {
-  color: var(--color-text-light);
+  color: var(--ds-muted-foreground);
 }
 
 .search-input:focus { /* focus visuals handled by container via :focus-within */ }
 
 .search-input:disabled {
-  background: var(--color-background);
-  color: var(--color-text-muted);
+  background: var(--ds-background);
+  color: var(--ds-muted-foreground);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .search-icon {
   position: absolute;
-  left: var(--space-4); /* 16px */
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
   display: inline-flex;
@@ -255,14 +268,14 @@ defineExpose({ focus, blur, select, showSuggestions: showSuggestionsMethod, hide
   justify-content: center;
   width: 20px;
   height: 20px;
-  color: var(--color-text-light);
+  color: var(--ds-muted-foreground);
   pointer-events: none;
   z-index: 2;
 }
 
 .clear-button {
   position: absolute;
-  right: var(--space-3); /* 12px */
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   width: 20px;
@@ -272,20 +285,20 @@ defineExpose({ focus, blur, select, showSuggestions: showSuggestionsMethod, hide
   justify-content: center;
   background: none;
   border: none;
-  color: var(--color-text-light);
+  color: var(--ds-muted-foreground);
   cursor: pointer;
-  border-radius: var(--border-radius-sm);
-  transition: all var(--transition-fast) var(--ease-in-out);
+  border-radius: var(--ds-radius-sm);
+  transition: all var(--ds-duration) var(--ds-ease);
   z-index: 2;
 }
 
 .clear-button:hover {
-  color: var(--color-text);
-  background: var(--color-background);
+  color: var(--ds-foreground);
+  background: var(--ds-background);
 }
 
 .clear-button:focus {
-  outline: 2px solid var(--color-border-focus);
+  outline: 2px solid var(--ds-ring);
   outline-offset: 1px;
 }
 
@@ -306,4 +319,3 @@ defineExpose({ focus, blur, select, showSuggestions: showSuggestionsMethod, hide
   -moz-appearance: textfield;
 }
 </style>
-

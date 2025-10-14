@@ -41,7 +41,7 @@
               <h2 
                 v-if="title"
                 :id="titleId"
-                class="modal__title"
+                class="ds-text-display-sm"
               >
                 {{ title }}
               </h2>
@@ -240,9 +240,9 @@ const containerClasses = computed(() => {
 
 .modal__container {
   position: relative;
-  background: var(--color-primary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-xl);
+  background: var(--ds-card);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-xl);
   max-height: 90vh;
   overflow-y: auto;
   z-index: 1;
@@ -251,7 +251,7 @@ const containerClasses = computed(() => {
   /* Mobile-first styling */
   width: 100%;
   height: 100vh;
-  padding: var(--space-8);
+  padding: var(--ds-spacing-3);
   border-radius: 0;
   max-height: none;
 }
@@ -261,8 +261,8 @@ const containerClasses = computed(() => {
     width: auto;
     height: auto;
     max-height: 90vh;
-    padding: var(--space-9);
-    border-radius: var(--border-radius-lg);
+    padding: var(--ds-spacing-3);
+    border-radius: var(--ds-radius-lg);
   }
   
   .modal__container--small {
@@ -283,8 +283,8 @@ const containerClasses = computed(() => {
 
 .modal__close {
   position: absolute;
-  top: var(--space-8);
-  right: var(--space-8);
+  top: var(--ds-spacing-3);
+  right: var(--ds-spacing-3);
   width: 32px;
   height: 32px;
   display: flex;
@@ -293,53 +293,53 @@ const containerClasses = computed(() => {
   background: none;
   border: none;
   cursor: pointer;
-  border-radius: var(--border-radius);
-  color: var(--color-text-muted);
-  transition: all var(--transition-fast);
+  border-radius: var(--ds-radius);
+  color: var(--ds-muted-foreground);
+  transition: all var(--ds-duration);
   z-index: 2;
 }
 
 .modal__close:hover {
-  background: var(--color-background);
-  color: var(--color-text);
+  background: var(--ds-background);
+  color: var(--ds-foreground);
 }
 
 @media (min-width: 768px) {
   .modal__close {
-    top: var(--space-9);
-    right: var(--space-9);
+    top: var(--ds-spacing-3);
+    right: var(--ds-spacing-3);
   }
 }
 
 .modal__header {
-  margin-bottom: var(--space-6);
-  padding-right: var(--space-11);
+  margin-bottom: var(--ds-spacing-2);
+  padding-right: 48px;
 }
 
 .modal__title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
+  font-size: 1.125rem;
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-foreground);
   margin: 0;
-  line-height: var(--line-height-tight);
+  line-height: var(--ds-line-height-tight);
 }
 
 @media (min-width: 768px) {
   .modal__title {
-    font-size: var(--font-size-xl);
+    font-size: 1.25rem;
   }
 }
 
 .modal__content {
   flex: 1;
-  color: var(--color-text);
-  line-height: var(--line-height-normal);
+  color: var(--ds-foreground);
+  line-height: var(--ds-line-height-normal);
 }
 
 .modal__footer {
-  margin-top: var(--space-8);
+  margin-top: var(--ds-spacing-3);
   display: flex;
-  gap: var(--space-4);
+  gap: var(--ds-spacing-1);
   justify-content: flex-end;
 }
 
@@ -352,7 +352,7 @@ const containerClasses = computed(() => {
 /* Transition animations */
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity var(--transition-normal);
+  transition: opacity var(--ds-duration);
 }
 
 .modal-enter-from,
@@ -362,7 +362,7 @@ const containerClasses = computed(() => {
 
 .modal-enter-active .modal__container,
 .modal-leave-active .modal__container {
-  transition: transform var(--transition-normal);
+  transition: transform var(--ds-duration);
 }
 
 .modal-enter-from .modal__container {

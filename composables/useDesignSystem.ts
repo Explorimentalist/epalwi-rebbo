@@ -5,51 +5,51 @@
  */
 
 export const useDesignSystem = () => {
-  // 📏 Spacing System (4px base unit) - Industry standard for granular control
+  // 📏 Spacing System (rem-based V2) - Modern scalable system
   const spacing = {
-    0: 'var(--space-0)',   // 0px
-    1: 'var(--space-1)',   // 4px - base unit
-    2: 'var(--space-2)',   // 8px
-    3: 'var(--space-3)',   // 12px
-    4: 'var(--space-4)',   // 16px
-    5: 'var(--space-5)',   // 20px
-    6: 'var(--space-6)',   // 24px
-    7: 'var(--space-7)',   // 28px
-    8: 'var(--space-8)',   // 32px
-    9: 'var(--space-9)',   // 36px
-    10: 'var(--space-10)', // 40px
-    11: 'var(--space-11)', // 44px
-    12: 'var(--space-12)', // 48px
-    13: 'var(--space-13)', // 52px
-    14: 'var(--space-14)', // 56px
-    15: 'var(--space-15)', // 60px
-    16: 'var(--space-16)', // 64px
-    17: 'var(--space-17)', // 68px
-    18: 'var(--space-18)', // 72px
-    19: 'var(--space-19)', // 76px
-    20: 'var(--space-20)', // 80px
-    21: 'var(--space-21)', // 84px
-    22: 'var(--space-22)', // 88px
-    23: 'var(--space-23)', // 92px
-    24: 'var(--space-24)'  // 96px
+    0: 'var(--ds-spacing-0)',
+    1: 'var(--ds-spacing-025)',
+    2: 'var(--ds-spacing-05)',
+    3: 'var(--ds-spacing-075)',
+    4: 'var(--ds-spacing-1)',
+    5: 'var(--ds-spacing-125)',
+    6: 'var(--ds-spacing-15)',
+    7: 'var(--ds-spacing-175)',
+    8: 'var(--ds-spacing-2)',
+    9: 'var(--ds-spacing-225)',
+    10: 'var(--ds-spacing-25)',
+    11: 'var(--ds-spacing-275)',
+    12: 'var(--ds-spacing-3)',
+    13: 'var(--ds-spacing-325)',
+    14: 'var(--ds-spacing-35)',
+    15: 'var(--ds-spacing-375)',
+    16: 'var(--ds-spacing-4)',
+    17: 'var(--ds-spacing-425)',
+    18: 'var(--ds-spacing-45)',
+    19: 'var(--ds-spacing-475)',
+    20: 'var(--ds-spacing-5)',
+    21: 'var(--ds-spacing-525)',
+    22: 'var(--ds-spacing-55)',
+    23: 'var(--ds-spacing-575)',
+    24: 'var(--ds-spacing-6)'
   } as const
 
   const getSpacing = (level: keyof typeof spacing) => spacing[level]
 
   // 🎯 Component Heights
   const componentHeights = {
-    input: 'var(--space-12)',      // 48px
+    input: 'var(--ds-spacing-3)',
     button: {
-      small: 'var(--space-8)',     // 32px
-      medium: 'var(--space-10)',   // 40px
-      large: 'var(--space-12)'     // 48px
+      small: 'var(--ds-spacing-2)',
+      medium: 'var(--ds-spacing-25)',
+      large: 'var(--ds-spacing-3)'
     },
-    navigationBar: 'var(--space-16)', // 64px
+    navigationBar: 'var(--ds-spacing-4)',
     trialBanner: {
-      desktop: 'var(--space-14)',  // 56px
-      mobile: 'var(--space-18)'    // 72px
+      desktop: 'var(--ds-spacing-35)',
+      mobile: 'var(--ds-spacing-45)'
     },
-    suggestionItem: 'var(--space-10)' // 40px
+    suggestionItem: 'var(--ds-spacing-25)'
   } as const
 
   // 🧩 Icon System
@@ -155,15 +155,15 @@ export const useDesignSystem = () => {
 
   // 🎨 Color Utilities
   const colors = {
-    primary: 'var(--color-primary)',
-    secondary: 'var(--color-secondary)',
-    background: 'var(--color-background)',
-    text: 'var(--color-text)',
-    textMuted: 'var(--color-text-muted)',
-    border: 'var(--color-border)',
-    borderFocus: 'var(--color-border-focus)',
-    error: 'var(--color-error)',
-    success: 'var(--color-success)'
+    primary: 'var(--ds-primary)',
+    secondary: 'var(--ds-secondary)',
+    background: 'var(--ds-background)',
+    text: 'var(--ds-foreground)',
+    textMuted: 'var(--ds-muted-foreground)',
+    border: 'var(--ds-border)',
+    borderFocus: 'var(--ds-ring)',
+    error: 'var(--ds-destructive)',
+    success: 'var(--ds-success)'
   } as const
 
   // 🌊 Interaction States
@@ -186,15 +186,15 @@ export const useDesignSystem = () => {
   // 🎭 Animation Presets
   const animations = {
     transition: {
-      fast: 'var(--transition-fast)',     // 150ms
-      normal: 'var(--transition-normal)', // 300ms
-      slow: 'var(--transition-slow)'      // 500ms
+      fast: 'var(--ds-duration)',
+      normal: 'var(--ds-duration)',
+      slow: 'var(--ds-duration)'
     },
     easing: {
-      ease: 'ease',
+      ease: 'var(--ds-ease)',
       easeIn: 'ease-in',
       easeOut: 'ease-out',
-      easeInOut: 'ease-in-out'
+      easeInOut: 'var(--ds-ease)'
     }
   } as const
 

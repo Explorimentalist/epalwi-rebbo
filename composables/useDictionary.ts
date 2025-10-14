@@ -184,7 +184,9 @@ export const useDictionary = () => {
       // Create translation result
       const translationResult: TranslationResult = {
         id: entry.id,
-        sourceWord: currentLanguage.value === 'español' ? entry.español : entry.ndoweText,
+        sourceWord: currentLanguage.value === 'español' 
+          ? (result.sourceOverride || entry.español) 
+          : entry.ndoweText,
         targetWord: currentLanguage.value === 'español' ? entry.ndoweText : entry.español,
         sourceLanguage: currentLanguage.value,
         targetLanguage: currentLanguage.value === 'español' ? 'ndowe' : 'español',

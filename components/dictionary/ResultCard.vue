@@ -84,118 +84,118 @@ const getTargetLanguageCode = computed(() => {
 
 <style scoped>
 .result-card {
-  background: var(--color-card-bg);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: var(--space-12); /* 48px - matches spec exactly */
-  margin-bottom: var(--space-6); /* 24px - matches spec exactly */
-  transition: all var(--transition-normal) var(--ease-in-out);
-  border: 1px solid var(--color-border);
+  background: var(--ds-card);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-sm);
+  padding: var(--ds-spacing-5); /* 48px - matches spec exactly */
+  margin-bottom: var(--ds-spacing-2); /* 24px - matches spec exactly */
+  transition: all var(--ds-duration) var(--ds-ease);
+  border: 1px solid var(--ds-border);
   position: relative;
   overflow: hidden;
 }
 
 .result-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-border-focus);
+  box-shadow: var(--ds-shadow-md);
+  border-color: var(--ds-ring);
 }
 
 .result-card:focus-within {
-  outline: 2px solid var(--color-border-focus);
+  outline: 2px solid var(--ds-ring);
   outline-offset: 2px;
 }
 
 /* Language Sections */
 .language-section {
-  margin-bottom: var(--space-8); /* 32px gap between sections - matches spec */
+  margin-bottom: var(--ds-spacing-3); /* 32px gap between sections - matches spec */
 }
 
 .language-section:last-of-type {
-  margin-bottom: var(--space-8); /* Maintain spacing before examples */
+  margin-bottom: var(--ds-spacing-3); /* Maintain spacing before examples */
 }
 
 .language-label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: var(--ds-font-weight-medium);
+  color: var(--ds-muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: var(--space-3); /* 12px */
-  font-family: var(--font-family-base);
-  line-height: var(--line-height-tight);
+  margin-bottom: var(--ds-spacing-05); /* 12px */
+  font-family: var(--ds-font-sans);
+  line-height: var(--ds-line-height-tight);
 }
 
 .source-word {
-  font-size: var(--font-size-lg); /* Smaller: 18px-20px instead of 24px-32px */
-  font-weight: var(--font-weight-medium); /* Medium weight instead of semibold */
-  color: var(--color-secondary); /* Red color for search term */
-  line-height: var(--line-height-tight);
+  font-size: 1.125rem; /* Smaller: 18px-20px instead of 24px-32px */
+  font-weight: var(--ds-font-weight-medium); /* Medium weight instead of semibold */
+  color: var(--ds-primary); /* Red color for search term */
+  line-height: var(--ds-line-height-tight);
   margin-bottom: 0;
-  font-family: var(--font-family-base);
+  font-family: var(--ds-font-sans);
   word-break: break-word;
   hyphens: auto;
 }
 
 .target-word {
-  font-size: var(--font-size-2xl); /* Bigger: 24px-32px instead of 20px-24px */
-  font-weight: var(--font-weight-semibold); /* Semibold weight for emphasis */
-  color: var(--color-text); /* Black color for translation */
-  line-height: var(--line-height-tight);
+  font-size: 1.5rem; /* Bigger: 24px-32px instead of 20px-24px */
+  font-weight: var(--ds-font-weight-semibold); /* Semibold weight for emphasis */
+  color: var(--ds-foreground); /* Black color for translation */
+  line-height: var(--ds-line-height-tight);
   margin-bottom: 0;
-  font-family: var(--font-family-base);
+  font-family: var(--ds-font-sans);
   word-break: break-word;
   hyphens: auto;
 }
 
 /* Examples Section */
 .example-section {
-  background: var(--color-background);
-  padding: var(--space-6); /* 24px */
-  border-radius: var(--border-radius);
-  border-left: 3px solid var(--color-secondary);
-  margin-top: var(--space-8); /* 32px gap from language sections */
+  background: var(--ds-background);
+  padding: var(--ds-spacing-2); /* 24px */
+  border-radius: var(--ds-radius);
+  border-left: 3px solid var(--ds-primary);
+  margin-top: var(--ds-spacing-3); /* 32px gap from language sections */
 }
 
 .example-label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: var(--ds-font-weight-medium);
+  color: var(--ds-muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: var(--space-4); /* 16px */
-  font-family: var(--font-family-base);
-  line-height: var(--line-height-tight);
+  margin-bottom: var(--ds-spacing-1); /* 16px */
+  font-family: var(--ds-font-sans);
+  line-height: var(--ds-line-height-tight);
 }
 
 .examples-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3); /* 12px between example pairs */
+  gap: var(--ds-spacing-05); /* 12px between example pairs */
 }
 
 .example-pair {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2); /* 8px between source and target */
+  gap: var(--ds-spacing-025); /* 8px between source and target */
 }
 
 .example-source {
-  font-size: var(--font-size-base);
-  color: var(--color-text);
-  line-height: var(--line-height-normal);
-  font-family: var(--font-family-base);
+  font-size: 1rem;
+  color: var(--ds-foreground);
+  line-height: var(--ds-line-height-normal);
+  font-family: var(--ds-font-sans);
   word-break: break-word;
   hyphens: auto;
 }
 
 .example-target {
-  font-size: var(--font-size-base);
-  color: var(--color-text-muted);
+  font-size: 1rem;
+  color: var(--ds-muted-foreground);
   font-style: italic;
-  line-height: var(--line-height-normal);
+  line-height: var(--ds-line-height-normal);
   margin-bottom: 0;
-  font-family: var(--font-family-base);
+  font-family: var(--ds-font-sans);
   word-break: break-word;
   hyphens: auto;
 }
@@ -203,53 +203,53 @@ const getTargetLanguageCode = computed(() => {
 /* Responsive Design */
 @media (max-width: 768px) {
   .result-card {
-    padding: var(--space-8); /* 32px on mobile */
-    margin-bottom: var(--space-4); /* 16px on mobile */
+    padding: var(--ds-spacing-3); /* 32px on mobile */
+    margin-bottom: var(--ds-spacing-1); /* 16px on mobile */
   }
   
   .language-section {
-    margin-bottom: var(--space-6); /* 24px on mobile */
+    margin-bottom: var(--ds-spacing-2); /* 24px on mobile */
   }
   
   .language-section:last-of-type {
-    margin-bottom: var(--space-6); /* 24px on mobile */
+    margin-bottom: var(--ds-spacing-2); /* 24px on mobile */
   }
   
   .example-section {
-    margin-top: var(--space-6); /* 24px on mobile */
-    padding: var(--space-4); /* 16px on mobile */
+    margin-top: var(--ds-spacing-2); /* 24px on mobile */
+    padding: var(--ds-spacing-1); /* 16px on mobile */
   }
   
   .source-word {
-    font-size: var(--font-size-base); /* Slightly smaller on mobile but still smaller than target */
+    font-size: 1rem; /* Slightly smaller on mobile but still smaller than target */
   }
   
   .target-word {
-    font-size: var(--font-size-xl); /* Slightly smaller on mobile but still bigger than source */
+    font-size: 1.25rem; /* Slightly smaller on mobile but still bigger than source */
   }
 }
 
 @media (max-width: 480px) {
   .result-card {
-    padding: var(--space-6); /* 24px on small mobile */
+    padding: var(--ds-spacing-2); /* 24px on small mobile */
   }
   
   .language-section {
-    margin-bottom: var(--space-4); /* 16px on small mobile */
+    margin-bottom: var(--ds-spacing-1); /* 16px on small mobile */
   }
   
   .example-section {
-    margin-top: var(--space-4); /* 16px on small mobile */
-    padding: var(--space-3); /* 12px on small mobile */
+    margin-top: var(--ds-spacing-1); /* 16px on small mobile */
+    padding: var(--ds-spacing-05); /* 12px on small mobile */
   }
   
   /* Maintain visual hierarchy on small mobile */
   .source-word {
-    font-size: var(--font-size-sm); /* Even smaller on small mobile */
+    font-size: 0.875rem; /* Even smaller on small mobile */
   }
   
   .target-word {
-    font-size: var(--font-size-lg); /* Still bigger than source on small mobile */
+    font-size: 1.125rem; /* Still bigger than source on small mobile */
   }
 }
 
