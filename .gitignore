@@ -1,13 +1,11 @@
-node_modules
+node_modules/
 .env
-.env.local
-.env.production
-.env.development
+.env.*
+!.env.example
 .output/
 .firebase/
 .nuxt/
 dist/
-node_modules/
 
 # YoYo AI version control directory
 .yoyo/
