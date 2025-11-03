@@ -2,10 +2,6 @@
   <div class="stripe-checkout-trigger">
     <!-- Plan Summary -->
     <div class="plan-summary">
-      <h3 class="summary-title">
-        <Icon name="credit-card" class="summary-icon" />
-        Resumen del Plan
-      </h3>
       
       <div class="plan-details">
         <div class="plan-name">{{ selectedPlan.title }}</div>
@@ -21,11 +17,12 @@
             {{ feature }}
           </li>
         </ul>
-        
-        <div class="total-amount">
-          Total: €{{ selectedPlan.price }}
-        </div>
       </div>
+    </div>
+    
+    <!-- Terms & Info -->
+    <div class="checkout-info">
+      Al continuar, serás redirigido a Stripe para completar tu pago
     </div>
     
     <!-- Stripe Checkout Button -->
@@ -42,11 +39,6 @@
       {{ buttonText }}
     </button>
     
-    <!-- Terms & Info -->
-    <div class="checkout-info">
-      Al continuar, serás redirigido a Stripe para completar tu pago
-    </div>
-    
     <!-- Error Display -->
     <div 
       v-if="error" 
@@ -60,6 +52,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRoute } from '#imports'
 import { loadStripe } from '@stripe/stripe-js'
 
 interface PlanFeature {
@@ -107,12 +100,13 @@ const initializeStripe = async () => {
   
   try {
     const config = useRuntimeConfig()
-    const publishableKey = config.public.stripePublishableKey
+    const publishableKey = (config.public.stripePublishableKey || '').trim()
     
     if (!publishableKey) {
       throw new Error('Stripe publishable key not configured')
     }
     
+    // Load Stripe.js (optional if we redirect via Checkout URL)
     stripe.value = await loadStripe(publishableKey)
     return stripe.value
   } catch (err) {
@@ -122,7 +116,9 @@ const initializeStripe = async () => {
 }
 
 // Create checkout session
-const createCheckoutSession = async (): Promise<string> => {
+const route = useRoute()
+
+const createCheckoutSession = async (): Promise<{ sessionId: string, url?: string }> => {
   try {
     const response = await $fetch('/api/stripe/create-checkout-session', {
       method: 'POST',
@@ -130,7 +126,8 @@ const createCheckoutSession = async (): Promise<string> => {
         priceId: props.selectedPlan.priceId,
         planType: props.selectedPlan.period.includes('mes') ? 'monthly' : 'annual',
         successUrl: `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl: `${window.location.origin}/subscription/cancel`
+        // Send the invoking page as cancel URL so Stripe's back action returns there
+        cancelUrl: `${window.location.origin}${route.fullPath}`
       }
     })
     
@@ -138,7 +135,7 @@ const createCheckoutSession = async (): Promise<string> => {
       throw new Error('No se pudo crear la sesión de pago')
     }
     
-    return response.sessionId
+    return response
   } catch (err: any) {
     console.error('Failed to create checkout session:', err)
     throw new Error(err.message || 'Error al crear la sesión de pago')
@@ -147,25 +144,37 @@ const createCheckoutSession = async (): Promise<string> => {
 
 // Trigger Stripe checkout
 const triggerStripeCheckout = async () => {
-  if (!canProceed.value || loading.value) return
+  if (!canProceed.value || loading.value) {
+    if (!props.selectedPlan.priceId) {
+      error.value = 'El plan no está configurado. Vuelve a intentarlo en unos segundos.'
+    }
+    return
+  }
   
   try {
     loading.value = true
     error.value = null
-    
+
     // Emit checkout started event
     emit('checkout-started')
-    
-    // Initialize Stripe if needed
-    const stripeInstance = await initializeStripe()
-    
+
     // Create checkout session
-    const sessionId = await createCheckoutSession()
-    
-    // Redirect to Stripe checkout
-    const { error: checkoutError } = await stripeInstance.redirectToCheckout({
-      sessionId
-    })
+    const { sessionId, url } = await createCheckoutSession()
+
+    if (process.dev) {
+      console.log('[Stripe] Created session', sessionId, 'url?', !!url)
+      console.log('[Stripe] Using priceId', props.selectedPlan.priceId)
+    }
+
+    // Prefer direct URL redirect (works even if Stripe.js init fails)
+    if (url) {
+      window.location.href = url
+      return
+    }
+
+    // Initialize Stripe.js only if needed
+    const stripeInstance = await initializeStripe()
+    const { error: checkoutError } = await stripeInstance.redirectToCheckout({ sessionId })
     
     if (checkoutError) {
       throw new Error(checkoutError.message)
@@ -211,8 +220,6 @@ const triggerStripeCheckout = async () => {
 }
 
 .plan-details {
-  background: var(--ds-background);
-  padding: var(--ds-spacing-2); /* 16px */
   border-radius: var(--ds-radius);
   margin-bottom: var(--ds-spacing-3); /* 24px */
   
@@ -225,7 +232,7 @@ const triggerStripeCheckout = async () => {
   
   .plan-price {
     font-size: 1rem;
-    color: var(--ds-muted-foreground);
+    color: var(--ds-primary);
     margin-bottom: var(--ds-spacing-1); /* 8px */
   }
   
@@ -280,7 +287,6 @@ const triggerStripeCheckout = async () => {
   align-items: center;
   justify-content: center;
   gap: var(--ds-spacing-05); /* 8px */
-  margin-bottom: var(--ds-spacing-2); /* 16px */
   
   &:hover:not(:disabled) {
     background: var(--ds-primary-dark);
@@ -303,7 +309,7 @@ const triggerStripeCheckout = async () => {
   color: var(--ds-muted-foreground);
   text-align: center;
   line-height: var(--ds-line-height-normal);
-  margin-bottom: var(--ds-spacing-2); /* 16px */
+  margin-bottom: var(--ds-spacing-1); /* 16px */
 }
 
 .error-message {

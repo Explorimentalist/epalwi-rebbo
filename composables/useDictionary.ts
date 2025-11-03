@@ -37,6 +37,18 @@ export const useDictionary = () => {
     // Only initialize on client side
     if (process.server) return
     
+    // Guard: block initialization for expired users (no active/trial/grace)
+    try {
+      const { canAccessFeatures, isInGracePeriod } = useAuth()
+      if (!canAccessFeatures.value && !isInGracePeriod.value) {
+        error.value = 'subscription-required'
+        isReady.value = false
+        return
+      }
+    } catch (_) {
+      // If auth composable is unavailable, proceed (route/middleware should still protect)
+    }
+    
     try {
       isLoading.value = true
       error.value = null
@@ -76,6 +88,15 @@ export const useDictionary = () => {
   // Load dictionary data (from API or cache)
   const loadDictionaryData = async () => {
     try {
+      // Guard: prevent offline/cache usage for expired users
+      try {
+        const { canAccessFeatures, isInGracePeriod } = useAuth()
+        if (!canAccessFeatures.value && !isInGracePeriod.value) {
+          throw new Error('subscription-required')
+        }
+      } catch (_) {
+        // no-op if auth not available
+      }
       // Try to get from IndexedDB first
       const cachedData = await indexedDBService.loadDictionaryData()
       if (cachedData) {
@@ -107,6 +128,17 @@ export const useDictionary = () => {
   
   // Perform search
   const search = async (query: string, mode: SearchMode = 'hybrid') => {
+    // Access guard: expired users get no results
+    try {
+      const { canAccessFeatures, isInGracePeriod } = useAuth()
+      if (!canAccessFeatures.value && !isInGracePeriod.value) {
+        error.value = 'subscription-required'
+        searchResults.value = []
+        hasSearched.value = false
+        return []
+      }
+    } catch (_) {}
+
     if (!isReady.value || !searchService) {
       console.warn('Dictionary service not initialized, using fallback')
       // Return empty results instead of throwing error
@@ -151,6 +183,16 @@ export const useDictionary = () => {
   
   // Get autocomplete suggestions
   const getSuggestions = async (query: string) => {
+    // Access guard
+    try {
+      const { canAccessFeatures, isInGracePeriod } = useAuth()
+      if (!canAccessFeatures.value && !isInGracePeriod.value) {
+        error.value = 'subscription-required'
+        suggestions.value = []
+        return []
+      }
+    } catch (_) {}
+
     if (!isReady.value || !searchService || !query.trim()) {
       suggestions.value = []
       return []

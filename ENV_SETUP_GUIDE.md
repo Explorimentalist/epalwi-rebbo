@@ -42,6 +42,26 @@ NODE_ENV=development
 NUXT_DEBUG=true
 ```
 
+## User Preferences (Default Language + Notifications)
+
+The app persists a small set of user preferences in Firestore and caches them locally for offline/guest use.
+
+- Firestore document: `users/{uid}`
+  - `preferences` (object)
+    - `defaultLanguage`: `'español' | 'ndowe'` (default `'español'`)
+    - `notifications` (object)
+      - `productUpdates`: boolean (default `false`)
+      - `languageTips`: boolean (default `false`)
+  - `preferencesUpdatedAt`: server timestamp used for last‑write‑wins across devices.
+
+Behavior
+- When signed in: preferences are loaded from local cache first, then merged with Firestore (newer `preferencesUpdatedAt` wins) and re‑cached.
+- Guests: preferences are stored in IndexedDB under a `guest` key. On sign‑in, guest prefs are merged into the user document using last‑write‑wins, then the guest cache is cleared.
+- Offline: preference changes apply locally (optimistic) and are queued to update Firestore when connectivity returns.
+
+No themes
+- Dark mode or themes are out of scope. Only default language and notifications are stored as preferences.
+
 ## How to Obtain Each Key
 
 ### 1. Firebase Configuration
@@ -121,6 +141,22 @@ firebase functions:config:set \
 
 ## Development Environment Setup
 
+### Enable Firebase Auth Email Link (Production)
+
+1. In Firebase Console → Authentication → Sign-in method, enable "Email link (passwordless)".
+2. Add your authorized domains (localhost for dev, your production host).
+3. In `nuxt.config.ts`, ensure `runtimeConfig.public.appUrl` points to your site base URL (e.g., `https://yourdomain.com`).
+4. For development, `NUXT_PUBLIC_DEV_AUTH_MOCK=true` uses the existing mock flow. Set it to `false` in production to use Firebase Email Link.
+
+### Verification Checklist
+
+- Send link: `/auth/login` sends Email Link and stores `emailForSignIn` locally.
+- Cross-device: Opening the link on a different device prompts for email, then signs in.
+- Invalid/expired: Verify page shows error and link back to login.
+- Redirect: After success, redirect honors `return=` if present; otherwise to `/dictionary`.
+- Preferences: Default language initializes dictionary; changes persist across sessions.
+- History: Search history merges across devices (last-write-wins) and caps at 50 items.
+
 ### ⚠️ IMPORTANT: Development vs Production Workflow
 
 **For Development (localhost):**
@@ -168,7 +204,7 @@ firebase deploy
   ```
 
 #### Issue: Wrong Port in Browser
-- **Development**: Always use `http://localhost:3000`
+- **Development**: Always use `http://localhost:4000`
 - **Production**: Use your Firebase hosting URL
 
 1. Install dependencies:

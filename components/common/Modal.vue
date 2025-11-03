@@ -160,16 +160,49 @@ const trapFocus = (event: KeyboardEvent) => {
   }
 }
 
-// Body scroll prevention
+// Body scroll prevention with scrollbar compensation
 const preventScroll = () => {
   if (props.preventBodyScroll) {
-    document.body.style.overflow = 'hidden'
+    // Calculate scrollbar width before hiding it
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+    
+    // Only apply compensation if there's actually a scrollbar
+    if (scrollbarWidth > 0) {
+      // Prevent body scroll and compensate for scrollbar
+      document.body.style.overflow = 'hidden'
+      document.body.style.paddingRight = `${scrollbarWidth}px`
+      
+      // Apply compensation to all fixed positioned elements
+      const fixedElements = document.querySelectorAll('nav[class*="fixed"], .fixed')
+      fixedElements.forEach(el => {
+        const element = el as HTMLElement
+        const currentPadding = parseInt(getComputedStyle(element).paddingRight) || 0
+        element.style.paddingRight = `${currentPadding + scrollbarWidth}px`
+        element.setAttribute('data-modal-padding-added', scrollbarWidth.toString())
+      })
+    } else {
+      // Just prevent scroll if no scrollbar
+      document.body.style.overflow = 'hidden'
+    }
   }
 }
 
 const restoreScroll = () => {
   if (props.preventBodyScroll) {
     document.body.style.overflow = ''
+    document.body.style.paddingRight = ''
+    
+    // Restore all fixed elements that had padding added
+    const fixedElements = document.querySelectorAll('[data-modal-padding-added]')
+    fixedElements.forEach(el => {
+      const element = el as HTMLElement
+      const addedPadding = parseInt(element.getAttribute('data-modal-padding-added') || '0')
+      const currentPadding = parseInt(getComputedStyle(element).paddingRight) || 0
+      const originalPadding = currentPadding - addedPadding
+      
+      element.style.paddingRight = originalPadding > 0 ? `${originalPadding}px` : ''
+      element.removeAttribute('data-modal-padding-added')
+    })
   }
 }
 
@@ -283,8 +316,8 @@ const containerClasses = computed(() => {
 
 .modal__close {
   position: absolute;
-  top: var(--ds-spacing-3);
-  right: var(--ds-spacing-3);
+  top: var(--ds-spacing-1);
+  right: var(--ds-spacing-1);
   width: 32px;
   height: 32px;
   display: flex;
@@ -306,8 +339,8 @@ const containerClasses = computed(() => {
 
 @media (min-width: 768px) {
   .modal__close {
-    top: var(--ds-spacing-3);
-    right: var(--ds-spacing-3);
+    top: var(--ds-spacing-1);
+    right: var(--ds-spacing-1);
   }
 }
 

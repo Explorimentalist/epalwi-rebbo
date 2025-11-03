@@ -59,6 +59,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 /**
  * 🎛️ TrialBanner Component
  * Subscription trial status banner with dismissible functionality
@@ -101,7 +102,8 @@ const { createComponentClasses } = useDesignSystem()
 
 // Local storage key for dismissal
 const DISMISSAL_KEY = 'trial-banner-dismissed'
-const DISMISSAL_DURATION = 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
+const DISMISSAL_DURATION = 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds (standard)
+const DISMISSAL_DAY_KEY = 'trial-banner-dismissed-day' // daily dismissal key for final 3 days/grace
 
 // Reactive state
 const isDismissed = ref(false)
@@ -109,20 +111,29 @@ const isDismissed = ref(false)
 // Check if banner was dismissed
 const checkDismissalStatus = () => {
   if (!props.dismissible || props.forceShow) return false
-  
+
+  // Near expiration or grace period: allow only daily dismissal
+  const todayKey = new Date().toISOString().slice(0, 10)
+  const dismissedDay = localStorage.getItem(DISMISSAL_DAY_KEY)
+  if (dismissedDay) {
+    // If dismissed today, keep hidden; otherwise show again
+    if (dismissedDay === todayKey) return true
+    localStorage.removeItem(DISMISSAL_DAY_KEY)
+  }
+
+  // Standard dismissal fallback (7 days)
   const dismissedAt = localStorage.getItem(DISMISSAL_KEY)
   if (!dismissedAt) return false
-  
+
   const dismissedTime = parseInt(dismissedAt, 10)
   const now = Date.now()
-  
-  // Check if 7 days have passed
-  if (now - dismissedTime > DISMISSAL_DURATION) {
-    localStorage.removeItem(DISMISSAL_KEY)
-    return false
+
+  if (Number.isFinite(dismissedTime) && (now - dismissedTime) <= DISMISSAL_DURATION) {
+    return true
   }
-  
-  return true
+
+  localStorage.removeItem(DISMISSAL_KEY)
+  return false
 }
 
 // Initialize dismissal state
@@ -131,13 +142,25 @@ onMounted(() => {
 })
 
 // Computed properties
+// Stores (optional): use global store values when prop not provided
+const authStore = useAuthStore()
+const subscriptionStore = useSubscriptionStore()
+const { isInGracePeriod: graceFlag, graceDaysRemaining } = useAuth()
+
+const effectiveDaysRemaining = computed(() => {
+  if (typeof props.daysRemaining === 'number') return props.daysRemaining
+  return authStore.trialDaysRemaining || subscriptionStore.trialDaysRemaining || 0
+})
+
 const showBanner = computed(() => {
-  return !isDismissed.value && props.daysRemaining >= 0
+  // Show during active trial or grace period
+  return !isDismissed.value && (effectiveDaysRemaining.value >= 0 || graceFlag.value)
 })
 
 const bannerState = computed(() => {
-  if (props.daysRemaining <= 3) return 'critical'
-  if (props.daysRemaining <= 7) return 'warning'
+  if (graceFlag.value) return 'warning'
+  if (effectiveDaysRemaining.value <= 3) return 'critical'
+  if (effectiveDaysRemaining.value <= 7) return 'warning'
   return 'info'
 })
 
@@ -150,15 +173,18 @@ const statusIcon = computed(() => {
 })
 
 const bannerMessage = computed(() => {
-  const days = props.daysRemaining
-  
-  if (days === 0) {
-    return 'Tu prueba gratuita expira hoy'
-  } else if (days === 1) {
-    return 'Prueba gratuita: 1 día restante'
-  } else {
-    return `Prueba gratuita: ${days} días restantes`
+  if (graceFlag.value) {
+    const remaining = graceDaysRemaining.value
+    const elapsed = Math.max(0, 3 - remaining)
+    if (elapsed <= 0) return `Tu prueba ha expirado — periodo de gracia activo (${remaining} días restantes)`
+    if (elapsed === 1) return `Tu prueba expiró ayer — periodo de gracia: ${remaining} días restantes`
+    return `Tu prueba expiró hace ${elapsed} días — periodo de gracia: ${remaining} días restantes`
   }
+
+  const days = effectiveDaysRemaining.value
+  if (days === 0) return 'Tu prueba gratuita expira hoy'
+  if (days === 1) return 'Prueba gratuita: 1 día restante'
+  return `Prueba gratuita: ${days} días restantes`
 })
 
 const bannerAriaLabel = computed(() => {
@@ -166,15 +192,22 @@ const bannerAriaLabel = computed(() => {
 })
 
 // Event handlers
+const { redirectToSubscription } = useAuth()
 const handleUpgradeClick = () => {
   if (!props.ctaLoading) {
     emit('upgrade-click')
+    redirectToSubscription(graceFlag.value ? 'trial-banner-grace' : 'trial-banner')
   }
 }
 
 const handleDismiss = () => {
-  // Store dismissal timestamp
-  localStorage.setItem(DISMISSAL_KEY, Date.now().toString())
+  // In final 3 days or grace, dismiss only for the current day
+  if (graceFlag.value || effectiveDaysRemaining.value <= 3) {
+    localStorage.setItem(DISMISSAL_DAY_KEY, new Date().toISOString().slice(0, 10))
+  } else {
+    // Store dismissal timestamp (7-day suppression)
+    localStorage.setItem(DISMISSAL_KEY, Date.now().toString())
+  }
   isDismissed.value = true
   emit('dismiss')
 }
