@@ -65,6 +65,18 @@
     "node": "20.x"
   },
   "overrides": {
-    "estree-walker": "2.0.2"
+    "estree-walker": "2.0.2",
+    "unhead": "2.0.19",
+    "@unhead/vue": "2.0.19",
+    "@unhead/dom": "2.0.19",
+    "@unhead/ssr": "2.0.19",
+    "@unhead/schema": "2.0.19"
+  },
+  "resolutions": {
+    "unhead": "2.0.19",
+    "@unhead/vue": "2.0.19",
+    "@unhead/dom": "2.0.19",
+    "@unhead/ssr": "2.0.19",
+    "@unhead/schema": "2.0.19"
   }
 }
