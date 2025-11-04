@@ -1,4 +1,4 @@
 {
-  "installCommand": "npm ci --omit=dev --ignore-scripts",
+  "installCommand": "npm ci --omit=dev --ignore-scripts --legacy-peer-deps",
   "buildCommand": "nuxt build"
 }
