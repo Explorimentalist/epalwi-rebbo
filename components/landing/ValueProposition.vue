@@ -40,7 +40,6 @@ Epalwi rebbo no es un proyecto aislado, queremos que evolucione. Aún quedan muc
   // Design System V2 - Modern background and spacing
   padding: var(--ds-spacing-10) var(--ds-spacing-2);
   background: var(--ds-card);
-  border-top: 1px solid var(--ds-border);
   
   .value-container {
     max-width: 800px;

@@ -68,7 +68,7 @@ import { ref, computed, onMounted } from 'vue'
 
 interface Props {
   /** Number of trial days remaining */
-  daysRemaining: number
+  daysRemaining?: number
   /** Whether banner can be dismissed */
   dismissible?: boolean
   /** Whether to show upgrade button */

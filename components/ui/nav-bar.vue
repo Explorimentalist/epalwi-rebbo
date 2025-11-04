@@ -1,5 +1,11 @@
 <template>
-  <nav class="ds-navbar fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-6 backdrop-blur-md" style="z-index: var(--z-fixed)">
+  <nav 
+    :class="[
+      'ds-navbar fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-6 backdrop-blur-md transition-colors duration-300',
+      { 'bg-gradient-to-b from-white to-transparent': isOverHero }
+    ]" 
+    style="z-index: var(--z-fixed)"
+  >
     <!-- Logo -->
     <NuxtLink to="/" class="flex items-center">
       <img src="/logo.svg" alt="epàlwi-rèbbo" class="h-8 w-auto" />
@@ -207,6 +213,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
 
 // Route composable
@@ -216,12 +223,12 @@ const route = useRoute()
 const isDropdownOpen = ref(false)
 const isMobileMenuOpen = ref(false)
 const dropdownTrigger = ref<HTMLButtonElement>()
+const isOverHero = ref(true) // Start as true for hero section
 
 // Auth store - use proper SSR pattern
 const authStore = useAuthStore()
-
-// Computed properties
-const isAuthenticated = computed(() => authStore.isAuthenticated)
+// Pull booleans as refs to avoid nested computed truthiness
+const { isAuthenticated } = storeToRefs(authStore)
 
 // Navigation items with paths and icons
 const navItems = computed(() => [
@@ -277,6 +284,12 @@ const handleClickOutside = (event: Event) => {
   }
 }
 
+// Scroll detection for hero section
+const handleScroll = () => {
+  const heroHeight = window.innerHeight // Assume hero section is full viewport height
+  isOverHero.value = window.scrollY < heroHeight
+}
+
 // Keyboard navigation
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Escape') {
@@ -289,11 +302,15 @@ const handleKeydown = (event: KeyboardEvent) => {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeydown)
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  // Initialize scroll state
+  handleScroll()
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('scroll', handleScroll)
 })
 
 // Watch for route changes to close mobile menu

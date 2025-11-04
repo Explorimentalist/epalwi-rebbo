@@ -7,6 +7,13 @@
 // Import interactions (compatible with V2)
 @use 'interactions';
 
+// Tailwind layers
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// (moved @use rules above per Sass requirement)
+
 // Global reset and base styles
 *, 
 *::before, 

@@ -20,6 +20,15 @@
           {{ headline }}
         </h1>
         
+        <!-- Mobile placement of the animated word pairs (between headline and copy) -->
+        <HeroWordDuet
+          class="hero-words hero-words--mobile"
+          a-label="Español"
+          :a-words="typedWords"
+          b-label="Ndowéÿé"
+          :b-words="typedWordsNdowe"
+        />
+        
         <p class="hero-subheading">
           {{ subheading }}
         </p>
@@ -34,11 +43,21 @@
           </ButtonV2>
         </div>
       </div>
+
+      <!-- Right-side animated word pairs -->
+      <HeroWordDuet
+        class="hero-words hero-words--desktop"
+        a-label="Español"
+        :a-words="typedWords"
+        b-label="Ndowéÿé"
+        :b-words="typedWordsNdowe"
+      />
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
+import HeroWordDuet from './HeroWordDuet.vue'
 interface Props {
   headline?: string
   subheading?: string
@@ -50,9 +69,9 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   headline: 'Aprende Ndowe',
-  subheading: 'El primer diccionario online traductor Español-Ndowe palabra por palabra. Es hora de preservar tu lengua',
+  subheading: 'El primer diccionario traductor online de Español-Ndowe. Mantén tu lengua viva',
   primaryCtaText: 'Prueba Epàlwi‑Rèbbo gratis',
-  primaryCtaAriaLabel: 'Comenzar prueba gratuita de 14 días',
+  primaryCtaAriaLabel: 'Comienza tu prueba gratuita de 14 días',
   mockupImage: '/icons/icon-512x512.png',
   mockupAlt: 'Epàlwi-Rèbbo Dictionary App - Spanish to Ndowe translation interface showing search results and language toggle'
 })
@@ -64,6 +83,26 @@ const emit = defineEmits<{
 const handlePrimaryCTA = () => {
   emit('primaryCta')
 }
+
+const typedWords = [
+  'Casa',
+  'Bonita',
+  'Luz',
+  'Alegria',
+  'Futuro',
+  'Brillante',
+  'Pueblo'
+]
+
+const typedWordsNdowe = [
+  'Mbàddi',      // casa
+  'Asaÿÿa',      // bonita
+  'Bwèÿÿe',      // luz
+  'Mosaro',      // alegria
+  'Gànné',       // futuro
+  'Epànyi',      // brillante
+  'Mboka'        // pueblo
+]
 </script>
 
 <style lang="scss" scoped>
@@ -85,25 +124,11 @@ const handlePrimaryCTA = () => {
     width: 100%;
     height: 100%;
     z-index: 0;
-    background: #1a1a1a; // Fallback color
-    background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1920&h=1080&fit=crop&crop=center&q=80');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        135deg, 
-        rgba(0, 0, 0, 0.6) 0%, 
-        rgba(0, 0, 0, 0.3) 100%
-      );
-    }
+    background: linear-gradient(
+      to bottom,
+      var(--ds-primary) 54%,
+      var(--ds-background) 100%
+    );
   }
   
   // // Visual mockup layered above background and below content
@@ -136,6 +161,9 @@ const handlePrimaryCTA = () => {
     margin: 0 auto;
     position: relative;
     z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
   }
   
   // Hero Content - Left Aligned like Double Play
@@ -173,6 +201,18 @@ const handlePrimaryCTA = () => {
   .hero-actions {
     animation: fadeInUp 0.8s ease-out 0.5s both;
   }
+
+  // Right side dynamic words
+  .hero-words {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 64px;
+    justify-self: start;
+  }
+
+  // default: mobile variant visible, desktop variant hidden
+  .hero-words--mobile { display: grid; }
+  .hero-words--desktop { display: none; }
 }
 
 /* 📱 Responsive Design - Clean & Professional */
@@ -180,7 +220,7 @@ const handlePrimaryCTA = () => {
 // Mobile (≤768px)
 @media (max-width: 768px) {
   .hero-section {
-    padding: 80px 24px 60px;
+    padding: var(--ds-spacing-4) 24px 60px; // bring headline up a bit
     min-height: 90vh;
     
     // .hero-visual {
@@ -209,6 +249,13 @@ const handlePrimaryCTA = () => {
         margin-bottom: var(--ds-spacing-3);
         max-width: 100%;
       }
+    }
+    
+    .hero-words {
+      margin-top: var(--ds-spacing-3);
+      margin-bottom: var(--ds-spacing-3);
+      grid-template-columns: 1fr;
+      gap: 56px;
     }
     
   }
@@ -241,6 +288,23 @@ const handlePrimaryCTA = () => {
       }
     }
     
+    .hero-container {
+      grid-template-columns: minmax(420px, 620px) 1fr;
+      align-items: center; // middle align on tablet/desktop
+      gap: 80px;
+    }
+
+    .hero-words {
+      grid-template-columns: repeat(2, max-content);
+      justify-content: start;
+      column-gap: 120px;
+      row-gap: 0;
+      align-self: center;
+    }
+
+    .hero-words--mobile { display: none; }
+    .hero-words--desktop { display: grid; }
+    
   }
 }
 
@@ -267,6 +331,22 @@ const handlePrimaryCTA = () => {
         font-size: var(--ds-font-size-copy-18);
       }
     }
+
+    .hero-container {
+      grid-template-columns: minmax(520px, 640px) 1fr;
+      align-items: center; // middle align on desktop
+      gap: 120px;
+    }
+
+    .hero-words {
+      grid-template-columns: repeat(2, max-content);
+      column-gap: 160px;
+      row-gap: 0;
+      align-self: center;
+    }
+
+    .hero-words--mobile { display: none; }
+    .hero-words--desktop { display: grid; }
   }
 }
 
