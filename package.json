@@ -8,7 +8,7 @@
     "dev:https": "nuxt dev --https",
     "build": "nuxt build",
     "preview": "nuxt preview",
-    "postinstall": "node -e \"if(process.env.CI||process.env.VERCEL){process.exit(0)}\" && nuxt prepare",
+    "postinstall": "node -e \"process.exit(process.env.CI||process.env.VERCEL ? 0 : 1)\" || nuxt prepare",
     "generate": "nuxt generate",
     "setup:env": "node setup-env.js",
     "lint": "eslint .",
