@@ -1,7 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
-  devtools: { enabled: true },
+  // Disable DevTools in production builds to avoid pulling heavy, dev-only deps
+  devtools: { enabled: process.env.NODE_ENV !== 'production' },
   
   // SSR configuration - disabled for debugging
   ssr: false,
@@ -179,31 +180,8 @@ export default defineNuxtConfig({
   
   // Nitro configuration for serverless
   nitro: {
-    preset: 'firebase',
-    // Fix for Vercel deployment unhead module resolution issue
-    hooks: {
-      'compiled'(ctx) {
-        // Ensure unhead modules are properly resolved in Vercel environment
-        if (process.env.VERCEL) {
-          const fs = require('fs')
-          const path = require('path')
-          
-          try {
-            // Check if unhead directory exists and contains required files
-            const unheadPath = path.join(process.cwd(), 'node_modules/unhead/dist')
-            if (fs.existsSync(unheadPath)) {
-              // Ensure shared directory exists
-              const sharedPath = path.join(unheadPath, 'shared')
-              if (!fs.existsSync(sharedPath)) {
-                fs.mkdirSync(sharedPath, { recursive: true })
-              }
-            }
-          } catch (error) {
-            console.warn('Warning: Could not resolve unhead module paths:', error.message)
-          }
-        }
-      }
-    }
+    // Use the correct adapter based on the platform
+    preset: process.env.VERCEL ? 'vercel' : 'firebase'
   },
 
   // Components auto-import configuration
