@@ -3,8 +3,8 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
   
-  // SSR configuration
-  ssr: true,
+  // SSR configuration - disabled for debugging
+  ssr: false,
   
   // TypeScript configuration
   typescript: {
@@ -18,12 +18,20 @@ export default defineNuxtConfig({
   // Modules configuration
   // Note: Order matters - some modules depend on others being loaded first
   modules: [
-    '@nuxtjs/tailwindcss',
+    // Tailwind handled via PostCSS to avoid ESM/CJS issues
     '@pinia/nuxt',
     '@vite-pwa/nuxt',
     '@vueuse/nuxt',
     '@nuxt/icon' // Provides <NuxtIcon> component
   ],
+
+  // Configure PostCSS explicitly so Tailwind runs without the Nuxt module
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {}
+    }
+  },
   
   // Icon configuration
   // Uses @iconify-json packages from devDependencies:
@@ -31,6 +39,8 @@ export default defineNuxtConfig({
   // - @iconify-json/lucide: Additional icons for specific features
   // - @iconify-json/mdi: Material Design icons for fallback
   icon: {
+    // Avoids name collision with our local components/common/Icon.vue
+    componentName: 'NuxtIcon',
     size: '24px',
     class: 'icon',
     mode: 'svg',
@@ -70,6 +80,10 @@ export default defineNuxtConfig({
   
   // PWA Configuration
   pwa: {
+    // Avoid terser/minify issues during SW generation
+    minify: false,
+    // Allow disabling PWA (eg, in CI/dev) via env
+    disable: process.env.PWA_DISABLE === 'true',
     registerType: 'autoUpdate',
     workbox: {
       globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
@@ -123,6 +137,7 @@ export default defineNuxtConfig({
   // Runtime config
   runtimeConfig: {
     // Private keys (only available on server-side)
+    jwtSecret: process.env['JWT_SECRET'] || '',
     mailersendApiKey: process.env['MAILERSEND_API_KEY'] || '',
     stripeSecretKey: process.env['STRIPE_SECRET_KEY'] || '',
     stripeWebhookSecret: process.env['STRIPE_WEBHOOK_SECRET'] || '',
@@ -136,7 +151,11 @@ export default defineNuxtConfig({
       stripePublishableKey: process.env['NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'] || '',
       stripeMonthlyPriceId: process.env['NUXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID'] || '',
       stripeAnnualPriceId: process.env['NUXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID'] || '',
-      appUrl: process.env['NUXT_PUBLIC_APP_URL'] || 'http://localhost:3000'
+      appUrl: process.env['NUXT_PUBLIC_APP_URL'] || 'http://localhost:4000',
+      // Dev fallback to mock auth endpoints by default unless explicitly disabled
+      devAuthMock: (process.env['NUXT_PUBLIC_DEV_AUTH_MOCK'] ?? (process.env['NODE_ENV'] !== 'production' ? 'true' : 'false')) === 'true',
+      // Connect to Firebase emulators in dev only when explicitly enabled
+      useFirebaseEmulators: (process.env['NUXT_PUBLIC_USE_FIREBASE_EMULATORS'] ?? 'false') === 'true'
     }
   },
   
