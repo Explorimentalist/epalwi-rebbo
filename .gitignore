@@ -7,5 +7,10 @@ node_modules/
 .nuxt/
 dist/
 
+# Local tooling artifacts
+.DS_Store
+.vercel/
+.vscode/
+
 # YoYo AI version control directory
 .yoyo/

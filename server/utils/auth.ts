@@ -1,0 +1,174 @@
+import { getFirestore } from 'firebase-admin/firestore'
+import type { H3Event } from 'h3'
+import { getHeader } from 'h3'
+import { getFirebaseAdminAuth } from '~/services/firebase-admin'
+import { getGraceDaysRemaining as getGraceDaysRemainingUtil, isInGracePeriod as isInGracePeriodUtil } from '~/utils/gracePeriod'
+
+export interface UserSubscriptionInfo {
+  uid: string
+  email?: string
+  hasActiveSubscription: boolean
+  isTrialActive: boolean
+  isInGracePeriod: boolean
+  graceDaysRemaining: number
+  trialDaysRemaining: number
+  subscriptionStatus: 'trial' | 'active' | 'expired' | 'cancelled'
+  canAccessFeatures: boolean
+}
+
+export interface AuthValidationResult {
+  success: boolean
+  user?: UserSubscriptionInfo
+  error?: string
+  errorCode?: 'INVALID_TOKEN' | 'USER_NOT_FOUND' | 'SUBSCRIPTION_EXPIRED' | 'VERIFICATION_FAILED'
+}
+
+/**
+ * Extract and validate Firebase JWT token from request headers
+ */
+export async function validateUserToken(event: H3Event): Promise<{ uid: string; email?: string } | null> {
+  const authHeader = getHeader(event, 'authorization')
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null
+
+  const token = authHeader.substring(7)
+  try {
+    // Ensure Firebase Admin is initialized before verifying
+    const adminAuth = getFirebaseAdminAuth()
+    const decoded = await adminAuth.verifyIdToken(token)
+    return { uid: decoded.uid, email: decoded.email ?? undefined }
+  } catch (err) {
+    console.error('Token validation failed:', err)
+    return null
+  }
+}
+
+/**
+ * Get comprehensive user subscription status from Firestore
+ * - Computes 14-day trial from createdAt if no explicit trial info exists
+ * - Applies 3-day grace period after trial end
+ * - Treats subscription.status in ['active','trialing'] as active
+ */
+export async function getUserSubscriptionStatus(uid: string): Promise<UserSubscriptionInfo> {
+  const db = getFirestore()
+  const userRef = db.collection('users').doc(uid)
+  const snap = await userRef.get()
+
+  if (!snap.exists) {
+    throw new Error('User not found')
+  }
+
+  const data: any = snap.data()
+  const now = new Date()
+
+  // CreatedAt handling (admin Timestamp -> Date)
+  const createdAt: Date | null = data?.createdAt?.toDate ? data.createdAt.toDate() : (data?.createdAt ? new Date(data.createdAt) : null)
+
+  // Trial end date: prefer explicit, else 14 days from createdAt
+  const explicitTrialEnd = data?.trial?.endDate?.toDate ? data.trial.endDate.toDate() : (data?.trial?.endDate ? new Date(data.trial.endDate) : null)
+  const trialEndDate = explicitTrialEnd || (createdAt ? new Date(createdAt.getTime() + 14 * 24 * 60 * 60 * 1000) : now)
+
+  const msPerDay = 24 * 60 * 60 * 1000
+  const trialMsRemaining = trialEndDate.getTime() - now.getTime()
+  const trialDaysRemaining = Math.max(0, Math.ceil(trialMsRemaining / msPerDay))
+  const isTrialActive = trialDaysRemaining > 0
+
+  // Grace period: 3 days after trial end (via utils)
+  const isInGracePeriod = !isTrialActive && isInGracePeriodUtil(trialEndDate, now, 3)
+  const graceDaysRemaining = !isTrialActive ? getGraceDaysRemainingUtil(trialEndDate, now, 3) : 0
+
+  // Paid subscription status
+  const rawStatus: string | undefined = data?.subscription?.status
+  const hasActiveSubscription = rawStatus === 'active' || rawStatus === 'trialing'
+
+  // Derived user-facing status
+  let subscriptionStatus: UserSubscriptionInfo['subscriptionStatus'] = 'trial'
+  if (hasActiveSubscription) subscriptionStatus = 'active'
+  else if (rawStatus === 'cancelled' || rawStatus === 'canceled') subscriptionStatus = 'cancelled'
+  else if (!isTrialActive && !isInGracePeriod) subscriptionStatus = 'expired'
+
+  const canAccessFeatures = hasActiveSubscription || isTrialActive || isInGracePeriod
+
+  return {
+    uid,
+    email: data?.email,
+    hasActiveSubscription,
+    isTrialActive,
+    isInGracePeriod,
+    graceDaysRemaining,
+    trialDaysRemaining,
+    subscriptionStatus,
+    canAccessFeatures
+  }
+}
+
+/**
+ * Validate incoming request and compute subscription access with graceful errors
+ */
+export async function validateUserSubscription(event: H3Event): Promise<AuthValidationResult> {
+  try {
+    // Development fallback: allow mock auth via header when devAuthMock is enabled
+    try {
+      const config = useRuntimeConfig() as any
+      const devMock = Boolean(config?.public?.devAuthMock)
+      const devHeader = getHeader(event, 'x-dev-auth-user')
+      if (devMock && devHeader) {
+        try {
+          const decodedJson = Buffer.from(devHeader, 'base64').toString('utf-8')
+          const devUser = JSON.parse(decodedJson)
+          const now = new Date()
+          // Derive trial period from provided data, fallback to 14 days from now
+          const trialStart = devUser?.trial?.startDate ? new Date(devUser.trial.startDate) : (devUser?.createdAt ? new Date(devUser.createdAt) : now)
+          const trialEnd = devUser?.trial?.endDate ? new Date(devUser.trial.endDate) : new Date(trialStart.getTime() + 14 * 24 * 60 * 60 * 1000)
+          const msPerDay = 24 * 60 * 60 * 1000
+          const trialMsRemaining = trialEnd.getTime() - now.getTime()
+          const trialDaysRemaining = Math.max(0, Math.ceil(trialMsRemaining / msPerDay))
+          const isTrialActive = trialDaysRemaining > 0
+          const isInGrace = !isTrialActive && isInGracePeriodUtil(trialEnd, now, 3)
+          const graceDaysRemaining = !isTrialActive ? getGraceDaysRemainingUtil(trialEnd, now, 3) : 0
+          const rawStatus = devUser?.subscription?.status as string | undefined
+          const hasActiveSubscription = rawStatus === 'active' || rawStatus === 'trialing'
+          let subscriptionStatus: UserSubscriptionInfo['subscriptionStatus'] = 'trial'
+          if (hasActiveSubscription) subscriptionStatus = 'active'
+          else if (rawStatus === 'cancelled' || rawStatus === 'canceled') subscriptionStatus = 'cancelled'
+          else if (!isTrialActive && !isInGrace) subscriptionStatus = 'expired'
+
+          const userInfo: UserSubscriptionInfo = {
+            uid: String(devUser?.uid || 'dev-user'),
+            email: devUser?.email,
+            hasActiveSubscription,
+            isTrialActive,
+            isInGracePeriod: isInGrace,
+            graceDaysRemaining,
+            trialDaysRemaining,
+            subscriptionStatus,
+            canAccessFeatures: hasActiveSubscription || isTrialActive || isInGrace
+          }
+          return { success: true, user: userInfo }
+        } catch (e) {
+          console.warn('Dev auth header present but invalid; falling back to normal validation')
+        }
+      }
+    } catch {}
+
+    const tokenData = await validateUserToken(event)
+    if (!tokenData) {
+      return { success: false, error: 'Invalid or missing authentication token', errorCode: 'INVALID_TOKEN' }
+    }
+
+    const userInfo = await getUserSubscriptionStatus(tokenData.uid)
+    return { success: true, user: userInfo }
+  } catch (err: any) {
+    console.error('Subscription validation failed:', err)
+    if (err?.message === 'User not found') {
+      return { success: false, error: 'User not found', errorCode: 'USER_NOT_FOUND' }
+    }
+    return { success: false, error: 'Verification temporarily unavailable', errorCode: 'VERIFICATION_FAILED' }
+  }
+}
+
+/**
+ * Log access attempts (stub for analytics)
+ */
+export async function logAccessAttempt(userInfo: UserSubscriptionInfo, resource: string, granted: boolean) {
+  console.log(`Access ${granted ? 'granted' : 'denied'} for user ${userInfo.uid} to ${resource}`)
+}
