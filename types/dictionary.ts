@@ -137,6 +137,13 @@ export interface SearchResult {
   matchType: MatchType
   matchedFields: DictionaryLanguage[]
   highlightedText?: string
+  // Optional UI helpers
+  // If present, use this to display the source term instead of entry.español
+  // e.g., "dirimir SIN anular" when a cross-reference (ver) was followed
+  sourceOverride?: string
+  // Cross-reference context, if the result comes via a Spanish "ver" link
+  crossRefFrom?: string
+  crossRefTarget?: string
 }
 
 /**

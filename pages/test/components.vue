@@ -4,7 +4,7 @@ import LanguageToggle from '@/components/dictionary/LanguageToggle.vue'
 import SearchBox from '@/components/dictionary/SearchBox.vue'
 import SuggestionDropdown from '@/components/dictionary/SuggestionDropdown.vue'
 import ResultCard from '@/components/dictionary/ResultCard.vue'
-import NavigationBar from '@/components/common/NavigationBar.vue'
+import NavBar from '@/components/ui/nav-bar.vue'
 import PricingCard from '@/components/subscription/PricingCard.vue'
 
 import PaymentConfirmation from '@/components/subscription/PaymentConfirmation.vue'
@@ -495,7 +495,12 @@ const swapLanguages = () => {
 
 <template>
   <div class="min-h-screen bg-[#F2EDEB] text-gray-800">
-    <!-- NavigationBar Component -->
+    <!-- Enhanced Navigation Bar with Glow Effects -->
+    <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+      <EnhancedNavBar />
+    </div>
+    
+    <!-- Original NavigationBar Component -->
     <NavigationBar />
     
     <!-- Header -->

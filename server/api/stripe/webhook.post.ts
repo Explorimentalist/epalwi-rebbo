@@ -1,5 +1,6 @@
 import { defineEventHandler, readBody, getHeader } from 'h3'
 import Stripe from 'stripe'
+import { getFirebaseAdminDb } from '~/services/firebase-admin'
 
 // Initialize Stripe with secret key
 const config = useRuntimeConfig()
@@ -104,15 +105,33 @@ export default defineEventHandler(async (event) => {
 async function handleCheckoutSessionCompleted(session: any) {
   console.log('Checkout session completed:', session.id)
   
-  // Extract user information from session
-  const userId = session.client_reference_id
-  const customerId = session.customer
-  const subscriptionId = session.subscription
-  
-  if (userId && userId !== 'anonymous') {
-    // Update user profile with Stripe customer ID
-    // This would typically update your Firestore user document
-    console.log(`User ${userId} completed checkout, customer: ${customerId}, subscription: ${subscriptionId}`)
+  try {
+    // Extract user information from session
+    const userId = session.client_reference_id
+    const customerId = session.customer
+    const subscriptionId = session.subscription
+    
+    if (userId && userId !== 'anonymous') {
+      const db = getFirebaseAdminDb()
+      const userRef = db.collection('users').doc(userId)
+      
+      // Update user profile with Stripe customer ID and subscription
+      await userRef.update({
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscriptionId,
+        subscription: {
+          status: 'active',
+          stripeSubscriptionId: subscriptionId,
+          stripeCustomerId: customerId
+        },
+        updatedAt: new Date().toISOString()
+      })
+      
+      console.log(`User ${userId} subscription created: customer ${customerId}, subscription ${subscriptionId}`)
+    }
+  } catch (error) {
+    console.error('Error handling checkout session completion:', error)
+    throw error
   }
 }
 
@@ -120,13 +139,37 @@ async function handleCheckoutSessionCompleted(session: any) {
 async function handleSubscriptionCreated(subscription: any) {
   console.log('Subscription created:', subscription.id)
   
-  // Extract metadata
-  const userId = subscription.metadata?.userId
-  const planType = subscription.metadata?.planType
-  
-  if (userId && userId !== 'anonymous') {
-    // Update user subscription status in Firestore
-    console.log(`User ${userId} subscription created: ${planType}`)
+  try {
+    // Extract metadata
+    const userId = subscription.metadata?.userId
+    const planType = subscription.metadata?.planType
+    const customerId = subscription.customer
+    
+    if (userId && userId !== 'anonymous') {
+      const db = getFirebaseAdminDb()
+      const userRef = db.collection('users').doc(userId)
+      
+      // Update user subscription status in Firestore
+      await userRef.update({
+        subscription: {
+          status: subscription.status,
+          stripeSubscriptionId: subscription.id,
+          stripeCustomerId: customerId,
+          planType: planType,
+          currentPeriodStart: new Date(subscription.current_period_start * 1000).toISOString(),
+          currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+          cancelAtPeriodEnd: subscription.cancel_at_period_end,
+          trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
+          trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null
+        },
+        updatedAt: new Date().toISOString()
+      })
+      
+      console.log(`User ${userId} subscription created: ${planType}, status: ${subscription.status}`)
+    }
+  } catch (error) {
+    console.error('Error handling subscription creation:', error)
+    throw error
   }
 }
 
@@ -134,12 +177,36 @@ async function handleSubscriptionCreated(subscription: any) {
 async function handleSubscriptionUpdated(subscription: any) {
   console.log('Subscription updated:', subscription.id)
   
-  const userId = subscription.metadata?.userId
-  const status = subscription.status
-  
-  if (userId && userId !== 'anonymous') {
-    // Update user subscription status in Firestore
-    console.log(`User ${userId} subscription status: ${status}`)
+  try {
+    const userId = subscription.metadata?.userId
+    const customerId = subscription.customer
+    const status = subscription.status
+    
+    if (userId && userId !== 'anonymous') {
+      const db = getFirebaseAdminDb()
+      const userRef = db.collection('users').doc(userId)
+      
+      // Update user subscription status in Firestore
+      await userRef.update({
+        subscription: {
+          status: status,
+          stripeSubscriptionId: subscription.id,
+          stripeCustomerId: customerId,
+          planType: subscription.metadata?.planType,
+          currentPeriodStart: new Date(subscription.current_period_start * 1000).toISOString(),
+          currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+          cancelAtPeriodEnd: subscription.cancel_at_period_end,
+          trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
+          trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null
+        },
+        updatedAt: new Date().toISOString()
+      })
+      
+      console.log(`User ${userId} subscription status updated: ${status}`)
+    }
+  } catch (error) {
+    console.error('Error handling subscription update:', error)
+    throw error
   }
 }
 
@@ -147,11 +214,35 @@ async function handleSubscriptionUpdated(subscription: any) {
 async function handleSubscriptionDeleted(subscription: any) {
   console.log('Subscription deleted:', subscription.id)
   
-  const userId = subscription.metadata?.userId
-  
-  if (userId && userId !== 'anonymous') {
-    // Update user subscription status to cancelled in Firestore
-    console.log(`User ${userId} subscription cancelled`)
+  try {
+    const userId = subscription.metadata?.userId
+    
+    if (userId && userId !== 'anonymous') {
+      const db = getFirebaseAdminDb()
+      const userRef = db.collection('users').doc(userId)
+      
+      // Update user subscription status to cancelled in Firestore
+      await userRef.update({
+        subscription: {
+          status: 'canceled',
+          stripeSubscriptionId: subscription.id,
+          stripeCustomerId: subscription.customer,
+          planType: subscription.metadata?.planType,
+          currentPeriodStart: new Date(subscription.current_period_start * 1000).toISOString(),
+          currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+          cancelAtPeriodEnd: true,
+          canceledAt: new Date().toISOString(),
+          trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
+          trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null
+        },
+        updatedAt: new Date().toISOString()
+      })
+      
+      console.log(`User ${userId} subscription cancelled`)
+    }
+  } catch (error) {
+    console.error('Error handling subscription deletion:', error)
+    throw error
   }
 }
 

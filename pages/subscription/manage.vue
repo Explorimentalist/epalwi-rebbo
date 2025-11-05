@@ -1,9 +1,13 @@
 <template>
   <div class="manage-page">
-    <div class="page-container">
-      <!-- Header -->
-      <div class="page-header">
-        <h1 class="page-title">Gestionar Suscripción</h1>
+    <!-- Navigation -->
+    <nav-bar />
+
+    <section class="subscription-manage">
+      <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+        <h1 class="ds-text-display-lg">Gestionar Suscripción</h1>
         <p class="page-subtitle">
           Administra tu plan y método de pago
         </p>
@@ -12,7 +16,7 @@
       <!-- Current Subscription -->
       <div class="subscription-card">
         <div class="subscription-header">
-          <h3 class="subscription-title">Tu Suscripción Actual</h3>
+          <h2 class="ds-text-display-sm">Tu Suscripción Actual</h2>
           <div class="subscription-status" :class="subscriptionStatusClass">
             {{ subscriptionStatusText }}
           </div>
@@ -39,18 +43,18 @@
         
         <div class="subscription-actions">
           <button
-            @click="updatePaymentMethod"
-            class="action-button secondary"
+            @click="viewInvoices"
+            class="ds-btn-primary ds-btn-md ds-btn-icon"
           >
-            <Icon name="credit-card" class="button-icon" />
-            Actualizar Método de Pago
+            <Icon name="document-text" class="ds-btn-icon-element" />
+            Ver Facturas
           </button>
           <button
-            @click="viewInvoices"
-            class="action-button tertiary"
+            @click="updatePaymentMethod"
+            class="ds-btn-primary ds-btn-md ds-btn-icon"
           >
-            <Icon name="document-text" class="button-icon" />
-            Ver Facturas
+            <Icon name="credit-card" class="ds-btn-icon-element" />
+            Actualizar Método de Pago
           </button>
         </div>
       </div>
@@ -59,7 +63,7 @@
       <div v-if="isTrialActive" class="trial-card">
         <div class="trial-header">
           <Icon name="clock" class="trial-icon" />
-          <h3 class="trial-title">Período de Prueba</h3>
+          <h2 class="ds-text-display-sm">Período de Prueba</h2>
         </div>
         <p class="trial-description">
           Tu prueba gratuita termina el {{ trialEndDate }}. 
@@ -78,30 +82,30 @@
 
       <!-- Plan Management -->
       <div class="plan-management">
-        <h3 class="management-title">Gestionar Plan</h3>
+        <h2 class="ds-text-display-sm">Gestionar Plan</h2>
         
         <div class="plan-options">
           <div class="option-card">
-            <h4 class="option-title">Cambiar Plan</h4>
+            <h3 class="ds-text-display-xs">Cambiar Plan</h3>
             <p class="option-description">
               Actualiza a un plan diferente o cambia entre mensual y anual
             </p>
             <button
               @click="changePlan"
-              class="option-button"
+              class="ds-btn-primary ds-btn-md w-full"
             >
               Cambiar Plan
             </button>
           </div>
           
           <div class="option-card">
-            <h4 class="option-title">Cancelar Suscripción</h4>
+            <h3 class="ds-text-display-xs">Cancelar Suscripción</h3>
             <p class="option-description">
               Cancela tu suscripción al final del período actual
             </p>
             <button
               @click="cancelSubscription"
-              class="option-button danger"
+              class="ds-btn-danger ds-btn-md w-full"
             >
               Cancelar
             </button>
@@ -111,7 +115,7 @@
 
       <!-- Billing History -->
       <div class="billing-history">
-        <h3 class="history-title">Historial de Facturación</h3>
+        <h2 class="ds-text-display-sm">Historial de Facturación</h2>
         <div class="history-list">
           <div
             v-for="invoice in billingHistory"
@@ -127,9 +131,9 @@
             </div>
             <button
               @click="downloadInvoice(invoice.id)"
-              class="download-button"
+              class="ds-btn-secondary ds-btn-sm ds-btn-icon"
             >
-              <Icon name="arrow-down-tray" class="download-icon" />
+              <Icon name="arrow-down-tray" class="ds-btn-icon-element" />
               Descargar
             </button>
           </div>
@@ -138,28 +142,25 @@
 
       <!-- Support Section -->
       <div class="support-section">
-        <h3 class="support-title">¿Necesitas Ayuda?</h3>
+        <h2 class="ds-text-display-sm">¿Necesitas Ayuda?</h2>
         <p class="support-description">
           Nuestro equipo de soporte está aquí para ayudarte
         </p>
         <div class="support-actions">
           <button
             @click="contactSupport"
-            class="support-button"
+            class="ds-btn-primary ds-btn-md ds-btn-icon"
           >
-            <Icon name="question-mark-circle" class="support-icon" />
+            <Icon name="question-mark-circle" class="ds-btn-icon-element" />
             Contactar Soporte
-          </button>
-          <button
-            @click="viewHelpCenter"
-            class="support-button secondary"
-          >
-            <Icon name="book-open" class="support-icon" />
-            Centro de Ayuda
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <Footer />
 
     <!-- Confirmation Modal -->
     <Modal
@@ -175,13 +176,13 @@
         <div class="confirmation-actions">
           <button
             @click="confirmCancel"
-            class="confirm-button danger"
+            class="ds-btn-danger ds-btn-md"
           >
             Sí, Cancelar
           </button>
           <button
             @click="showCancelModal = false"
-            class="confirm-button secondary"
+            class="ds-btn-secondary ds-btn-md"
           >
             No, Mantener
           </button>
@@ -192,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 // Page metadata
 useHead({
@@ -207,64 +208,93 @@ useHead({
 
 // State
 const showCancelModal = ref(false)
+const buttonLoading = ref(false)
 
-// Mock data - replace with real data from your backend
-const currentSubscription = ref({
-  plan: 'Plan Anual',
-  price: 8.97,
-  period: 'por año',
-  nextBilling: '15 de Enero, 2025',
-  paymentMethod: 'Tarjeta terminada en 4242'
+// Stores
+const authStore = useAuthStore()
+const subscriptionStore = useSubscriptionStore()
+
+// Computed subscription details from real store data
+const currentSubscription = computed(() => {
+  const sub = subscriptionStore.userSubscription
+  if (!sub) {
+    return {
+      plan: 'No activo',
+      price: 0,
+      period: '',
+      nextBilling: 'No disponible',
+      paymentMethod: 'No disponible'
+    }
+  }
+
+  const planType = sub.planType === 'monthly' ? 'Plan Mensual' : 'Plan Anual'
+  const price = sub.planType === 'monthly' ? 1 : 8.97
+  const period = sub.planType === 'monthly' ? 'por mes' : 'por año'
+  const nextBilling = sub.currentPeriodEnd
+    ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-ES')
+    : 'No disponible'
+
+  return {
+    plan: planType,
+    price,
+    period,
+    nextBilling,
+    paymentMethod: 'Método de pago registrado'
+  }
 })
 
-const isTrialActive = ref(true)
-const trialEndDate = ref('15 de Enero, 2025')
-const trialDaysRemaining = ref(8)
+const isTrialActive = computed(() => subscriptionStore.isTrialActive)
+const trialDaysRemaining = computed(() => subscriptionStore.trialDaysRemaining)
+const trialEndDate = computed(() => {
+  const sub = subscriptionStore.userSubscription
+  return sub?.trialEnd ? new Date(sub.trialEnd).toLocaleDateString('es-ES') : '—'
+})
 
-const billingHistory = ref([
-  {
-    id: 'inv_001',
-    date: '15 de Diciembre, 2024',
-    amount: 8.97,
-    status: 'Pagado',
-    statusClass: 'status-paid'
-  },
-  {
-    id: 'inv_002',
-    date: '15 de Noviembre, 2024',
-    amount: 8.97,
-    status: 'Pagado',
-    statusClass: 'status-paid'
-  }
-])
+const billingHistory = ref([] as any[])
 
 // Computed properties
 const subscriptionStatusText = computed(() => {
-  if (isTrialActive.value) return 'En Prueba'
-  return 'Activo'
+  const sub = subscriptionStore.userSubscription
+  if (!sub) return 'No activo'
+  switch (sub.status) {
+    case 'trialing': return 'En Prueba'
+    case 'active': return 'Activo'
+    case 'canceled': return 'Cancelado'
+    case 'past_due': return 'Pago Pendiente'
+    default: return sub.status
+  }
 })
 
 const subscriptionStatusClass = computed(() => {
-  if (isTrialActive.value) return 'status-trial'
-  return 'status-active'
+  const sub = subscriptionStore.userSubscription
+  if (!sub) return 'status-inactive'
+  if (sub.status === 'trialing') return 'status-trial'
+  if (sub.status === 'active') return 'status-active'
+  if (sub.status === 'canceled') return 'status-canceled'
+  return 'status-inactive'
 })
 
 const trialProgressPercent = computed(() => {
-  // Assuming 14-day trial
   const totalDays = 14
-  const remaining = trialDaysRemaining.value
-  return ((totalDays - remaining) / totalDays) * 100
+  const remaining = trialDaysRemaining.value || 0
+  return Math.max(0, Math.min(100, ((totalDays - remaining) / totalDays) * 100))
 })
 
 // Actions
-const updatePaymentMethod = () => {
-  // Implement payment method update
-  console.log('Update payment method')
+const updatePaymentMethod = async () => {
+  try {
+    buttonLoading.value = true
+    const url = await subscriptionStore.getCustomerPortalUrl()
+    if (url) window.location.href = url
+  } catch (error) {
+    console.error('Error opening customer portal:', error)
+  } finally {
+    buttonLoading.value = false
+  }
 }
 
-const viewInvoices = () => {
-  // Implement invoice viewing
-  console.log('View invoices')
+const viewInvoices = async () => {
+  await updatePaymentMethod()
 }
 
 const changePlan = () => {
@@ -277,308 +307,232 @@ const cancelSubscription = () => {
 
 const confirmCancel = async () => {
   try {
-    // Implement subscription cancellation
-    console.log('Cancelling subscription')
+    buttonLoading.value = true
+    await subscriptionStore.cancelSubscription()
     showCancelModal.value = false
+    // Refresh subscription data
+    if (authStore.user?.uid) {
+      await subscriptionStore.loadUserSubscription(authStore.user.uid)
+    }
     // Show success message
   } catch (error) {
     console.error('Error cancelling subscription:', error)
+  } finally {
+    buttonLoading.value = false
   }
 }
 
 const downloadInvoice = (invoiceId: string) => {
-  // Implement invoice download
-  console.log('Download invoice:', invoiceId)
+  console.log('Invoice download requires backend implementation', invoiceId)
 }
 
 const contactSupport = () => {
   window.open('mailto:soporte@epalwi-rebbo.com', '_blank')
 }
 
-const viewHelpCenter = () => {
-  // Navigate to help center or open in new tab
-  window.open('/help', '_blank')
-}
+
+onMounted(async () => {
+  if (authStore.user?.uid) {
+    await subscriptionStore.loadUserSubscription(authStore.user.uid)
+  }
+})
 </script>
 
 <style lang="scss" scoped>
 .manage-page {
   min-height: 100vh;
-  background: var(--color-background);
-  padding: var(--space-8) 0;
+  background: var(--ds-background);
 }
 
-.page-container {
-  max-width: 1000px;
+.subscription-manage {
+  padding: var(--ds-spacing-8) var(--ds-spacing-2);
+  background: var(--ds-background);
+}
+
+.container {
+  max-width: 800px;
   margin: 0 auto;
-  padding: 0 var(--space-6);
 }
 
 .page-header {
   text-align: center;
-  margin-bottom: var(--space-10);
-  
-  .page-title {
-    font-size: var(--font-size-4xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    margin-bottom: var(--space-4);
-  }
-  
-  .page-subtitle {
-    font-size: var(--font-size-lg);
-    color: var(--color-text-muted);
-    line-height: var(--line-height-normal);
-  }
+  margin-bottom: var(--ds-spacing-4);
+  padding: var(--ds-spacing-8) var(--ds-spacing-3) 0;
+}
+
+.page-subtitle {
+  font-size: 1.125rem; /* 18px */
+  color: var(--ds-muted-foreground);
+  text-align: center;
+  margin-bottom: var(--ds-spacing-6);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .subscription-card {
-  background: var(--color-primary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: var(--space-8);
-  margin-bottom: var(--space-8);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-spacing-6);
+  margin-bottom: var(--ds-spacing-6);
   
   .subscription-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space-6);
-    
-    .subscription-title {
-      font-size: var(--font-size-xl);
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-text);
-    }
+    margin-bottom: var(--ds-spacing-4);
     
     .subscription-status {
-      padding: var(--space-2) var(--space-4);
-      border-radius: var(--border-radius-full);
-      font-size: var(--font-size-sm);
-      font-weight: var(--font-weight-semibold);
+      padding: var(--ds-spacing-1) var(--ds-spacing-3);
+      border-radius: var(--ds-radius-full);
+      font-size: 0.875rem;
+      font-weight: 500;
       
       &.status-trial {
-        background: var(--color-warning-light);
-        color: var(--color-warning);
+        background: hsl(48 96% 89%);
+        color: hsl(45 93% 47%);
       }
       
       &.status-active {
-        background: var(--color-success-light);
-        color: var(--color-success);
+        background: hsl(143 85% 96%);
+        color: hsl(140 100% 27%);
+      }
+      
+      &.status-canceled {
+        background: hsl(0 93% 94%);
+        color: hsl(0 84% 60%);
+      }
+      
+      &.status-inactive {
+        background: var(--ds-muted);
+        color: var(--ds-muted-foreground);
       }
     }
   }
   
   .subscription-details {
-    margin-bottom: var(--space-6);
+    margin-bottom: var(--ds-spacing-4);
     
     .detail-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: var(--space-3) 0;
-      border-bottom: 1px solid var(--color-border);
+      padding: var(--ds-spacing-3) 0;
+      border-bottom: 1px solid var(--ds-border);
       
       &:last-child {
         border-bottom: none;
       }
       
       .detail-label {
-        font-size: var(--font-size-base);
-        color: var(--color-text-muted);
-        font-weight: var(--font-weight-medium);
+        font-size: 0.875rem;
+        color: var(--ds-muted-foreground);
+        font-weight: 500;
       }
       
       .detail-value {
-        font-size: var(--font-size-base);
-        color: var(--color-text);
-        font-weight: var(--font-weight-semibold);
+        font-size: 0.875rem;
+        color: var(--ds-foreground);
+        font-weight: 600;
       }
     }
   }
   
   .subscription-actions {
     display: flex;
-    gap: var(--space-4);
-    
-    .action-button {
-      height: var(--space-10);
-      padding: 0 var(--space-6);
-      border: none;
-      border-radius: var(--border-radius);
-      font-size: var(--font-size-sm);
-      font-weight: var(--font-weight-semibold);
-      cursor: pointer;
-      transition: all 0.15s ease-in-out;
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      
-      .button-icon {
-        width: 16px;
-        height: 16px;
-      }
-      
-      &.secondary {
-        background: transparent;
-        color: var(--color-secondary);
-        border: 1px solid var(--color-secondary);
-        
-        &:hover {
-          background: var(--color-secondary);
-          color: white;
-        }
-      }
-      
-      &.tertiary {
-        background: transparent;
-        color: var(--color-text-muted);
-        border: 1px solid var(--color-border);
-        
-        &:hover {
-          background: var(--color-text-muted);
-          color: white;
-        }
-      }
-    }
+    gap: var(--ds-spacing-2);
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 }
 
 .trial-card {
-  background: var(--color-primary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: var(--space-6);
-  margin-bottom: var(--space-8);
+  background: var(--ds-card);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-spacing-6);
+  margin-bottom: var(--ds-spacing-6);
   
   .trial-header {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    margin-bottom: var(--space-4);
+    gap: var(--ds-spacing-3);
+    margin-bottom: var(--ds-spacing-4);
     
     .trial-icon {
       width: 24px;
       height: 24px;
-      color: var(--color-warning);
-    }
-    
-    .trial-title {
-      font-size: var(--font-size-lg);
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-text);
+      color: hsl(45 93% 47%);
     }
   }
   
   .trial-description {
-    font-size: var(--font-size-base);
-    color: var(--color-text-muted);
-    margin-bottom: var(--space-4);
-    line-height: var(--line-height-normal);
+    font-size: 0.875rem;
+    color: var(--ds-muted-foreground);
+    margin-bottom: var(--ds-spacing-4);
+    line-height: 1.5;
   }
   
   .trial-progress {
     .progress-bar {
       width: 100%;
       height: 8px;
-      background: var(--color-border);
-      border-radius: var(--border-radius-full);
+      background: var(--ds-muted);
+      border-radius: var(--ds-radius-full);
       overflow: hidden;
-      margin-bottom: var(--space-2);
+      margin-bottom: var(--ds-spacing-2);
       
       .progress-fill {
         height: 100%;
-        background: var(--color-warning);
+        background: hsl(45 93% 47%);
         transition: width 0.3s ease;
       }
     }
     
     .progress-text {
-      font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
-      font-weight: var(--font-weight-medium);
+      font-size: 0.875rem;
+      color: var(--ds-muted-foreground);
+      font-weight: 500;
     }
   }
 }
 
 .plan-management {
-  margin-bottom: var(--space-8);
-  
-  .management-title {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--space-6);
-  }
+  margin-bottom: var(--ds-spacing-6);
   
   .plan-options {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--space-6);
+    gap: var(--ds-spacing-4);
     
     .option-card {
-      background: var(--color-primary);
-      border-radius: var(--border-radius-lg);
-      box-shadow: var(--shadow-md);
-      padding: var(--space-6);
-      
-      .option-title {
-        font-size: var(--font-size-lg);
-        font-weight: var(--font-weight-semibold);
-        color: var(--color-text);
-        margin-bottom: var(--space-3);
-      }
+      background: var(--ds-card);
+      border: 1px solid var(--ds-border);
+      border-radius: var(--ds-radius-lg);
+      padding: var(--ds-spacing-6);
       
       .option-description {
-        font-size: var(--font-size-sm);
-        color: var(--color-text-muted);
-        margin-bottom: var(--space-6);
-        line-height: var(--line-height-normal);
+        font-size: 0.875rem;
+        color: var(--ds-muted-foreground);
+        margin-bottom: var(--ds-spacing-4);
+        line-height: 1.5;
       }
       
-      .option-button {
-        width: 100%;
-        height: var(--space-10);
-        border: none;
-        border-radius: var(--border-radius);
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-semibold);
-        cursor: pointer;
-        transition: all 0.15s ease-in-out;
-        
-        &:hover {
-          transform: translateY(-1px);
-        }
-        
-        &.danger {
-          background: var(--color-error);
-          color: white;
-          
-          &:hover {
-            background: var(--color-error-dark);
-          }
-        }
-      }
     }
   }
 }
 
 .billing-history {
-  margin-bottom: var(--space-8);
-  
-  .history-title {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--space-6);
-  }
+  margin-bottom: var(--ds-spacing-6);
   
   .history-list {
     .invoice-item {
-      background: var(--color-primary);
-      border-radius: var(--border-radius);
-      padding: var(--space-4);
-      margin-bottom: var(--space-4);
+      background: var(--ds-card);
+      border: 1px solid var(--ds-border);
+      border-radius: var(--ds-radius);
+      padding: var(--ds-spacing-4);
+      margin-bottom: var(--ds-spacing-3);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -589,117 +543,54 @@ const viewHelpCenter = () => {
       
       .invoice-info {
         display: flex;
-        gap: var(--space-6);
+        gap: var(--ds-spacing-4);
         align-items: center;
         
         .invoice-date {
-          font-size: var(--font-size-sm);
-          color: var(--color-text-muted);
+          font-size: 0.875rem;
+          color: var(--ds-muted-foreground);
         }
         
         .invoice-amount {
-          font-size: var(--font-size-base);
-          font-weight: var(--font-weight-semibold);
-          color: var(--color-text);
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: var(--ds-foreground);
         }
         
         .invoice-status {
-          padding: var(--space-1) var(--space-3);
-          border-radius: var(--border-radius-sm);
-          font-size: var(--font-size-xs);
-          font-weight: var(--font-weight-medium);
+          padding: var(--ds-spacing-1) var(--ds-spacing-2);
+          border-radius: var(--ds-radius-sm);
+          font-size: 0.75rem;
+          font-weight: 500;
           
           &.status-paid {
-            background: var(--color-success-light);
-            color: var(--color-success);
+            background: hsl(143 85% 96%);
+            color: hsl(140 100% 27%);
           }
         }
       }
       
-      .download-button {
-        height: var(--space-8);
-        padding: 0 var(--space-4);
-        background: transparent;
-        color: var(--color-secondary);
-        border: 1px solid var(--color-secondary);
-        border-radius: var(--border-radius);
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-medium);
-        cursor: pointer;
-        transition: all 0.15s ease-in-out;
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        
-        &:hover {
-          background: var(--color-secondary);
-          color: white;
-        }
-        
-        .download-icon {
-          width: 16px;
-          height: 16px;
-        }
-      }
     }
   }
 }
 
 .support-section {
   text-align: center;
-  
-  .support-title {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--space-4);
-  }
+  margin-bottom: var(--ds-spacing-6);
   
   .support-description {
-    font-size: var(--font-size-base);
-    color: var(--color-text-muted);
-    margin-bottom: var(--space-6);
-    line-height: var(--line-height-normal);
+    font-size: 0.875rem;
+    color: var(--ds-muted-foreground);
+    margin-bottom: var(--ds-spacing-4);
+    line-height: 1.5;
   }
   
   .support-actions {
     display: flex;
-    gap: var(--space-4);
+    gap: var(--ds-spacing-3);
     justify-content: center;
+    flex-wrap: wrap;
     
-    .support-button {
-      height: var(--space-10);
-      padding: 0 var(--space-6);
-      border: none;
-      border-radius: var(--border-radius);
-      font-size: var(--font-size-sm);
-      font-weight: var(--font-weight-semibold);
-      cursor: pointer;
-      transition: all 0.15s ease-in-out;
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      
-      .support-icon {
-        width: 16px;
-        height: 16px;
-      }
-      
-      &:hover {
-        transform: translateY(-1px);
-      }
-      
-      &.secondary {
-        background: transparent;
-        color: var(--color-secondary);
-        border: 1px solid var(--color-secondary);
-        
-        &:hover {
-          background: var(--color-secondary);
-          color: white;
-        }
-      }
-    }
   }
 }
 
@@ -707,57 +598,24 @@ const viewHelpCenter = () => {
   text-align: center;
   
   .confirmation-message {
-    font-size: var(--font-size-base);
-    color: var(--color-text);
-    margin-bottom: var(--space-6);
-    line-height: var(--line-height-normal);
+    font-size: 0.875rem;
+    color: var(--ds-foreground);
+    margin-bottom: var(--ds-spacing-4);
+    line-height: 1.5;
   }
   
   .confirmation-actions {
     display: flex;
-    gap: var(--space-4);
+    gap: var(--ds-spacing-3);
     justify-content: center;
     
-    .confirm-button {
-      height: var(--space-10);
-      padding: 0 var(--space-6);
-      border: none;
-      border-radius: var(--border-radius);
-      font-size: var(--font-size-sm);
-      font-weight: var(--font-weight-semibold);
-      cursor: pointer;
-      transition: all 0.15s ease-in-out;
-      
-      &:hover {
-        transform: translateY(-1px);
-      }
-      
-      &.danger {
-        background: var(--color-error);
-        color: white;
-        
-        &:hover {
-          background: var(--color-error-dark);
-        }
-      }
-      
-      &.secondary {
-        background: transparent;
-        color: var(--color-text-muted);
-        border: 1px solid var(--color-border);
-        
-        &:hover {
-          background: var(--color-text-muted);
-          color: white;
-        }
-      }
-    }
   }
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .subscription-actions {
+  .subscription-actions,
+  .confirmation-actions {
     flex-direction: column;
   }
   
@@ -765,16 +623,16 @@ const viewHelpCenter = () => {
     grid-template-columns: 1fr;
   }
   
-  .support-actions {
+  .invoice-info {
     flex-direction: column;
+    align-items: flex-start !important;
+    gap: var(--ds-spacing-2) !important;
   }
   
-  .confirmation-actions {
+  .invoice-item {
     flex-direction: column;
-  }
-  
-  .page-title {
-    font-size: var(--font-size-3xl);
+    align-items: flex-start !important;
+    gap: var(--ds-spacing-3);
   }
 }
 </style>

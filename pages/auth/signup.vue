@@ -1,12 +1,42 @@
 <template>
   <div class="auth-page">
+    <!-- Logo -->
+    <div class="auth-logo">
+      <NuxtLink to="/">
+        <img src="/logo.svg" alt="epàlwi-rèbbo" class="logo-image" />
+      </NuxtLink>
+    </div>
+    
     <div class="auth-container">
       <!-- Header -->
       <div class="auth-header">
-        <h1 class="auth-title">Crear Cuenta</h1>
+        <h2 class="ds-text-display-md">Crear Cuenta</h2>
         <p class="auth-subtitle">
           Comienza tu prueba gratuita de 14 días
         </p>
+      </div>
+
+            <!-- Benefits List -->
+      <div class="benefits-section">
+        <!-- <h3 class="benefits-title">¿Qué incluye tu cuenta?</h3> -->
+        <ul class="benefits-list">
+          <li class="benefit-item">
+            <Icon name="check" class="benefit-icon" />
+            <span>Acceso completo al diccionario</span>
+          </li>
+          <li class="benefit-item">
+            <Icon name="check" class="benefit-icon" />
+            <span>Búsqueda offline</span>
+          </li>
+          <li class="benefit-item">
+            <Icon name="check" class="benefit-icon" />
+            <span>Sin anuncios</span>
+          </li>
+          <li class="benefit-item">
+            <Icon name="check" class="benefit-icon" />
+            <span>Cancela cuando quieras</span>
+          </li>
+        </ul>
       </div>
 
       <!-- Signup Form -->
@@ -35,14 +65,6 @@
           />
         </div>
 
-        <!-- Terms and Conditions -->
-        <div class="terms-section">
-          <p class="terms-text">
-            Al registrarte aceptas nuestros 
-            <a href="#" class="terms-link">términos y condiciones</a>
-          </p>
-        </div>
-
         <button
           type="submit"
           class="auth-button"
@@ -54,27 +76,12 @@
         </button>
       </form>
 
-      <!-- Benefits List -->
-      <div class="benefits-section">
-        <h3 class="benefits-title">¿Qué incluye tu cuenta?</h3>
-        <ul class="benefits-list">
-          <li class="benefit-item">
-            <Icon name="check" class="benefit-icon" />
-            <span>Acceso completo al diccionario</span>
-          </li>
-          <li class="benefit-item">
-            <Icon name="check" class="benefit-icon" />
-            <span>Búsqueda offline</span>
-          </li>
-          <li class="benefit-item">
-            <Icon name="check" class="benefit-icon" />
-            <span>Sin anuncios</span>
-          </li>
-          <li class="benefit-item">
-            <Icon name="check" class="benefit-icon" />
-            <span>Cancela cuando quieras</span>
-          </li>
-        </ul>
+      <!-- Terms and Conditions -->
+      <div class="terms-section">
+        <p class="terms-text">
+          Al registrarte aceptas nuestros 
+          <NuxtLink to="/terms" class="terms-link">términos y condiciones</NuxtLink>
+        </p>
       </div>
 
       <!-- Login Link -->
@@ -206,58 +213,81 @@ const closeSuccessModal = () => {
 .auth-page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-6);
-  background: var(--color-background);
+  padding: var(--ds-spacing-6);
+  background: var(--ds-background);
+  position: relative;
+}
+
+.auth-logo {
+  position: absolute;
+  top: var(--ds-spacing-3);
+  left: var(--ds-spacing-3);
+  z-index: 10;
+  
+  .logo-image {
+    height: 32px;
+    width: auto;
+  }
 }
 
 .auth-container {
-  background: var(--color-primary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-11);
-  max-width: 480px;
+  background: var(--ds-card);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-lg);
+  padding: var(--ds-spacing-3);
+  max-width: 420px;
   width: 100%;
 }
 
 .auth-header {
   text-align: center;
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--ds-spacing-3);
   
   .auth-title {
-    font-size: var(--font-size-3xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    margin-bottom: var(--space-4);
+    font-size: var(--ds-font-size-xs);
+    font-weight: 700;
+    color: var(--ds-foreground);
+    margin-bottom: var(--ds-spacing-075);
+    letter-spacing: -0.02em;
   }
   
   .auth-subtitle {
-    font-size: var(--font-size-lg);
-    color: var(--color-text-muted);
-    line-height: var(--line-height-normal);
+    font-size: var(--ds-font-size-copy-16);
+    color: var(--ds-muted-foreground);
+    line-height: 1.4;
+    font-weight: 400;
+    max-width: 300px;
+    margin: 0 auto;
   }
 }
 
 .auth-form {
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--ds-spacing-25);
   
   .form-group {
-    margin-bottom: var(--space-6);
+    margin-bottom: var(--ds-spacing-2);
+  }
+  
+  // Override Input component label spacing to 8px
+  :deep(.input-group__label) {
+    margin-bottom: 8px;
   }
 }
 
 .terms-section {
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--ds-spacing-2);
   text-align: center;
   
   .terms-text {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    line-height: var(--line-height-normal);
+    font-size: var(--ds-font-size-copy-14);
+    color: var(--ds-muted-foreground);
+    line-height: 1.5;
     
     .terms-link {
-      color: var(--color-secondary);
+      color: var(--ds-primary);
       text-decoration: none;
       
       &:hover {
@@ -269,23 +299,24 @@ const closeSuccessModal = () => {
 
 .auth-button {
   width: 100%;
-  height: var(--space-11);
-  background: var(--color-secondary);
+  height: 48px;
+  background: var(--ds-primary);
   color: white;
   border: none;
-  border-radius: var(--border-radius);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
+  border-radius: var(--ds-radius);
+  font-size: var(--ds-font-size-copy-16);
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease-in-out;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3);
+  gap: var(--ds-spacing-3);
+  margin-bottom: 12px;
   
   &:hover:not(:disabled) {
-    background: var(--color-secondary-dark);
-    transform: translateY(-1px);
+    background: var(--ds-primary-dark);
+    box-shadow: var(--ds-shadow-md);
   }
   
   &:disabled {
@@ -307,13 +338,14 @@ const closeSuccessModal = () => {
 }
 
 .benefits-section {
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--ds-spacing-2);
+  margin-top: var(--ds-spacing-4);
   
   .benefits-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--space-6);
+    font-size: var(--ds-font-size-xs);
+    font-weight: 600;
+    color: var(--ds-foreground);
+    margin-bottom: var(--ds-spacing-4);
     text-align: center;
   }
   
@@ -325,8 +357,8 @@ const closeSuccessModal = () => {
     .benefit-item {
       display: flex;
       align-items: center;
-      gap: var(--space-4);
-      margin-bottom: var(--space-4);
+      gap: var(--ds-spacing-1);
+      margin-bottom: var(--ds-spacing-1);
       
       &:last-child {
         margin-bottom: 0;
@@ -340,8 +372,8 @@ const closeSuccessModal = () => {
       }
       
       span {
-        font-size: var(--font-size-base);
-        color: var(--color-text);
+        font-size: var(--ds-font-size-copy-16);
+        color: var(--ds-foreground);
       }
     }
   }
@@ -351,13 +383,13 @@ const closeSuccessModal = () => {
   text-align: center;
   
   .terms-text {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    margin-bottom: var(--space-4);
-    line-height: var(--line-height-normal);
+    font-size: var(--ds-font-size-copy-14);
+    color: var(--ds-muted-foreground);
+    margin-bottom: var(--ds-spacing-4);
+    line-height: 1.5;
     
     .terms-link {
-      color: var(--color-secondary);
+      color: var(--ds-primary);
       text-decoration: none;
       
       &:hover {
@@ -367,13 +399,13 @@ const closeSuccessModal = () => {
   }
   
   .login-link {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
+    font-size: var(--ds-font-size-copy-14);
+    color: var(--ds-muted-foreground);
     
     .login-link-text {
-      color: var(--color-secondary);
+      color: var(--ds-primary);
       text-decoration: none;
-      font-weight: var(--font-weight-medium);
+      font-weight: 500;
       
       &:hover {
         text-decoration: underline;
@@ -386,34 +418,33 @@ const closeSuccessModal = () => {
   text-align: center;
   
   .success-message {
-    font-size: var(--font-size-base);
-    color: var(--color-text);
-    margin-bottom: var(--space-4);
-    line-height: var(--line-height-normal);
+    font-size: var(--ds-font-size-copy-16);
+    color: var(--ds-foreground);
+    margin-bottom: var(--ds-spacing-4);
+    line-height: 1.5;
   }
   
   .success-instructions {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    margin-bottom: var(--space-6);
-    line-height: var(--line-height-normal);
+    font-size: var(--ds-font-size-copy-14);
+    color: var(--ds-muted-foreground);
+    margin-bottom: var(--ds-spacing-6);
+    line-height: 1.5;
   }
   
   .success-button {
-    height: var(--space-11);
-    padding: 0 var(--space-8);
-    background: var(--color-secondary);
+    height: var(--ds-spacing-11);
+    padding: 0 var(--ds-spacing-8);
+    background: var(--ds-primary);
     color: white;
     border: none;
-    border-radius: var(--border-radius);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
+    border-radius: var(--ds-radius);
+    font-size: var(--ds-font-size-copy-16);
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease-in-out;
     
     &:hover {
-      background: var(--color-secondary-dark);
-      transform: translateY(-1px);
+      background: var(--ds-primary-dark);
     }
   }
 }
@@ -424,13 +455,66 @@ const closeSuccessModal = () => {
 
 /* Responsive adjustments */
 @media (max-width: 640px) {
-  .auth-container {
-    padding: var(--space-8);
-    margin: var(--space-4);
+  .auth-page {
+    padding: var(--ds-spacing-2);
+    min-height: 100vh;
   }
   
-  .auth-title {
-    font-size: var(--font-size-2xl);
+  .auth-container {
+    padding: var(--ds-spacing-2);
+    margin: var(--ds-spacing-1);
+    max-width: 100%;
+    min-height: auto;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .auth-header {
+    margin-bottom: var(--ds-spacing-4);
+    
+    .auth-title {
+      font-size: var(--ds-font-size-xxs);
+      margin-bottom: var(--ds-spacing-1);
+    }
+    
+    .auth-subtitle {
+      font-size: var(--ds-font-size-copy-16);
+      max-width: 100%;
+    }
+  }
+  
+  .benefits-section {
+    margin-bottom: var(--ds-spacing-4);
+    margin-top: var(--ds-spacing-2);
+    
+    .benefit-item {
+      margin-bottom: var(--ds-spacing-2);
+      
+      span {
+        font-size: var(--ds-font-size-copy-16);
+      }
+    }
+  }
+  
+  .auth-form {
+    margin-bottom: var(--ds-spacing-3);
+    
+    .form-group {
+      margin-bottom: var(--ds-spacing-3);
+    }
+  }
+  
+  .auth-button {
+    height: 52px;
+    font-size: var(--ds-font-size-copy-18);
+    margin-bottom: var(--ds-spacing-3);
+  }
+  
+  .terms-section {
+    margin-bottom: var(--ds-spacing-4);
   }
 }
 </style>

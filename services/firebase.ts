@@ -50,6 +50,9 @@ export function initFirebase(): {
     apiKey: config.public.firebaseApiKey,
     authDomain: config.public.firebaseAuthDomain,
     projectId: config.public.firebaseProjectId,
+    storageBucket: `${config.public.firebaseProjectId}.appspot.com`,
+    messagingSenderId: '331415551469',
+    appId: '1:331415551469:web:ef32ebc21d6c8d196cbbe4'
   }
 
   try {
@@ -61,17 +64,22 @@ export function initFirebase(): {
     db = getFirestore(app)
     functions = getFunctions(app)
 
-    // Connect to emulators in development
-    if (process.dev && process.client) {
-      // Only connect to emulators if not already connected
-      try {
-        connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true })
-        connectFirestoreEmulator(db, 'localhost', 8080)
-        connectFunctionsEmulator(functions, 'localhost', 5001)
-        console.log('🔥 Connected to Firebase emulators')
-      } catch (error) {
-        // Emulators might already be connected
-        console.log('⚠️ Firebase emulators connection skipped (already connected)')
+    // Connect to emulators in development (opt-in via runtime config)
+    if (import.meta.dev && import.meta.client) {
+      const useEmulators = Boolean(config.public.useFirebaseEmulators)
+      if (useEmulators) {
+        // Only connect to emulators if not already connected
+        try {
+          connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true })
+          connectFirestoreEmulator(db, 'localhost', 8080)
+          connectFunctionsEmulator(functions, 'localhost', 5001)
+          console.log('🔥 Connected to Firebase emulators')
+        } catch (error) {
+          // Emulators might already be connected
+          console.log('⚠️ Firebase emulators connection skipped (already connected)')
+        }
+      } else {
+        console.log('ℹ️ Firebase emulators disabled (NUXT_PUBLIC_USE_FIREBASE_EMULATORS=false)')
       }
     }
 

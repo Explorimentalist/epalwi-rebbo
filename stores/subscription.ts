@@ -4,7 +4,9 @@
  */
 
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { doc, getDoc } from 'firebase/firestore'
+import { getFirebaseDb } from '~/services/firebase'
 import type { 
   SubscriptionPlan, 
   UserSubscription, 
@@ -106,7 +108,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     clearError()
   }
 
-  const updateUserSubscription = (subscription: UserSubscription) => {
+  const updateUserSubscription = (subscription: UserSubscription | null) => {
     userSubscription.value = subscription
   }
 
@@ -117,11 +119,52 @@ export const useSubscriptionStore = defineStore('subscription', () => {
       setLoading(true)
       clearError()
       
-      // This would typically fetch from your backend
-      // For now, we'll simulate loading
-      console.log('Loading subscription for user:', userId)
+      // Check network connectivity first
+      if (!navigator.onLine) {
+        console.log('📴 Device is offline, skipping subscription load')
+        setLoading(false)
+        return
+      }
+      
+      const db = getFirebaseDb()
+      const userRef = doc(db, 'users', userId)
+      const snap = await getDoc(userRef)
+
+      if (snap.exists()) {
+        const data: any = snap.data()
+        const sub = data?.subscription
+
+        const toDate = (v: any): Date | undefined => {
+          if (!v) return undefined
+          if (typeof v?.toDate === 'function') return v.toDate()
+          if (typeof v === 'string' || typeof v === 'number') return new Date(v)
+          return v as Date
+        }
+
+        if (sub) {
+          updateUserSubscription({
+            status: sub.status,
+            stripeSubscriptionId: sub.stripeSubscriptionId,
+            stripeCustomerId: sub.stripeCustomerId,
+            planType: sub.planType,
+            currentPeriodStart: toDate(sub.currentPeriodStart),
+            currentPeriodEnd: toDate(sub.currentPeriodEnd),
+            cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
+            trialStart: toDate(sub.trialStart),
+            trialEnd: toDate(sub.trialEnd)
+          } as UserSubscription)
+        }
+      }
       
     } catch (err: any) {
+      // Handle Firebase offline errors gracefully
+      if (err.code === 'failed-precondition' || err.message?.includes('client is offline')) {
+        console.log('📴 Firebase is offline, subscription data unavailable')
+        // Don't show error to user for offline state
+        setLoading(false)
+        return
+      }
+      
       const errorMessage = err.message || 'Failed to load subscription'
       setError(errorMessage)
       console.error('Error loading subscription:', err)
@@ -247,6 +290,51 @@ export const useSubscriptionStore = defineStore('subscription', () => {
         annualPlan.priceId = annualPriceId
       }
     }
+  }
+
+  // Keep subscription state in sync with auth user changes
+  const startAuthSubscriptionSync = async () => {
+    if (import.meta.server) return
+    try {
+      const { useAuthStore } = await import('~/stores/auth')
+      const authStore = useAuthStore()
+      watch(
+        () => authStore.user,
+        async (newUser) => {
+          if (newUser?.uid) {
+            await loadUserSubscription(newUser.uid)
+          } else {
+            updateUserSubscription(null)
+          }
+        },
+        { immediate: false }
+      )
+    } catch (e) {
+      // optional sync
+    }
+  }
+
+  // Start sync on client
+  startAuthSubscriptionSync()
+
+  // Post-subscription redirect: when status flips to active, return user to attempted route
+  if (import.meta.client) {
+    watch(
+      () => userSubscription.value?.status,
+      (newStatus, oldStatus) => {
+        if (newStatus === 'active' && oldStatus !== 'active') {
+          try {
+            const path = sessionStorage.getItem('attempted-route')
+            if (path) {
+              sessionStorage.removeItem('attempted-route')
+              navigateTo(path)
+            }
+          } catch {
+            // ignore
+          }
+        }
+      }
+    )
   }
 
   return {

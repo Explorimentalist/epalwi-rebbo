@@ -39,6 +39,19 @@ export interface SubscriptionInfo {
 }
 
 /**
+ * User preferences
+ */
+export interface UserPreferences {
+  defaultLanguage: 'español' | 'ndowe'
+  // Theme intentionally out of scope; keep optional for backward compatibility
+  darkMode?: boolean
+  notifications?: {
+    productUpdates?: boolean
+    languageTips?: boolean
+  }
+}
+
+/**
  * Extended user profile
  */
 export interface UserProfile {
@@ -51,6 +64,8 @@ export interface UserProfile {
   lastLoginAt: Date
   subscription: SubscriptionInfo
   trial: TrialInfo
+  preferences?: UserPreferences
+  preferencesUpdatedAt?: Date
   emailVerified: boolean
   isActive: boolean
 }

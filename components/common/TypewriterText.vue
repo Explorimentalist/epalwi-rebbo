@@ -42,7 +42,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  words: () => ['Casa', 'Bonita', 'Luz', 'Alegria', 'Futuro', 'Brillante', 'Pueblo'],
+  words: () => ['Casa', 'Bonita', 'Luz', 'Alegría', 'Futuro', 'Brillante', 'Pueblo'],
   typingMsPerChar: 90,
   eraseMsPerChar: 60,
   holdMs: 1000,

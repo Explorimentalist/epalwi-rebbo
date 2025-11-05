@@ -40,6 +40,8 @@ export class IndexedDBService {
   private dictionaryStore: LocalForage
   private metadataStore: LocalForage
   private indexStore: LocalForage
+  private preferencesStore: LocalForage
+  private searchHistoryStore: LocalForage
   private initialized: boolean = false
 
   constructor() {
@@ -57,6 +59,16 @@ export class IndexedDBService {
     this.indexStore = localforage.createInstance({
       ...DB_CONFIG,
       storeName: 'search-index'
+    })
+
+    this.preferencesStore = localforage.createInstance({
+      ...DB_CONFIG,
+      storeName: 'user-preferences'
+    })
+
+    this.searchHistoryStore = localforage.createInstance({
+      ...DB_CONFIG,
+      storeName: 'search-history'
     })
   }
 
@@ -240,6 +252,52 @@ export class IndexedDBService {
       console.error('❌ Failed to store search index:', error)
       throw this.createError('index-error', 'Failed to cache search index', error)
     }
+  }
+
+  /**
+   * Preferences: get/set per user
+   */
+  async getUserPreferences(uid: string): Promise<{ data: any, updatedAt: number } | null> {
+    this.ensureInitialized()
+    try {
+      const raw = await this.preferencesStore.getItem<any>(uid)
+      if (!raw) return null
+      if (raw && typeof raw === 'object' && 'data' in raw && 'updatedAt' in raw) {
+        return raw as { data: any, updatedAt: number }
+      }
+      // Backward compatibility: stored plain prefs
+      return { data: raw, updatedAt: 0 }
+    } catch (e) {
+      return null
+    }
+  }
+
+  async setUserPreferences(uid: string, prefs: any, updatedAt?: number): Promise<void> {
+    this.ensureInitialized()
+    try {
+      await this.preferencesStore.setItem(uid, { data: prefs, updatedAt: updatedAt ?? Date.now() })
+    } catch (e) {
+      // no-op
+    }
+  }
+
+  /**
+   * Search history: get/set per user (or 'guest')
+   */
+  async getUserSearchHistory(uid: string): Promise<any[] | null> {
+    this.ensureInitialized()
+    try {
+      return (await this.searchHistoryStore.getItem(uid)) || []
+    } catch {
+      return []
+    }
+  }
+
+  async setUserSearchHistory(uid: string, items: any[]): Promise<void> {
+    this.ensureInitialized()
+    try {
+      await this.searchHistoryStore.setItem(uid, items)
+    } catch {}
   }
 
   /**

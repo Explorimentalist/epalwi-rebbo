@@ -8,7 +8,7 @@
 
       <!-- Success Header -->
       <div class="success-header">
-        <h1 class="success-title">¡Pago Exitoso!</h1>
+        <h1 class="ds-text-display-lg">¡Pago Exitoso!</h1>
         <p class="success-subtitle">
           Tu suscripción ha sido activada correctamente
         </p>
@@ -16,7 +16,7 @@
 
       <!-- Subscription Details -->
       <div class="subscription-details">
-        <h3 class="details-title">Detalles de tu Suscripción</h3>
+        <h2 class="ds-text-display-sm">Detalles de tu Suscripción</h2>
         <div class="details-grid">
           <div class="detail-item">
             <span class="detail-label">Plan:</span>
@@ -39,12 +39,12 @@
 
       <!-- Next Steps -->
       <div class="next-steps">
-        <h3 class="steps-title">Próximos Pasos</h3>
+        <h2 class="ds-text-display-sm">Próximos Pasos</h2>
         <div class="steps-list">
           <div class="step-item">
             <div class="step-number">1</div>
             <div class="step-content">
-              <h4 class="step-title">Accede al Diccionario</h4>
+              <h3 class="ds-card-title">Accede al Diccionario</h3>
               <p class="step-description">
                 Comienza a usar todas las funciones del diccionario
               </p>
@@ -53,7 +53,7 @@
           <div class="step-item">
             <div class="step-number">2</div>
             <div class="step-content">
-              <h4 class="step-title">Descarga para Offline</h4>
+              <h3 class="ds-card-title">Descarga para Offline</h3>
               <p class="step-description">
                 Sincroniza el diccionario para uso sin internet
               </p>
@@ -62,7 +62,7 @@
           <div class="step-item">
             <div class="step-number">3</div>
             <div class="step-content">
-              <h4 class="step-title">Gestiona tu Cuenta</h4>
+              <h3 class="ds-card-title">Gestiona tu Cuenta</h3>
               <p class="step-description">
                 Accede a la configuración de tu suscripción
               </p>
@@ -101,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 
 // Page metadata
 useHead({
@@ -118,14 +118,58 @@ useHead({
 const route = useRoute()
 const sessionId = route.query.session_id as string
 
-// Subscription details (mock data - replace with real data from Stripe)
-const subscriptionDetails = ref({
-  plan: 'Plan Anual',
-  nextBilling: '15 de Enero, 2025',
-  paymentMethod: 'Tarjeta terminada en 4242'
+// Stores
+const authStore = useAuthStore()
+const subscriptionStore = useSubscriptionStore()
+
+// Computed subscription details from store
+const subscriptionDetails = computed(() => {
+  const sub = subscriptionStore.userSubscription
+  const user = authStore.user
+
+  if (!sub || !user) {
+    return {
+      plan: 'Cargando...',
+      nextBilling: 'Cargando...',
+      paymentMethod: 'Cargando...'
+    }
+  }
+
+  const plan = sub.planType === 'monthly' ? 'Plan Mensual' : 'Plan Anual'
+  const nextBilling = sub.currentPeriodEnd
+    ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-ES', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      })
+    : 'No disponible'
+
+  return {
+    plan,
+    nextBilling,
+    paymentMethod: 'Método de pago registrado'
+  }
 })
 
-// On mount
+// On mount: refresh user to get latest subscription state
+onMounted(async () => {
+  if (sessionId) {
+    try {
+      const sessionData = await $fetch('/api/stripe/get-session', {
+        method: 'POST',
+        body: { sessionId }
+      })
+      console.log('Payment session:', sessionData)
+    } catch (error) {
+      console.error('Error fetching session:', error)
+    }
+  }
+
+  if (authStore.firebaseUser) {
+    await authStore.refreshUser()
+    if (authStore.user?.uid) {
+      await subscriptionStore.loadUserSubscription(authStore.user.uid)
+    }
+  }
+})
 onMounted(() => {
   if (sessionId) {
     // You can fetch subscription details from Stripe here

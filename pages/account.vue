@@ -3,10 +3,41 @@
     <div class="page-container">
       <!-- Header -->
       <div class="page-header">
-        <h1 class="page-title">Mi Cuenta</h1>
+        <h1 class="ds-text-display-lg">Mi Cuenta</h1>
         <p class="page-subtitle">
           Gestiona tu perfil y configuración
         </p>
+      </div>
+
+      <!-- Preferencias (V2) -->
+      <div class="preferences-section">
+        <h2 class="ds-text-display-sm">Preferencias</h2>
+        <p class="pref-subtitle">Idioma por defecto del diccionario y notificaciones por email.</p>
+
+        <div class="pref-group">
+          <label class="pref-label">Idioma por defecto del diccionario</label>
+          <select class="pref-select" v-model="defaultLanguage" :disabled="prefSaving">
+            <option value="español">Español</option>
+            <option value="ndowe">Ndowe</option>
+          </select>
+          <p class="pref-help">Se usará al abrir el diccionario por primera vez.</p>
+        </div>
+
+        <div class="pref-group">
+          <label class="pref-label">Notificaciones por email</label>
+          <div class="pref-switches">
+            <label class="pref-switch">
+              <input type="checkbox" class="notif-product" v-model="notificationsProduct" :disabled="prefSaving" />
+              <span>Novedades del producto</span>
+            </label>
+            <label class="pref-switch">
+              <input type="checkbox" class="notif-tips" v-model="notificationsTips" :disabled="prefSaving" />
+              <span>Consejos del idioma</span>
+            </label>
+          </div>
+          <p class="pref-help">Recibirás únicamente correos seleccionados si activas estas opciones.</p>
+          <p v-if="prefsError && (prefsError as any).value" class="pref-error">No se pudo guardar: {{ (prefsError as any).value }}</p>
+        </div>
       </div>
 
       <!-- Profile Section -->
@@ -16,7 +47,7 @@
             <Icon name="user" class="avatar-icon" />
           </div>
           <div class="profile-info">
-            <h3 class="profile-name">{{ userProfile.name || userProfile.email }}</h3>
+            <h2 class="ds-text-display-xs">{{ userProfile.name || userProfile.email }}</h2>
             <p class="profile-email">{{ userProfile.email }}</p>
             <div class="profile-status">
               <span class="status-badge" :class="subscriptionStatusClass">
@@ -40,10 +71,16 @@
       <!-- Subscription Status -->
       <div class="subscription-status-card">
         <div class="status-header">
-          <h3 class="status-title">Estado de Suscripción</h3>
-          <NuxtLink to="/subscription/manage" class="manage-link">
-            Gestionar
-          </NuxtLink>
+          <h2 class="ds-text-display-sm">Estado de Suscripción</h2>
+          <div class="status-actions-inline">
+            <NuxtLink to="/subscription/manage" class="manage-link">
+              Gestionar
+            </NuxtLink>
+            <button class="portal-button" @click="goToCustomerPortal">
+              <Icon name="document-text" class="ds-btn-icon-element" />
+              Portal de Suscripción
+            </button>
+          </div>
         </div>
         
         <div class="status-content">
@@ -56,6 +93,10 @@
             <span class="status-value" :class="subscriptionStatusClass">
               {{ subscriptionStatusText }}
             </span>
+          </div>
+          <div v-if="trialInfoText" class="status-item">
+            <span class="status-label">Prueba:</span>
+            <span class="status-value">{{ trialInfoText }}</span>
           </div>
           <div class="status-item">
             <span class="status-label">Próximo cobro:</span>
@@ -73,14 +114,14 @@
 
       <!-- Account Settings -->
       <div class="settings-section">
-        <h3 class="settings-title">Configuración de Cuenta</h3>
+        <h2 class="ds-text-display-sm">Configuración de Cuenta</h2>
         
         <div class="settings-list">
           <div class="setting-item">
             <div class="setting-info">
               <Icon name="bell" class="setting-icon" />
               <div class="setting-content">
-                <h4 class="setting-name">Notificaciones</h4>
+                <h3 class="ds-text-display-xs">Notificaciones</h3>
                 <p class="setting-description">
                   Gestiona tus preferencias de notificaciones
                 </p>
@@ -99,7 +140,7 @@
             <div class="setting-info">
               <Icon name="globe" class="setting-icon" />
               <div class="setting-content">
-                <h4 class="setting-name">Idioma</h4>
+                <h3 class="ds-text-display-xs">Idioma</h3>
                 <p class="setting-description">
                   Cambia el idioma de la interfaz
                 </p>
@@ -118,7 +159,7 @@
             <div class="setting-info">
               <Icon name="moon" class="setting-icon" />
               <div class="setting-content">
-                <h4 class="setting-name">Tema Oscuro</h4>
+                <h3 class="ds-text-display-xs">Tema Oscuro</h3>
                 <p class="setting-description">
                   Cambia entre tema claro y oscuro
                 </p>
@@ -137,7 +178,7 @@
             <div class="setting-info">
               <Icon name="wifi" class="setting-icon" />
               <div class="setting-content">
-                <h4 class="setting-name">Sincronización Offline</h4>
+                <h3 class="ds-text-display-xs">Sincronización Offline</h3>
                 <p class="setting-description">
                   Gestiona la sincronización de datos offline
                 </p>
@@ -150,6 +191,7 @@
             >
               <Icon v-if="isSyncing" name="loader" class="sync-icon" />
               <span v-else>Sincronizar</span>
+              <span v-if="(pendingCount as any)?.value > 0" class="pending-badge">{{ (pendingCount as any).value }}</span>
             </button>
           </div>
         </div>
@@ -157,7 +199,7 @@
 
       <!-- Data & Privacy -->
       <div class="privacy-section">
-        <h3 class="privacy-title">Datos y Privacidad</h3>
+        <h2 class="ds-text-display-sm">Datos y Privacidad</h2>
         
         <div class="privacy-actions">
           <button
@@ -180,7 +222,7 @@
 
       <!-- Support & Help -->
       <div class="support-section">
-        <h3 class="support-title">Soporte y Ayuda</h3>
+        <h2 class="ds-text-display-sm">Soporte y Ayuda</h2>
         
         <div class="support-actions">
           <button
@@ -219,9 +261,9 @@
           Cerrar Sesión
         </button>
       </div>
-    </div>
+  </div>
 
-    <!-- Edit Profile Modal -->
+  <!-- Edit Profile Modal -->
     <Modal
       v-model="showEditModal"
       title="Editar Perfil"
@@ -268,11 +310,17 @@
         </div>
       </div>
     </Modal>
+    
+    <!-- Sync Toast -->
+    <div v-if="showSyncToast" class="sync-toast">{{ syncToast }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { usePreferences } from '~/composables/usePreferences'
+import { useSearchHistory } from '~/services/searchHistory'
+definePageMeta({ authRequired: true })
 
 // Page metadata
 useHead({
@@ -285,13 +333,64 @@ useHead({
   ]
 })
 
-// Auth store
+onMounted(() => {
+  // Load preferences for preview
+  try { loadPreferences() } catch {}
+})
+
+// Auth & subscription
 const authStore = useAuthStore()
+const subscriptionStore = useSubscriptionStore()
+const { isInGracePeriod, graceDaysRemaining, redirectToSubscription } = useAuth()
 
 // State
 const showEditModal = ref(false)
 const isSaving = ref(false)
 const isSyncing = ref(false)
+
+// Preferences preview and updates
+const { prefs, loadPreferences, updatePreferences, error: prefsError, pendingCount } = usePreferences()
+const prefSaving = ref(false)
+const syncToast = ref('')
+const showSyncToast = ref(false)
+const prefPreview = computed(() => ({
+  defaultLanguage: (prefs as any).value?.defaultLanguage || 'español',
+  notifications: {
+    productUpdates: Boolean((prefs as any).value?.notifications?.productUpdates),
+    languageTips: Boolean((prefs as any).value?.notifications?.languageTips)
+  }
+}))
+
+// Two-way binding for default language
+const defaultLanguage = computed({
+  get: () => (prefs as any).value?.defaultLanguage || 'español',
+  set: (val: any) => {
+    prefSaving.value = true
+    Promise.resolve(updatePreferences({ defaultLanguage: val }))
+      .finally(() => { prefSaving.value = false })
+  }
+})
+
+// Two-way bindings for notifications
+const notificationsProduct = computed({
+  get: () => Boolean((prefs as any).value?.notifications?.productUpdates),
+  set: (val: boolean) => {
+    const current = ((prefs as any).value?.notifications) || {}
+    prefSaving.value = true
+    Promise.resolve(updatePreferences({ notifications: { ...current, productUpdates: val } }))
+      .finally(() => { prefSaving.value = false })
+  }
+})
+
+const notificationsTips = computed({
+  get: () => Boolean((prefs as any).value?.notifications?.languageTips),
+  set: (val: boolean) => {
+    const current = ((prefs as any).value?.notifications) || {}
+    prefSaving.value = true
+    Promise.resolve(updatePreferences({ notifications: { ...current, languageTips: val } }))
+      .finally(() => { prefSaving.value = false })
+  }
+})
 
 // Mock data - replace with real data from your backend
 const userProfile = ref({
@@ -299,9 +398,12 @@ const userProfile = ref({
   email: 'usuario@ejemplo.com'
 })
 
-const subscriptionInfo = ref({
-  plan: 'Plan Anual',
-  nextBilling: '15 de Enero, 2025'
+const subscriptionInfo = computed(() => {
+  const sub: any = (subscriptionStore as any).userSubscription?.value
+  const plan = sub?.planId ? (sub.planId.includes('annual') ? 'Plan Anual' : 'Plan Mensual') : 'Sin plan'
+  const next = (subscriptionStore as any).nextBillingDate?.value as Date | null
+  const nextBilling = next ? next.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'
+  return { plan, nextBilling }
 })
 
 const settings = ref({
@@ -318,15 +420,29 @@ const editForm = ref({
 
 // Computed properties
 const subscriptionStatusText = computed(() => {
-  if (authStore.isTrialActive) return 'En Prueba'
-  if (authStore.isSubscriptionActive) return 'Activo'
-  return 'Inactivo'
+  if ((authStore as any).isSubscriptionActive?.value) return 'Activo'
+  if ((authStore as any).isTrialActive?.value) return 'En Prueba'
+  if (isInGracePeriod.value) return 'Periodo de Gracia'
+  return 'Expirado'
 })
 
 const subscriptionStatusClass = computed(() => {
-  if (authStore.isTrialActive) return 'status-trial'
-  if (authStore.isSubscriptionActive) return 'status-active'
+  if ((authStore as any).isSubscriptionActive?.value) return 'status-active'
+  if ((authStore as any).isTrialActive?.value) return 'status-trial'
+  if (isInGracePeriod.value) return 'status-warning'
   return 'status-inactive'
+})
+
+const trialInfoText = computed(() => {
+  if ((authStore as any).isTrialActive?.value) {
+    const days = (authStore as any).trialDaysRemaining?.value || 0
+    return days === 1 ? '1 día de prueba restante' : `${days} días de prueba restantes`
+  }
+  if (isInGracePeriod.value) {
+    const days = graceDaysRemaining.value
+    return days === 1 ? 'Periodo de gracia: 1 día restante' : `Periodo de gracia: ${days} días restantes`
+  }
+  return ''
 })
 
 // Methods
@@ -367,14 +483,27 @@ const toggleDarkMode = () => {
 const syncOfflineData = async () => {
   try {
     isSyncing.value = true
-    
-    // Mock sync - replace with real implementation
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
+    // Flush any pending preference writes
+    try {
+      const { flushPending } = usePreferences()
+      await flushPending()
+    } catch {}
+
+    // Trigger a history merge/load
+    try {
+      const { load } = useSearchHistory()
+      await load()
+    } catch {}
+
     console.log('Offline data synced successfully')
-    
+    syncToast.value = 'Sincronizado'
+    showSyncToast.value = true
+    setTimeout(() => { showSyncToast.value = false }, 1200)
   } catch (error) {
     console.error('Error syncing offline data:', error)
+    syncToast.value = 'Error al sincronizar'
+    showSyncToast.value = true
+    setTimeout(() => { showSyncToast.value = false }, 1500)
   } finally {
     isSyncing.value = false
   }
@@ -383,6 +512,16 @@ const syncOfflineData = async () => {
 const exportData = () => {
   // Implement data export
   console.log('Exporting data...')
+}
+
+const goToCustomerPortal = async () => {
+  const url = await subscriptionStore.getCustomerPortalUrl()
+  if (url) {
+    window.location.href = url
+  } else {
+    // Fallback to plans page
+    redirectToSubscription('account-portal')
+  }
 }
 
 const deleteAccount = () => {
@@ -397,7 +536,7 @@ const contactSupport = () => {
 }
 
 const viewHelpCenter = () => {
-  window.open('/help', '_blank')
+  window.open('/sugerencias', '_blank')
 }
 
 const viewPrivacyPolicy = () => {
@@ -555,6 +694,7 @@ const logout = async () => {
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--space-6);
+    gap: var(--space-4);
     
     .status-title {
       font-size: var(--font-size-lg);
@@ -571,6 +711,28 @@ const logout = async () => {
       &:hover {
         text-decoration: underline;
       }
+    }
+    
+    .status-actions-inline {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .portal-button {
+      height: var(--space-10);
+      padding: 0 var(--space-4);
+      background: transparent;
+      color: var(--color-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      &:hover { background: var(--color-surface); }
     }
   }
   
@@ -641,6 +803,44 @@ const logout = async () => {
       }
     }
   }
+}
+
+.preferences-section {
+  background: var(--color-primary);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
+
+  .pref-subtitle { color: var(--color-text-muted); margin: var(--space-2) 0 var(--space-4); }
+  .pref-group { margin-bottom: var(--space-5); }
+  .pref-label { display: block; font-weight: var(--font-weight-medium); margin-bottom: var(--space-2); }
+  .pref-select { height: var(--space-10); padding: 0 var(--space-4); border: 1px solid var(--color-border); border-radius: var(--border-radius); background: var(--color-surface); }
+  .pref-switches { display: grid; gap: var(--space-3); }
+  .pref-switch { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-sm); }
+  .pref-error { color: var(--color-error); font-size: var(--font-size-sm); margin-top: var(--space-2); }
+}
+
+/* Sync toast */
+.sync-toast {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: var(--color-secondary);
+  color: white;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--font-size-sm);
+}
+
+.pending-badge {
+  margin-left: 8px;
+  background: var(--color-warning);
+  color: white;
+  border-radius: 9999px;
+  padding: 2px 6px;
+  font-size: 12px;
 }
 
 .settings-section {

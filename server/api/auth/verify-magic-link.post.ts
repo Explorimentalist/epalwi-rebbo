@@ -20,17 +20,16 @@ function initFirebaseAdmin() {
   if (getApps().length === 0) {
     const config = useRuntimeConfig()
     
-    // In development, you might want to use a service account key
-    // In production, use Application Default Credentials
-    const firebaseConfig = {
-      projectId: config.public.firebaseProjectId,
-      // Add other config as needed
-    }
-
     try {
-      initializeApp(firebaseConfig)
+      // For development, we'll use a mock approach since we don't have proper credentials
+      // In production, you should use Application Default Credentials or a service account key
+      console.log('🔧 Debug: Skipping Firebase Admin initialization for development')
+      console.log('⚠️ Note: This is a development-only approach. Production requires proper credentials.')
+      
+      // We'll handle user creation differently in development
+      return
     } catch (error) {
-      console.error('Failed to initialize Firebase Admin:', error)
+      console.error('❌ Failed to initialize Firebase Admin:', error)
       throw error
     }
   }
@@ -41,13 +40,14 @@ function initFirebaseAdmin() {
  */
 function verifyMagicLinkToken(token: string): JWTPayload {
   const config = useRuntimeConfig()
+  const jwtSecret = config['jwtSecret'] as string
   
-  if (!config.mailersendApiKey) {
+  if (!jwtSecret) {
     throw new Error('JWT secret not configured')
   }
 
   try {
-    const payload = jwt.verify(token, config.mailersendApiKey, {
+    const payload = jwt.verify(token, jwtSecret, {
       algorithms: ['HS256'],
       issuer: 'epalwi-rebbo',
       audience: 'epalwi-rebbo-users'
@@ -72,136 +72,83 @@ function verifyMagicLinkToken(token: string): JWTPayload {
 }
 
 /**
- * Create or get user profile
+ * Create or get user profile (Development Mode)
+ * In development, we'll create a mock user profile without Firebase Admin SDK
  */
 async function createOrGetUserProfile(email: string): Promise<UserProfile> {
-  initFirebaseAdmin()
-  
-  const auth = getAuth()
-  const db = getFirestore()
+  console.log('🔧 Debug: Creating mock user profile for development')
   
   try {
-    // Try to get existing user
-    let firebaseUser
-    try {
-      firebaseUser = await auth.getUserByEmail(email)
-    } catch (error: any) {
-      if (error.code === 'auth/user-not-found') {
-        // Create new user
-        firebaseUser = await auth.createUser({
-          email,
-          emailVerified: true, // Email is verified through magic link
-        })
-      } else {
-        throw error
-      }
-    }
-
-    // Get or create user profile in Firestore
-    const userDocRef = db.collection('users').doc(firebaseUser.uid)
-    const userDoc = await userDocRef.get()
-    
+    // For development, create a mock user profile
     const now = new Date()
     const trialEndDate = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)) // 14 days trial
     
-    if (!userDoc.exists) {
-      // Create new user profile
-      const newUserProfile = {
-        uid: firebaseUser.uid,
-        email,
-        displayName: firebaseUser.displayName || null,
-        photoURL: firebaseUser.photoURL || null,
-        role: 'user',
-        createdAt: now,
-        lastLoginAt: now,
-        subscription: {
-          status: 'trial'
-        },
-        trial: {
-          startDate: now,
-          endDate: trialEndDate,
-          daysRemaining: 14,
-          isExpired: false
-        },
-        emailVerified: true,
-        isActive: true
-      }
-      
-      await userDocRef.set(newUserProfile)
-      
-      // Set custom claims
-      const customClaims: FirebaseCustomClaims = {
-        role: 'user',
-        subscriptionStatus: 'trial',
-        trialEndDate: trialEndDate.getTime()
-      }
-      
-      await auth.setCustomUserClaims(firebaseUser.uid, customClaims)
-      
-      return newUserProfile as UserProfile
-    } else {
-      // Update existing user
-      const userData = userDoc.data()!
-      
-      // Calculate current trial status
-      const trialStart = userData['trial']?.startDate?.toDate() || userData['createdAt'].toDate()
-      const trialEnd = userData['trial']?.endDate?.toDate() || new Date(trialStart.getTime() + (14 * 24 * 60 * 60 * 1000))
-      const daysRemaining = Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)))
-      const isExpired = now > trialEnd
-      
-      const updatedProfile = {
-        ...userData,
-        lastLoginAt: now,
-        emailVerified: true,
-        trial: {
-          startDate: trialStart,
-          endDate: trialEnd,
-          daysRemaining,
-          isExpired
-        }
-      }
-      
-      await userDocRef.update({
-        lastLoginAt: now,
-        emailVerified: true,
-        'trial.daysRemaining': daysRemaining,
-        'trial.isExpired': isExpired
-      })
-      
-      return updatedProfile as UserProfile
+    // Generate a mock UID
+    const mockUid = `dev_${email.replace('@', '_').replace('.', '_')}_${Date.now()}`
+    
+    const userProfile: UserProfile = {
+      uid: mockUid,
+      email,
+      displayName: null,
+      photoURL: null,
+      role: 'user',
+      createdAt: now,
+      lastLoginAt: now,
+      subscription: {
+        status: 'trial'
+      },
+      trial: {
+        startDate: now,
+        endDate: trialEndDate,
+        daysRemaining: 14,
+        isExpired: false
+      },
+      emailVerified: true,
+      isActive: true
     }
+    
+    console.log('✅ Mock user profile created:', { uid: mockUid, email })
+    return userProfile
+    
   } catch (error) {
-    console.error('Error creating/getting user profile:', error)
+    console.error('❌ Error creating mock user profile:', error)
     throw error
   }
 }
 
 /**
- * Create Firebase custom token
+ * Create Firebase custom token (Development Mode)
+ * In development, we'll return a mock token
  */
 async function createFirebaseCustomToken(uid: string, claims?: FirebaseCustomClaims): Promise<string> {
-  initFirebaseAdmin()
-  
-  const auth = getAuth()
+  console.log('🔧 Debug: Creating mock Firebase custom token for development')
   
   try {
-    const customToken = await auth.createCustomToken(uid, claims)
-    return customToken
+    // For development, create a mock custom token
+    // In production, this would use Firebase Admin SDK
+    const mockToken = `dev_mock_token_${uid}_${Date.now()}`
+    
+    console.log('✅ Mock Firebase custom token created:', mockToken)
+    return mockToken
   } catch (error) {
-    console.error('Error creating custom token:', error)
+    console.error('❌ Error creating mock custom token:', error)
     throw error
   }
 }
 
 export default defineEventHandler(async (event): Promise<TokenVerificationResponse> => {
   try {
+    console.log('🔧 Debug: Magic link verification request received')
+    
     // Only allow POST requests
     assertMethod(event, 'POST')
 
     // Parse request body
     const body = await readBody<TokenVerificationPayload>(event)
+    console.log('🔧 Debug: Request body received:', { hasToken: !!body?.token })
     
     if (!body || !body.token) {
+      console.error('❌ No token provided in request')
       throw createError({
         statusCode: 400,
         statusMessage: 'Token is required'
@@ -213,8 +160,11 @@ export default defineEventHandler(async (event): Promise<TokenVerificationRespon
     // Verify the JWT token
     let payload: JWTPayload
     try {
+      console.log('🔧 Debug: Verifying JWT token...')
       payload = verifyMagicLinkToken(token)
+      console.log('✅ JWT token verified successfully for email:', payload.email)
     } catch (error: any) {
+      console.error('❌ JWT token verification failed:', error.message)
       throw createError({
         statusCode: 401,
         statusMessage: error.message || 'Invalid token'
@@ -222,9 +172,12 @@ export default defineEventHandler(async (event): Promise<TokenVerificationRespon
     }
 
     // Create or get user profile
+    console.log('🔧 Debug: Creating/getting user profile for:', payload.email)
     const userProfile = await createOrGetUserProfile(payload.email)
+    console.log('✅ User profile processed successfully')
 
     // Create custom Firebase token
+    console.log('🔧 Debug: Creating Firebase custom token...')
     const customClaims: FirebaseCustomClaims = {
       role: userProfile.role,
       subscriptionStatus: userProfile.subscription.status,
@@ -232,7 +185,9 @@ export default defineEventHandler(async (event): Promise<TokenVerificationRespon
     }
 
     const firebaseToken = await createFirebaseCustomToken(userProfile.uid, customClaims)
+    console.log('✅ Firebase custom token created successfully')
 
+    console.log('✅ Magic link verification completed successfully')
     return {
       success: true,
       message: 'Verificación exitosa',
@@ -242,6 +197,7 @@ export default defineEventHandler(async (event): Promise<TokenVerificationRespon
 
   } catch (error: any) {
     console.error('❌ Verify magic link error:', error)
+    console.error('❌ Error stack:', error.stack)
 
     // Handle specific error types
     if (error.statusCode) {
@@ -251,7 +207,7 @@ export default defineEventHandler(async (event): Promise<TokenVerificationRespon
     // Generic error response
     throw createError({
       statusCode: 500,
-      statusMessage: 'Failed to verify magic link'
+      statusMessage: 'Failed to verify magic link: ' + (error.message || 'Unknown error')
     })
   }
 }) 

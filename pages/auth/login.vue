@@ -1,9 +1,16 @@
 <template>
   <div class="auth-page">
+    <!-- Logo -->
+    <div class="auth-logo">
+      <NuxtLink to="/">
+        <img src="/logo.svg" alt="epàlwi-rèbbo" class="logo-image" />
+      </NuxtLink>
+    </div>
+    
     <div class="auth-container">
       <!-- Header -->
       <div class="auth-header">
-        <h1 class="auth-title">Iniciar Sesión</h1>
+        <h2 class="ds-text-display-md">Iniciar Sesión</h2>
         <p class="auth-subtitle">
           Accede a tu cuenta con tu enlace mágico
         </p>
@@ -50,7 +57,7 @@
     <!-- Success Modal -->
     <Modal
       v-model="showSuccessModal"
-      title="✉️ Email Enviado"
+      title="Email Enviado"
       :show-close-button="false"
     >
       <div class="success-content">
@@ -73,6 +80,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+const config = useRuntimeConfig()
+const route = useRoute()
 
 // Page metadata
 useHead({
@@ -131,7 +140,15 @@ const handleLogin = async () => {
   try {
     isLoading.value = true
     
-    const response = await authStore.sendMagicLink(form.value.email)
+    // Use Firebase Email Link in production (devAuthMock=false). Fallback to mock endpoint in dev.
+    const useEmailLink = !Boolean((config as any).public?.devAuthMock)
+    let response
+    if (useEmailLink) {
+      const returnPath = (route.query['return'] as string) || undefined
+      response = await authStore.sendEmailLink(form.value.email, returnPath)
+    } else {
+      response = await authStore.sendMagicLink(form.value.email)
+    }
     
     if (response.success) {
       showSuccessModal.value = true
@@ -158,66 +175,90 @@ const closeSuccessModal = () => {
 .auth-page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-6);
-  background: var(--color-background);
+  padding: var(--ds-spacing-6);
+  background: var(--ds-background);
+  position: relative;
+}
+
+.auth-logo {
+  position: absolute;
+  top: var(--ds-spacing-3);
+  left: var(--ds-spacing-3);
+  z-index: 10;
+  
+  .logo-image {
+    height: 32px;
+    width: auto;
+  }
 }
 
 .auth-container {
-  background: var(--color-primary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-11);
-  max-width: 480px;
+  background: var(--ds-card);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-lg);
+  padding: var(--ds-spacing-3);
+  max-width: 420px;
   width: 100%;
 }
 
 .auth-header {
   text-align: center;
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--ds-spacing-3);
   
   .auth-title {
-    font-size: var(--font-size-3xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    margin-bottom: var(--space-4);
+    font-size: var(--ds-font-size-xs);
+    font-weight: 700;
+    color: var(--ds-foreground);
+    margin-bottom: var(--ds-spacing-075);
+    letter-spacing: -0.02em;
   }
   
   .auth-subtitle {
-    font-size: var(--font-size-lg);
-    color: var(--color-text-muted);
-    line-height: var(--line-height-normal);
+    font-size: var(--ds-font-size-copy-16);
+    color: var(--ds-muted-foreground);
+    line-height: 1.4;
+    font-weight: 400;
+    max-width: 300px;
+    margin: 0 auto;
   }
 }
 
 .auth-form {
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--ds-spacing-25);
   
   .form-group {
-    margin-bottom: var(--space-6);
+    margin-bottom: var(--ds-spacing-2);
+  }
+  
+  // Override Input component label spacing to 8px
+  :deep(.input-group__label) {
+    margin-bottom: 8px;
   }
 }
 
 .auth-button {
   width: 100%;
-  height: var(--space-11);
-  background: var(--color-secondary);
+  height: 48px;
+  background: var(--ds-primary);
   color: white;
   border: none;
-  border-radius: var(--border-radius);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
+  border-radius: var(--ds-radius);
+  font-size: var(--ds-font-size-copy-16);
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease-in-out;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3);
+  gap: var(--ds-spacing-3);
+  margin-bottom: 12px;
   
   &:hover:not(:disabled) {
-    background: var(--color-secondary-dark);
-    transform: translateY(-1px);
+    background: var(--ds-primary-dark);
+    box-shadow: var(--ds-shadow-md);
   }
   
   &:disabled {
@@ -244,13 +285,13 @@ const closeSuccessModal = () => {
   text-align: center;
   
   .signup-link {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
+    font-size: var(--ds-font-size-copy-14);
+    color: var(--ds-muted-foreground);
     
     .signup-link-text {
-      color: var(--color-secondary);
+      color: var(--ds-primary);
       text-decoration: none;
-      font-weight: var(--font-weight-medium);
+      font-weight: 500;
       
       &:hover {
         text-decoration: underline;
@@ -260,37 +301,40 @@ const closeSuccessModal = () => {
 }
 
 .success-content {
-  text-align: center;
+  padding: var(--ds-spacing-2) 0;
   
   .success-message {
-    font-size: var(--font-size-base);
-    color: var(--color-text);
-    margin-bottom: var(--space-4);
-    line-height: var(--line-height-normal);
+    font-size: var(--ds-font-size-copy-16);
+    color: var(--ds-foreground);
+    margin-bottom: var(--ds-spacing-3);
+    line-height: 1.5;
+    text-align: left;
   }
   
   .success-instructions {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    margin-bottom: var(--space-6);
-    line-height: var(--line-height-normal);
+    font-size: var(--ds-font-size-copy-14);
+    color: var(--ds-muted-foreground);
+    margin-bottom: var(--ds-spacing-4);
+    line-height: 1.5;
+    text-align: left;
   }
   
   .success-button {
-    height: var(--space-11);
-    padding: 0 var(--space-8);
-    background: var(--color-secondary);
+    width: 100%;
+    height: 48px;
+    background: var(--ds-primary);
     color: white;
     border: none;
-    border-radius: var(--border-radius);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
+    border-radius: var(--ds-radius);
+    font-size: var(--ds-font-size-copy-16);
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease-in-out;
+    margin-top: var(--ds-spacing-2);
     
     &:hover {
-      background: var(--color-secondary-dark);
-      transform: translateY(-1px);
+      background: var(--ds-primary-dark);
+      box-shadow: var(--ds-shadow-md);
     }
   }
 }
@@ -301,13 +345,17 @@ const closeSuccessModal = () => {
 
 /* Responsive adjustments */
 @media (max-width: 640px) {
+  .auth-page {
+    padding: var(--ds-spacing-2);
+  }
+  
   .auth-container {
-    padding: var(--space-8);
-    margin: var(--space-4);
+    padding: var(--ds-spacing-2);
+    margin: var(--ds-spacing-1);
   }
   
   .auth-title {
-    font-size: var(--font-size-2xl);
+    font-size: var(--ds-font-size-xxs);
   }
 }
 </style>

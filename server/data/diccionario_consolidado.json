@@ -4,7 +4,7 @@
     "description": "Comprehensive Spanish-Ndowe dictionary compiled from 15 batch files",
     "version": "1.1",
     "created": "2025-06-26T21:50:14Z",
-    "total_entries":10561,
+    "total_entries":10737,
     "language_pair": [
       "es",
       "ndowe"
@@ -12600,6 +12600,1333 @@
       "ndowe": [
         "ikuduwé",
         "ipabilo"
+      ]
+    },
+    {
+      "español": "bienvenido, -a",
+      "ndowe": [
+        "sàlle",
+        "inyònilo",
+        "ibélo",
+        "igomu",
+        "isalangana"
+      ]
+    },
+    {
+      "español": "bifurcación",
+      "ndowe": [
+        "màndda",
+        "ibónggó",
+        "manni"
+      ]
+    },
+    {
+      "español": "bigote",
+      "ndowe": [
+        "têmbu",
+        "mmotàdi"
+      ]
+    },
+    {
+      "español": "bilateral",
+      "ndowe": [
+        "begàli-bàyye",
+        "begàli-mbaÿani"
+      ]
+    },
+    {
+      "español": "bilingüe",
+      "ndowe": [
+        "ulàpo-mbaÿani",
+        "ulàpo-bàyye"
+      ]
+    },
+    {
+      "español": "billete",
+      "ndowe": [
+        "kendi"
+      ]
+    },
+    {
+      "español": "biografía",
+      "ndowe": [
+        "idàko-emênó"
+      ]
+    },
+    {
+      "español": "biombo",
+      "ndowe": [
+        "epagga",
+        "molòlo"
+      ]
+    },
+    {
+      "español": "birria",
+      "ndowe": [
+        "eseÿesêÿé",
+        "mbà-màla"
+      ]
+    },
+    {
+      "español": "bisabuelo, -a",
+      "ndowe": [
+        "embambambbi"
+      ]
+    },
+    {
+      "español": "bisagra",
+      "ndowe": [
+        "konno"
+      ]
+    },
+    {
+      "español": "bisar",
+      "ndowe": [
+        "etìtiyé",
+        "ebàdé",
+        "etìmbéné"
+      ]
+    },
+    {
+      "español": "bisexual",
+      "ndowe": [
+        "ibòdo-mbaÿani",
+        "ibòdo-bàyye"
+      ]
+    },
+    {
+      "español": "bisílabo, -a",
+      "ndowe": [
+        "etengo-mbaÿani",
+        "etengo-bàyye"
+      ]
+    },
+    {
+      "español": "bisnieto, -a",
+      "ndowe": [
+        "endindinddi"
+      ]
+    },
+    {
+      "español": "bisutería",
+      "ver": [
+        "alhaja"
+      ]
+    },
+    {
+      "español": "bizarro, -a",
+      "ndowe": [
+        "ekayi",
+        "evèmbi",
+        "ubongo",
+        "kobongo",
+        "ukajagge",
+        "evàyivayi"
+      ]
+    },
+    {
+      "español": "bizco, -a",
+      "ndowe": [
+        "migó tyènga"
+      ]
+    },
+    {
+      "español": "bizcocho",
+      "ndowe": [
+        "ndókó",
+        "inàmbé"
+      ]
+    },
+    {
+      "español": "blanco, -a",
+      "ndowe": [
+        "epuwe-ni",
+        "kêddi",
+        "puwwa",
+        "monànga",
+        "nyàngge",
+        "endòndo",
+        "ivéla"
+      ]
+    },
+    {
+      "español": "blancura",
+      "ndowe": [
+        "epuwa",
+        "ikêdima",
+        "ipuwiddi"
+      ]
+    },
+    {
+      "español": "blandear",
+      "ndowe": [
+        "ebôbiyé",
+        "ekômbiyé",
+        "evóziyé",
+        "etômbiyé"
+      ]
+    },
+    {
+      "español": "blandir",
+      "ndowe": [
+        "evêliyé",
+        "evêlima",
+        "ekwêdima"
+      ],
+      "explicación": [
+        "ea ituma jé-lêÿÿé ukwalla"
+      ]
+    },
+    {
+      "español": "blando, -a",
+      "ndowe": [
+        "bôbbó",
+        "ebôbbeÿe-ni",
+        "evônddeÿe-ni",
+        "etêggele-ni"
+      ]
+    },
+    {
+      "español": "blanquear",
+      "ndowe": [
+        "epujé",
+        "epuwina",
+        "ekêdiyé",
+        "evélina"
+      ]
+    },
+    {
+      "español": "blasfemar",
+      "ndowe": [
+        "etomba",
+        "éreme",
+        "ekumbuna",
+        "elôhó",
+        "ebeva"
+      ]
+    },
+    {
+      "español": "blasfemia",
+      "ndowe": [
+        "botombbe",
+        "kumbbu"
+      ]
+    },
+    {
+      "español": "blenorragia",
+      "ndowe": [
+        "mosìsi",
+        "jàlla",
+        "ndonggo"
+      ]
+    },
+    {
+      "español": "bloque",
+      "ndowe": [
+        "kota"
+      ]
+    },
+    {
+      "español": "bloquear",
+      "ndowe": [
+        "edìbiyé",
+        "epàndé",
+        "edìbama",
+        "epàndémé",
+        "edìba"
+      ]
+    },
+    {
+      "español": "blusa",
+      "ndowe": [
+        "ekullu e-a elingga",
+        "ekullu e-a ngôyi",
+        "jómba",
+        "verusi"
+      ]
+    },
+    {
+      "español": "boa",
+      "ndowe": [
+        "mbômó"
+      ],
+      "explicación": [
+        "serpiente"
+      ]
+    },
+    {
+      "español": "bobo, -a",
+      "ndowe": [
+        "etìketike",
+        "endèke"
+      ]
+    },
+    {
+      "español": "boca",
+      "ndowe": [
+        "modùmbu",
+        "ipônddi",
+        "upùdu",
+        "umbyóÿó",
+        "jiÿiriddi",
+        "ikudwiddi"
+      ]
+    },
+    {
+      "español": "bocadillo",
+      "ndowe": [
+        "ekàkwi"
+      ]
+    },
+    {
+      "español": "bocado",
+      "ndowe": [
+        "itàmbbu"
+      ]
+    },
+    {
+      "español": "bochorno",
+      "ndowe": [
+        "vigóni",
+        "eÿòngo",
+        "upùpé ubevva"
+      ]
+    },
+    {
+      "español": "bocina",
+      "ndowe": [
+        "ihuppu"
+      ]
+    },
+    {
+      "español": "bocoy",
+      "ver": [
+        "barril"
+      ]
+    },
+    {
+      "español": "boda",
+      "ndowe": [
+        "ibaÿa",
+        "isàngo ji-a molàto"
+      ]
+    },
+    {
+      "español": "bodega",
+      "ndowe": [
+        "upulunggu",
+        "etatwi-màku",
+        "ibùmuku ji-a mbàddi"
+      ]
+    },
+    {
+      "español": "bofetada",
+      "ndowe": [
+        "ehapokka",
+        "ibaro",
+        "epambulla",
+        "epangulla",
+        "ipêjé",
+        "ityélé"
+      ]
+    },
+    {
+      "español": "boga",
+      "ndowe": [
+        "ikwèsakwesa",
+        "kusani",
+        "iduka",
+        "weyi"
+      ]
+    },
+    {
+      "español": "bogar",
+      "ndowe": [
+        "eduka",
+        "ekavé"
+      ]
+    },
+    {
+      "español": "boicot",
+      "ndowe": [
+        "ikìndano"
+      ]
+    },
+    {
+      "español": "boicotear",
+      "ndowe": [
+        "ekìndana"
+      ]
+    },
+    {
+      "español": "boina",
+      "ndowe": [
+        "ipaki"
+      ]
+    },
+    {
+      "español": "bola",
+      "ver": [
+        "balón"
+      ]
+    },
+    {
+      "español": "bolsa",
+      "ndowe": [
+        "goro",
+        "eÿèkwa",
+        "elanddi",
+        "mokùta"
+      ]
+    },
+    {
+      "español": "bolsillo",
+      "ndowe": [
+        "nduda",
+        "elanddi e-a ngôyi",
+        "elanddi e-a ukandda"
+      ]
+    },
+    {
+      "español": "bollo",
+      "ndowe": [
+        "inàmbé"
+      ]
+    },
+    {
+      "español": "bomba",
+      "ndowe": [
+        "ngadi",
+        "udùma",
+        "evolanni",
+        "egàndi",
+        "pómbu",
+        "mokòmbba",
+        "mosòngo"
+      ]
+    },
+    {
+      "español": "bombardear",
+      "ndowe": [
+        "egàndiyé",
+        "eboya"
+      ]
+    },
+    {
+      "español": "bombear",
+      "ndowe": [
+        "esòngwa",
+        "evudiyé",
+        "epómbó"
+      ]
+    },
+    {
+      "español": "bombo",
+      "ndowe": [
+        "ngômó e-tubbwé"
+      ]
+    },
+    {
+      "español": "bombón",
+      "ndowe": [
+        "yólélé"
+      ]
+    },
+    {
+      "español": "bombona",
+      "ndowe": [
+        "egukka"
+      ]
+    },
+    {
+      "español": "bonachón, -a",
+      "ver": [
+        "amable"
+      ]
+    },
+    {
+      "español": "bonanza",
+      "ndowe": [
+        "udêmbé",
+        "pôllé",
+        "imbwênjjé",
+        "mbwênjjé"
+      ]
+    },
+    {
+      "español": "bondad",
+      "ver": [
+        "amabilidad"
+      ]
+    },
+    {
+      "español": "bondadoso, -a",
+      "ver": [
+        "bonachón"
+      ]
+    },
+    {
+      "español": "boniato",
+      "ndowe": [
+        "mbôngó à molélêÿÿé"
+      ]
+    },
+    {
+      "español": "bonificación",
+      "ndowe": [
+        "tadi"
+      ]
+    },
+    {
+      "español": "bonito, -a",
+      "ndowe": [
+        "asaÿÿa",
+        "enyêvveÿe-ni",
+        "dôdó",
+        "upèsa"
+      ]
+    },
+    {
+      "español": "boquete",
+      "ndowe": [
+        "ipônddi",
+        "ipolo",
+        "ubànddi",
+        "ikàndi"
+      ]
+    },
+    {
+      "español": "boquilla",
+      "ndowe": [
+        "utôngu"
+      ]
+    },
+    {
+      "español": "borbotar",
+      "ndowe": [
+        "etôkó",
+        "enyété",
+        "evovola"
+      ]
+    },
+    {
+      "español": "borda",
+      "ndowe": [
+        "igòmbi",
+        "motyènji",
+        "motyènje"
+      ]
+    },
+    {
+      "español": "borde",
+      "ver": [
+        "borda"
+      ]
+    },
+    {
+      "español": "bordear",
+      "ndowe": [
+        "elànda",
+        "etyènjila",
+        "ehàmbala"
+      ]
+    },
+    {
+      "español": "bóreas",
+      "ndowe": [
+        "ngôngó",
+        "upùpé"
+      ]
+    },
+    {
+      "español": "borla",
+      "ndowe": [
+        "imbùnja"
+      ]
+    },
+    {
+      "español": "borrachera",
+      "ndowe": [
+        "iyôngi",
+        "peya"
+      ]
+    },
+    {
+      "español": "borracho, -a",
+      "ver": [
+        "bebedor"
+      ]
+    },
+    {
+      "español": "borrador",
+      "ndowe": [
+        "epùpwi"
+      ]
+    },
+    {
+      "español": "borrar",
+      "ndowe": [
+        "epùpwa"
+      ]
+    },
+    {
+      "español": "borrasca",
+      "ndowe": [
+        "vùngwé",
+        "ekùdikudi",
+        "ngunga",
+        "ngwênyé",
+        "bokùdi"
+      ]
+    },
+    {
+      "español": "borrego",
+      "ndowe": [
+        "moÿodòmbé"
+      ]
+    },
+    {
+      "español": "borrico",
+      "ver": [
+        "asno"
+      ]
+    },
+    {
+      "español": "borrón",
+      "ndowe": [
+        "ególi"
+      ]
+    },
+    {
+      "español": "borroso, -a",
+      "ndowe": [
+        "ndàmu-ndàmu"
+      ]
+    },
+    {
+      "español": "bosque",
+      "ndowe": [
+        "ezìtyyi",
+        "njingga",
+        "ibùtu"
+      ]
+    },
+    {
+      "español": "bostezar",
+      "ndowe": [
+        "eÿonjonjé"
+      ]
+    },
+    {
+      "español": "bostezo",
+      "ndowe": [
+        "isaÿa ji-a eÿonjonjé"
+      ]
+    },
+    {
+      "español": "bota",
+      "ndowe": [
+        "gova à mokòbo"
+      ]
+    },
+    {
+      "español": "botánica",
+      "ndowe": [
+        "ingàmbi ji-a beliyanni"
+      ]
+    },
+    {
+      "español": "botar",
+      "ndowe": [
+        "evuga",
+        "evaningila",
+        "epema",
+        "esoda"
+      ]
+    },
+    {
+      "español": "bote",
+      "ndowe": [
+        "elèndde",
+        "ugôbó",
+        "gigé",
+        "eÿèvva e-a eninggo",
+        "ikwelle",
+        "ingongo"
+      ]
+    },
+    {
+      "español": "botella",
+      "ndowe": [
+        "mbutte",
+        "pàla",
+        "ulôgó",
+        "ikwelle"
+      ]
+    },
+    {
+      "español": "botica",
+      "ndowe": [
+        "mbaddi à mebwànga"
+      ]
+    },
+    {
+      "español": "boticario, -a",
+      "ndowe": [
+        "motati-mebwanga"
+      ]
+    },
+    {
+      "español": "botijo",
+      "ndowe": [
+        "kula"
+      ]
+    },
+    {
+      "español": "botín",
+      "ndowe": [
+        "ngumbba à bokìno"
+      ],
+      "explicación": [
+        "bota"
+      ]
+    },
+    {
+      "español": "botiquín",
+      "ndowe": [
+        "etatwi-mebwanga"
+      ]
+    },
+    {
+      "español": "botón",
+      "ndowe": [
+        "iloki"
+      ]
+    },
+    {
+      "español": "boxeador",
+      "ndowe": [
+        "mobodi"
+      ]
+    },
+    {
+      "español": "boxear",
+      "ndowe": [
+        "eboda",
+        "ebodana"
+      ]
+    },
+    {
+      "español": "boxeo",
+      "ndowe": [
+        "melòmbyani me-a bedodde",
+        "melòmbyani me-a likuta",
+        "ibodana"
+      ]
+    },
+    {
+      "español": "boya",
+      "ver": [
+        "baliza"
+      ]
+    },
+    {
+      "español": "boyar",
+      "ndowe": [
+        "etòrama",
+        "esàkida"
+      ]
+    },
+    {
+      "español": "bracero",
+      "ndowe": [
+        "mokwàli",
+        "movwàsi",
+        "molabatiyye",
+        "mogayi"
+      ]
+    },
+    {
+      "español": "braga",
+      "ndowe": [
+        "ikoba",
+        "bokandda",
+        "pinjaka"
+      ]
+    },
+    {
+      "español": "bramar",
+      "ndowe": [
+        "ebama",
+        "egónyó",
+        "eÿama",
+        "eboma",
+        "elànya"
+      ]
+    },
+    {
+      "español": "bramido",
+      "ndowe": [
+        "moÿamokko",
+        "ubamo"
+      ]
+    },
+    {
+      "español": "branquia",
+      "ndowe": [
+        "ewawàÿÿa"
+      ]
+    },
+    {
+      "español": "brasa",
+      "ndowe": [
+        "injêtyi",
+        "ikanga"
+      ]
+    },
+    {
+      "español": "brasero",
+      "ndowe": [
+        "mwa-ebetyye",
+        "umbiko"
+      ]
+    },
+    {
+      "español": "braveador, -a",
+      "ndowe": [
+        "mogùngwi",
+        "motyétini",
+        "mobêngwili"
+      ]
+    },
+    {
+      "español": "bravo, -a",
+      "ndowe": [
+        "movèmbi",
+        "ekayi",
+        "evèmbi",
+        "bojìja"
+      ]
+    },
+    {
+      "español": "braza",
+      "ndowe": [
+        "eguba",
+        "eyêyyi"
+      ]
+    },
+    {
+      "español": "brazalete",
+      "ndowe": [
+        "ewèla",
+        "moÿêni",
+        "mbotti"
+      ]
+    },
+    {
+      "español": "brazo",
+      "ndowe": [
+        "motyindi",
+        "ebóÿó"
+      ]
+    },
+    {
+      "español": "brebaje",
+      "ver": [
+        "bebida"
+      ]
+    },
+    {
+      "español": "brecha",
+      "ndowe": [
+        "ubànddi",
+        "ikandi",
+        "ugômbi"
+      ]
+    },
+    {
+      "español": "bregar",
+      "ndowe": [
+        "eÿàna",
+        "eringinya",
+        "edòkana",
+        "etyìbéné",
+        "elùnja"
+      ]
+    },
+    {
+      "español": "breve",
+      "ndowe": [
+        "vuvvé",
+        "tèkki",
+        "pyérré",
+        "ipyérré",
+        "mwa-ukìli"
+      ],
+      "ver": [
+        "corto, -a"
+      ]
+    },
+    {
+      "español": "brevedad",
+      "ndowe": [
+        "ivuvino"
+      ]
+    },
+    {
+      "español": "brigada",
+      "ver": [
+        "bando"
+      ]
+    },
+    {
+      "español": "brillante",
+      "ndowe": [
+        "epànyi",
+        "ekwêdi",
+        "ekòyi",
+        "kêddi",
+        "bùmbbe",
+        "kêdi-kéddi"
+      ]
+    },
+    {
+      "español": "brillar",
+      "ndowe": [
+        "epanya",
+        "ekwêdé",
+        "ekòya",
+        "ekêdima",
+        "ebàluma"
+      ]
+    },
+    {
+      "español": "brillo",
+      "ndowe": [
+        "ipànya",
+        "ibamo",
+        "imànyi"
+      ]
+    },
+    {
+      "español": "brincar",
+      "ndowe": [
+        "epeka",
+        "esoda",
+        "epema",
+        "ekùtama"
+      ]
+    },
+    {
+      "español": "brindar",
+      "ndowe": [
+        "esalangana",
+        "esànga",
+        "ebéliyé",
+        "esara",
+        "eÿambiyé",
+        "evinyé"
+      ]
+    },
+    {
+      "español": "brindis",
+      "ndowe": [
+        "usalanggo",
+        "isaloko",
+        "isàngo"
+      ]
+    },
+    {
+      "español": "brío",
+      "ndowe": [
+        "pimba",
+        "ngùdi",
+        "bojìja",
+        "evèmba",
+        "tyànyi"
+      ]
+    },
+    {
+      "español": "brisa",
+      "ndowe": [
+        "upùpé",
+        "evudi"
+      ]
+    },
+    {
+      "español": "brizna",
+      "ndowe": [
+        "esìma",
+        "molimbi"
+      ]
+    },
+    {
+      "español": "brocha",
+      "ndowe": [
+        "ekembwini"
+      ]
+    },
+    {
+      "español": "broma",
+      "ndowe": [
+        "imbungga",
+        "njèbo",
+        "ungésó",
+        "elési"
+      ]
+    },
+    {
+      "español": "bronca",
+      "ndowe": [
+        "mogwoÿo",
+        "imbêléké",
+        "upàkko",
+        "rèmbo",
+        "moÿòmbo",
+        "modèkka"
+      ]
+    },
+    {
+      "español": "brotar",
+      "ndowe": [
+        "etyétyé",
+        "ekuduwé",
+        "ekudwa",
+        "ejaya",
+        "enyété",
+        "enjéngina"
+      ]
+    },
+    {
+      "español": "brote",
+      "ndowe": [
+        "elómbó",
+        "etômbbuwwa",
+        "motonddo",
+        "etututtu",
+        "jaÿali",
+        "enjénggi"
+      ]
+    },
+    {
+      "español": "broza",
+      "ver": [
+        "basura"
+      ]
+    },
+    {
+      "español": "brujo, -a",
+      "ndowe": [
+        "motimbi",
+        "esùkkuluku",
+        "moÿèmba",
+        "mongweli"
+      ]
+    },
+    {
+      "español": "brújula",
+      "ndowe": [
+        "etumbwini",
+        "moÿindi"
+      ]
+    },
+    {
+      "español": "bruma",
+      "ndowe": [
+        "bengùmbi",
+        "mbàka",
+        "lingùte"
+      ]
+    },
+    {
+      "español": "bruno, -a",
+      "ndowe": [
+        "unômbbé",
+        "uvindo",
+        "igùllubeÿe"
+      ]
+    },
+    {
+      "español": "brusco, -a",
+      "ndowe": [
+        "botembaka",
+        "bodùmbbaka",
+        "bobùmbbaka",
+        "mbà-isévó",
+        "mbà-ikénggé"
+      ]
+    },
+    {
+      "español": "bruto, -a",
+      "ver": [
+        "brusco"
+      ]
+    },
+    {
+      "español": "bubón",
+      "ndowe": [
+        "itungga",
+        "moÿinddé",
+        "ituttu"
+      ]
+    },
+    {
+      "español": "bucear",
+      "ndowe": [
+        "etiba",
+        "eviviyé"
+      ],
+      "explicación": [
+        "Eviviyé e-a ndàgga Socaliñar; sacar a uno con socaliña algún asunto, palabra."
+      ]
+    },
+    {
+      "español": "buceo",
+      "ndowe": [
+        "metibbe"
+      ]
+    },
+    {
+      "español": "bucle",
+      "ndowe": [
+        "edimba",
+        "mondendda",
+        "motóki"
+      ]
+    },
+    {
+      "español": "buenaventura",
+      "ndowe": [
+        "ebélé e-asaÿÿa",
+        "pôllé",
+        "isôkino"
+      ]
+    },
+    {
+      "español": "bueno, -a",
+      "ver": [
+        "bonito, -a"
+      ]
+    },
+    {
+      "español": "buey",
+      "ndowe": [
+        "nyati à mboka"
+      ]
+    },
+    {
+      "español": "búfalo",
+      "ndowe": [
+        "nyati à ezìtyyi",
+        "njòmma"
+      ]
+    },
+    {
+      "español": "bufanda",
+      "ndowe": [
+        "eÿèkwa e-a ikòdu"
+      ]
+    },
+    {
+      "español": "bufar",
+      "ndowe": [
+        "evómó",
+        "ebama",
+        "egónyó"
+      ]
+    },
+    {
+      "español": "bufete",
+      "ndowe": [
+        "esowangendda",
+        "eÿalino",
+        "emêsa"
+      ]
+    },
+    {
+      "español": "búho",
+      "ndowe": [
+        "ngùllu"
+      ]
+    },
+    {
+      "español": "buhonero, -a",
+      "ndowe": [
+        "mosambii-itanddo",
+        "movyeyi"
+      ]
+    },
+    {
+      "español": "buitre",
+      "ndowe": [
+        "ngòmu"
+      ]
+    },
+    {
+      "español": "bujía",
+      "ndowe": [
+        "buji"
+      ]
+    },
+    {
+      "español": "bula",
+      "ndowe": [
+        "engòbo e-a upèdi"
+      ]
+    },
+    {
+      "español": "bulevar",
+      "ver": [
+        "avenida"
+      ]
+    },
+    {
+      "español": "bulto",
+      "ndowe": [
+        "iyumbba",
+        "usòyé",
+        "ntyúnggunu",
+        "ituttu",
+        "ivombbollo",
+        "ebóló"
+      ]
+    },
+    {
+      "español": "bullicio",
+      "ndowe": [
+        "bokàno",
+        "ikwàkoso",
+        "bubbwangga",
+        "mebonjé"
+      ]
+    },
+    {
+      "español": "bullir",
+      "ndowe": [
+        "etôkó",
+        "enyété",
+        "etyétyé",
+        "egomba"
+      ]
+    },
+    {
+      "español": "buñuelo",
+      "ndowe": [
+        "ndókó e-a fùrra"
+      ]
+    },
+    {
+      "español": "buque",
+      "ndowe": [
+        "eÿèvva e-a eninggo",
+        "meli",
+        "moÿalo u-tubbwé"
+      ]
+    },
+    {
+      "español": "burbuja",
+      "ndowe": [
+        "mosikì",
+        "ivêvé"
+      ]
+    },
+    {
+      "español": "burda",
+      "ver": [
+        "bordado"
+      ]
+    },
+    {
+      "español": "burdo, -a",
+      "ndowe": [
+        "gogòlo-ggogóllo",
+        "ebonganni",
+        "udòpu"
+      ]
+    },
+    {
+      "español": "burla",
+      "ndowe": [
+        "ungésó",
+        "njèbo",
+        "vikàno",
+        "elési"
+      ]
+    },
+    {
+      "español": "burlar",
+      "ndowe": [
+        "engésó",
+        "elejé",
+        "ekaniyé",
+        "elisilé"
+      ]
+    },
+    {
+      "español": "burlón, -a",
+      "ndowe": [
+        "mokàni",
+        "motèntwi",
+        "ungésó"
+      ]
+    },
+    {
+      "español": "burocracia",
+      "ndowe": [
+        "matòta ma-a etyêlo"
+      ]
+    },
+    {
+      "español": "burrada",
+      "ndowe": [
+        "ityìto",
+        "eseÿesêÿé"
+      ]
+    },
+    {
+      "español": "burro",
+      "ver": [
+        "asno"
+      ]
+    },
+    {
+      "español": "buscar",
+      "ndowe": [
+        "etonda",
+        "ekòlova"
+      ]
+    },
+    {
+      "español": "búsqueda",
+      "ndowe": [
+        "itonda",
+        "ikòlova"
+      ]
+    },
+    {
+      "español": "busto",
+      "ndowe": [
+        "téyi à moÿana",
+        "izônggó"
+      ]
+    },
+    {
+      "español": "butaca",
+      "ndowe": [
+        "idìyyiddi",
+        "isowagendda"
+      ]
+    },
+    {
+      "español": "butano",
+      "ndowe": [
+        "gàse"
+      ]
+    },
+    {
+      "español": "buzón",
+      "ndowe": [
+        "iwombino-mbando"
       ]
     },
     {

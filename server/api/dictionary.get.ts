@@ -7,6 +7,7 @@
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 import type { DictionaryData, DictionaryApiResponse } from '~/types/dictionary'
+import { enforceSubscription } from '~/server/utils/validateSubscription'
 
 // Cache the dictionary data in memory for performance
 let cachedDictionary: DictionaryData | null = null
@@ -79,7 +80,18 @@ export default defineEventHandler(async (event): Promise<DictionaryApiResponse> 
         statusMessage: 'Method Not Allowed'
       })
     }
-    
+
+    // Enforce subscription (allow access during grace period)
+    const userInfo = await enforceSubscription(event, {
+      allowGrace: true,
+      resource: '/api/dictionary'
+    })
+
+    // Expose minimal subscription metadata via headers (do not alter typed payload)
+    setHeader(event, 'X-Subscription-Status', userInfo.subscriptionStatus)
+    setHeader(event, 'X-Subscription-Can-Access', String(userInfo.canAccessFeatures))
+    setHeader(event, 'X-Subscription-In-Grace', String(userInfo.isInGracePeriod))
+
     // Load dictionary data
     const data = await getDictionaryData()
     
@@ -107,19 +119,18 @@ export default defineEventHandler(async (event): Promise<DictionaryApiResponse> 
       version: data.metadata.version
     }
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Dictionary API error:', error)
-    
-    // Create appropriate error response
+    // If an H3 error (e.g., from enforceSubscription) was thrown, rethrow as-is
+    if (error && typeof error.statusCode === 'number') {
+      throw error
+    }
+    // Fallback to generic 500
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-    
     throw createError({
       statusCode: 500,
       statusMessage: 'Internal Server Error',
-      data: {
-        success: false,
-        error: errorMessage
-      }
+      data: { success: false, error: errorMessage }
     })
   }
 })

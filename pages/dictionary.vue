@@ -3,6 +3,9 @@
     <!-- Navigation Bar -->
     <nav-bar />
     
+    <!-- Trial Banner -->
+    <TrialBanner />
+    
     <!-- Header -->
     <div class="page-header">
       <div class="header-content">
@@ -15,103 +18,113 @@
       <!-- Language Toggle -->
       <div class="language-toggle-wrapper">
         <LanguageToggle
-          :current-language="(currentLanguage?.value || 'español') === 'español' ? 'spanish' : 'ndowe'"
+          :current-language="currentLanguage === 'español' ? 'spanish' : 'ndowe'"
           @language-change="handleLanguageChange"
         />
       </div>
     </div>
 
-    <!-- Search Section -->
-    <div class="search-section">
-      <SearchBox
-        v-model="searchQuery"
-        :placeholder="dynamicSearchPlaceholder"
-        :suggestions="suggestionTexts || []"
-        :show-suggestions="showSuggestions"
-        @search="handleSearch"
-        @clear="clearSearch"
-        @suggestion-select="handleSuggestionSelect"
-        @focus="handleSearchFocus"
-        @blur="handleSearchBlur"
-      />
-    </div>
-
-    <!-- Recent Searches -->
-    <div v-if="recentSearches.length > 0" class="recent-searches">
-      <h4 class="ds-text-display-xs">Búsquedas Recientes</h4>
-      <div class="recent-list">
-        <button
-          v-for="search in recentSearches"
-          :key="search.id"
-          @click="repeatSearch(search.query)"
-          class="recent-item"
-        >
-          <span class="recent-query">{{ search.query }}</span>
-          <span class="recent-time">{{ formatTimeAgo(search.timestamp) }}</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Results Section -->
-    <div class="results-section">
-      <!-- Loading State -->
-      <div v-if="isLoading" class="loading-state">
-        <Icon name="loader" class="loading-icon" />
-        <p class="loading-text">Buscando...</p>
-      </div>
-
-      <!-- Results -->
-      <div v-else-if="translationResults && translationResults.length > 0" class="results-grid">
-        <ResultCard
-          v-for="result in translationResults"
-          :key="result.id"
-          :entry="result"
-          :translation-direction="(currentLanguage || 'español') === 'español' ? 'spanish-to-ndowe' : 'ndowe-to-spanish'"
+    <!-- Subscription Feature Gate for Dictionary content -->
+    <FeatureGate feature="Diccionario">
+      <!-- Search Section -->
+      <div class="search-section">
+        <SearchBox
+          v-model="searchQuery"
+          :placeholder="dynamicSearchPlaceholder"
+          :suggestions="suggestionTexts || []"
+          :show-suggestions="showSuggestions"
+          @search="handleSearch"
+          @clear="clearSearch"
+          @suggestion-select="handleSuggestionSelect"
+          @focus="handleSearchFocus"
+          @blur="handleSearchBlur"
         />
       </div>
 
-      <!-- Empty State (After Search) -->
-      <EmptyState
-        v-else-if="hasSearched && (!translationResults || translationResults.length === 0)"
-        icon-name="magnifying-glass"
-        title="No se encontraron traducciones"
-        :description="emptyStateDescription || 'No se encontraron traducciones'"
-      >
-        <template #default>
+      <!-- Recent Searches -->
+      <div v-if="recentSearches.length > 0" class="recent-searches">
+        <h4 class="ds-text-display-xs">Búsquedas Recientes</h4>
+        <div class="recent-list">
           <button
-            @click="clearSearch"
-            class="clear-search-button"
+            v-for="search in recentSearches"
+            :key="search.id"
+            @click="repeatSearch(search.query)"
+            class="recent-item"
           >
-            Limpiar Búsqueda
+            <span class="recent-query">{{ search.query }}</span>
+            <span class="recent-time">{{ formatTimeAgo(search.timestamp) }}</span>
           </button>
-        </template>
-      </EmptyState>
+        </div>
+      </div>
 
-      <!-- Initial State (Before Search) -->
-      <EmptyState
-        v-else
-        icon-name="book-open"
-        title="Bienvenido al Diccionario"
-        description="Comienza a buscar palabras en español o ndowe para ver traducciones"
-        cta-text="Iniciar Búsqueda"
-        @cta-click="focusSearch"
-      >
-        <template #default>
-          <!-- Quick Actions -->
-          <div class="quick-actions">
+      <!-- Results Section -->
+      <div class="results-section">
+        <!-- Loading State -->
+        <div v-if="isLoading" class="loading-state">
+          <Icon name="loader" class="loading-icon" />
+          <p class="loading-text">Buscando...</p>
+        </div>
+
+        <!-- Results -->
+        <div v-else-if="translationResults && translationResults.length > 0" class="results-grid">
+          <ResultCard
+            v-for="result in translationResults"
+            :key="result.id"
+            :entry="result"
+            :translation-direction="(currentLanguage || 'español') === 'español' ? 'spanish-to-ndowe' : 'ndowe-to-spanish'"
+          />
+        </div>
+
+        <!-- Empty State (After Search) -->
+        <EmptyState
+          v-else-if="hasSearched && (!translationResults || translationResults.length === 0)"
+          icon-name="magnifying-glass"
+          title="No se encontraron traducciones"
+          :description="emptyStateDescription || 'No se encontraron traducciones'"
+        >
+          <template #default>
             <button
-              v-for="action in quickActions"
-              :key="action.id"
-              @click="performQuickAction(action)"
-              class="quick-action-button"
+              @click="clearSearch"
+              class="clear-search-button"
             >
-              <Icon :name="action.icon" class="action-icon" />
-              {{ action.label }}
+              Limpiar Búsqueda
             </button>
-          </div>
-        </template>
-      </EmptyState>
-    </div>
+          </template>
+        </EmptyState>
+
+        <!-- Initial State (Before Search) - Only show if user has never searched before -->
+        <EmptyState
+          v-else-if="!hasSearchedBefore"
+          icon-name="book-open"
+          title="Bienvenido al Diccionario"
+          description="Comienza a buscar palabras en español o ndowe para ver traducciones"
+          cta-text="Iniciar Búsqueda"
+          @cta-click="focusSearch"
+        >
+          <template #default>
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+              <button
+                v-for="action in quickActions"
+                :key="action.id"
+                @click="performQuickAction(action)"
+                class="quick-action-button"
+              >
+                <Icon :name="action.icon" class="action-icon" />
+                {{ action.label }}
+              </button>
+            </div>
+          </template>
+        </EmptyState>
+      </div>
+
+      <!-- Fallback: render paywall if access is blocked (defensive) -->
+      <template #fallback>
+        <div class="results-section">
+          <SubscriptionRequired feature="Diccionario" />
+        </div>
+      </template>
+    </FeatureGate>
 
     <!-- Offline Status -->
     <div v-if="!isOnline" class="offline-banner">
@@ -126,8 +139,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { usePreferences } from '~/composables/usePreferences'
+import { useSearchHistory } from '~/services/searchHistory'
 
 // Page metadata
+definePageMeta({
+  middleware: ['subscription']
+})
 useHead({
   title: 'Diccionario Español-Ndowe | epàlwi-rèbbo',
   meta: [
@@ -155,7 +173,7 @@ const {
   getSuggestions,
   clearSearch: clearDictionarySearch,
   setLanguage
-} = process.client ? useDictionary() : {
+} = import.meta.client ? useDictionary() : {
   isReady: ref(false),
   isLoading: ref(false),
   error: ref(null),
@@ -176,10 +194,8 @@ const {
 // Local state
 const isOnline = ref(true)
 const showSuggestions = ref(false)
-const recentSearches = ref([
-  { id: 1, query: 'hola', timestamp: Date.now() - 3600000 },
-  { id: 2, query: 'agua', timestamp: Date.now() - 7200000 }
-])
+const { list: searchHistory, hasSearchedBefore, load: loadHistory, add: addHistory } = useSearchHistory()
+const recentSearches = computed(() => searchHistory.value.map((it, idx) => ({ id: idx + 1, query: it.query, timestamp: it.ts })))
 
 // Quick actions
 const quickActions = ref([
@@ -224,6 +240,12 @@ const handleLanguageChange = (language: 'spanish' | 'ndowe') => {
   // Update the language in the dictionary service
   setLanguage(newLanguage)
   
+  // Persist user preference for default language
+  try {
+    const { updatePreferences } = usePreferences()
+    updatePreferences({ defaultLanguage: newLanguage as any })
+  } catch {}
+  
   // Force refresh of search suggestions if there's a current query
   if (searchQuery.value.trim().length >= 2) {
     handleSearch(searchQuery.value)
@@ -260,11 +282,14 @@ const handleSuggestionSelect = async (suggestion: string) => {
     searchQuery.value = suggestion
     showSuggestions.value = false
     
+    // User search history will be marked when we add to history below
+    
     // NOW execute the actual search with the selected suggestion - EXACT MATCH ONLY
     await performSearch(suggestion, 'exact') // Force exact match mode
     
     // Add to recent searches only after successful search
-    addToRecentSearches(suggestion)
+    // Add to history only after successful search
+    addHistory(suggestion, (currentLanguage as any).value === 'español' ? 'español' : 'ndowe')
     
   } catch (err: any) {
     console.error('Suggestion search error:', err)
@@ -302,6 +327,8 @@ const performQuickAction = (action: any) => {
   // Implement quick actions using proper suggestion selection flow
   console.log('Performing action:', action)
   
+  // History service marks user as searched on add
+  
   // Set search query and trigger suggestion selection for quick actions
   switch (action.id) {
     case 'common':
@@ -323,29 +350,17 @@ const performQuickAction = (action: any) => {
   }
 }
 
-const addToRecentSearches = (query: string) => {
-  const existingIndex = recentSearches.value.findIndex(s => s.query === query)
-  if (existingIndex > -1) {
-    recentSearches.value.splice(existingIndex, 1)
-  }
-  
-  recentSearches.value.unshift({
-    id: Date.now(),
-    query,
-    timestamp: Date.now()
-  })
-  
-  // Keep only last 5 searches
-  if (recentSearches.value.length > 5) {
-    recentSearches.value = recentSearches.value.slice(0, 5)
-  }
-}
+// addToRecentSearches removed (replaced by addHistory)
 
 const repeatSearch = (query: string) => {
   searchQuery.value = query
   // Use suggestion selection flow for recent searches with exact search
   handleSuggestionSelect(query)
 }
+
+// markUserHasSearched no longer needed; handled by history service
+
+const loadUserSearchHistory = () => { loadHistory() }
 
 const formatTimeAgo = (timestamp: number) => {
   const now = Date.now()
@@ -383,6 +398,20 @@ watch(currentLanguage, (newLanguage, oldLanguage) => {
 
 // On mount
 onMounted(() => {
+  // Load user preferences and set initial language
+  try {
+    const { prefs, loadPreferences } = usePreferences()
+    loadPreferences().then(() => {
+      const desired = prefs.value?.defaultLanguage === 'español' ? 'español' : 'ndowe'
+      if ((currentLanguage as any)?.value && (currentLanguage as any).value !== desired) {
+        setLanguage(desired)
+      }
+    })
+  } catch {}
+
+  // Load user search history from localStorage
+  loadUserSearchHistory()
+  
   // Check online status
   isOnline.value = navigator.onLine
   
@@ -405,7 +434,7 @@ onMounted(() => {
 
 .page-header {
   max-width: 800px;
-  margin: 0 auto var(--ds-spacing-6);
+  margin: 0 auto var(--ds-spacing-2);
   padding: var(--ds-spacing-8) var(--ds-spacing-3) 0;
   text-align: center;
   
@@ -625,4 +654,3 @@ onMounted(() => {
   }
 }
 </style>
-
