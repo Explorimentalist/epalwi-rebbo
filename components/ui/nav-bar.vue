@@ -2,13 +2,20 @@
   <nav 
     :class="[
       'ds-navbar fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-6 backdrop-blur-md transition-colors duration-300',
-      { 'bg-gradient-to-b from-white to-transparent': isOverHero }
+      { 'bg-gradient-to-b from-ds-primary to-transparent': isOverHomeHero }
     ]" 
     style="z-index: var(--z-fixed)"
   >
     <!-- Logo -->
     <NuxtLink to="/" class="flex items-center">
-      <img src="/logo.svg" alt="epàlwi-rèbbo" class="h-8 w-auto" />
+      <img 
+        src="/logo.svg" 
+        alt="epàlwi-rèbbo" 
+        :class="[
+          'h-8 w-auto transition-all duration-300',
+          { 'brightness-0 invert': isOverHomeHero }
+        ]"
+      />
     </NuxtLink>
 
     <!-- Desktop Navigation Items -->
@@ -17,8 +24,12 @@
         <NuxtLink
           :to="item.path"
           :class="[
-            'relative font-medium transition-colors',
-            route.path === item.path ? 'text-secondary' : 'text-muted-foreground hover:text-foreground'
+            'relative font-medium transition-colors px-3 py-2 rounded-md',
+            route.path === item.path 
+              ? isOverHomeHero ? 'text-white' : 'text-secondary'
+              : isOverHomeHero
+                ? 'text-ds-secondary hover:text-white hover:bg-ds-card/20'
+                : 'text-muted-foreground hover:text-foreground'
           ]"
         >
           <span class="pb-1 transition-all duration-300">
@@ -36,7 +47,12 @@
           ref="dropdownTrigger"
           @click="toggleDropdown"
           @blur="handleDropdownBlur"
-          class="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted transition-colors"
+          :class="[
+            'flex items-center gap-2 px-3 py-2 rounded-md transition-colors',
+            isOverHomeHero 
+              ? 'text-ds-card hover:bg-ds-card/20 hover:text-white'
+              : 'hover:bg-muted'
+          ]"
           aria-haspopup="true"
           :aria-expanded="isDropdownOpen"
         >
@@ -101,7 +117,12 @@
       <NuxtLink 
         v-else 
         to="/auth/login" 
-        class="hidden md:inline-flex ds-btn-primary ds-btn-md"
+        :class="[
+          'hidden md:inline-flex ds-btn-primary ds-btn-md',
+          isOverHomeHero
+            ? '!bg-ds-card !text-ds-primary !border-ds-card hover:!bg-white hover:!text-ds-primary'
+            : ''
+        ]"
       >
         Iniciar sesión
       </NuxtLink>
@@ -109,7 +130,12 @@
       <!-- Mobile Hamburger Button -->
       <button 
         @click="toggleMobileMenu"
-        class="md:hidden p-2 rounded-md hover:bg-muted transition-colors"
+        :class="[
+          'md:hidden p-2 rounded-md transition-colors',
+          isOverHomeHero 
+            ? 'text-ds-card hover:bg-ds-card/20 hover:text-white'
+            : 'hover:bg-muted'
+        ]"
         aria-label="Abrir menú de navegación"
         :aria-expanded="isMobileMenuOpen"
       >
@@ -229,6 +255,9 @@ const isOverHero = ref(true) // Start as true for hero section
 const authStore = useAuthStore()
 // Pull booleans as refs to avoid nested computed truthiness
 const { isAuthenticated } = storeToRefs(authStore)
+
+// Check if we're on home page AND over hero
+const isOverHomeHero = computed(() => route.path === '/' && isOverHero.value)
 
 // Navigation items with paths and icons
 const navItems = computed(() => [

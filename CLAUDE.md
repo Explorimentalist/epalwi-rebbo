@@ -251,3 +251,4 @@ NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
 NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
 - When we talk about cosmetic design changes please make sure you check the design system v2 instead of making assumptions
+- Don't translate to Spanish to me I know Spanish
