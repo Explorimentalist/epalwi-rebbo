@@ -35,17 +35,33 @@ export async function loadEmailTemplate(templateName: string, data: EmailTemplat
  */
 export function getPlainTextVersion(magicLink: string): string {
   return `
-¡Accede a tu cuenta en epàlwi-rèbbo!
+epàlwi-rèbbo - Tu diccionario Español ↔ Ndowe
+====================================================
 
-Hola, hemos recibido una solicitud para acceder a tu cuenta.
+¡BIENVENIDO DE VUELTA!
+Tu enlace seguro de acceso está listo
 
-Copia y pega este enlace en tu navegador para acceder:
+🔐 ACCESO SEGURO
+Este enlace mágico te permite acceder sin contraseña. Solo tú puedes 
+usarlo y expira en 15 minutos por tu seguridad.
+
+Hemos recibido una solicitud para acceder a tu cuenta en epàlwi-rèbbo.
+
+ACCEDER A MI CUENTA:
 ${magicLink}
 
-Este enlace es válido por 15 minutos.
+PRUEBA GRATUITA ACTIVA
+Tienes acceso completo a todas las funciones durante tu período de 
+prueba. ¡Explora el diccionario y descubre la riqueza del idioma Ndowe!
 
-Si no solicitaste este acceso, puedes ignorar este correo.
+INFORMACIÓN IMPORTANTE:
+⏰ Este enlace expira en 15 minutos por tu seguridad.
+🛡️ Si no solicitaste este acceso, puedes ignorar este correo de forma 
+    segura. Tu cuenta permanece protegida.
 
-© 2025 epàlwi-rèbbo - Preservando el idioma Ndowe
+====================================================
+© 2025 epàlwi-rèbbo
+Preservando y digitalizando el patrimonio lingüístico Ndowe 
+para las futuras generaciones
   `.trim()
 } 

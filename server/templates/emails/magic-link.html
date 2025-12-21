@@ -1,40 +1,162 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tu enlace de acceso</title>
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <title>Tu enlace de acceso - epàlwi-rèbbo</title>
+    <style>
+      /* Import Google Fonts for better typography */
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+      
+      /* Dark mode support */
+      @media (prefers-color-scheme: dark) {
+        .email-container { background-color: #1a1a1a !important; }
+        .email-content { background-color: #2a2a2a !important; color: #ffffff !important; }
+        .text-muted { color: #cccccc !important; }
+        .footer-text { color: #999999 !important; }
+        .divider { border-color: #444444 !important; }
+      }
+      
+      /* Mobile responsive */
+      @media only screen and (max-width: 600px) {
+        .email-container { width: 100% !important; margin: 0 !important; }
+        .email-content { padding: 24px !important; }
+        .header-content { padding: 24px !important; }
+        .cta-button { padding: 14px 24px !important; font-size: 15px !important; }
+        .main-title { font-size: 20px !important; }
+        .brand-title { font-size: 24px !important; }
+      }
+    </style>
   </head>
-  <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #F2EDEB;">
-    <div style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-      <div style="background-color: #D45B41; padding: 32px; text-align: center;">
-        <h1 style="color: #FFFFFF; margin: 0; font-size: 28px; font-weight: bold;">epàlwi-rèbbo</h1>
-        <p style="color: #FFFFFF; margin: 8px 0 0 0; opacity: 0.9;">Diccionario Español ↔ Ndowe</p>
-      </div>
-      <div style="padding: 32px;">
-        <h2 style="color: #333333; margin: 0 0 16px 0; font-size: 24px;">¡Accede a tu cuenta!</h2>
-        <p style="color: #666666; margin: 0 0 24px 0; line-height: 1.5;">
-          Hola, hemos recibido una solicitud para acceder a tu cuenta en epàlwi-rèbbo. 
-          Haz clic en el botón de abajo para acceder:
+  <body style="margin: 0; padding: 20px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f3eeec 0%, #e8ddd9 100%); line-height: 1.6;">
+    <div class="email-container" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);">
+      
+      <!-- Header with brand identity -->
+      <div class="header-content" style="background: linear-gradient(135deg, #D45B41 0%, #b94a34 100%); padding: 40px 32px; text-align: center; position: relative;">
+        <!-- Decorative elements for visual appeal -->
+        <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #ffffff33 0%, #ffffff66 50%, #ffffff33 100%);"></div>
+        
+        <h1 class="brand-title" style="color: #ffffff; margin: 0 0 8px 0; font-size: 32px; font-weight: 600; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          epàlwi-rèbbo
+        </h1>
+        <p style="color: #ffffff; margin: 0; opacity: 0.95; font-size: 16px; font-weight: 400;">
+          Tu diccionario Español ↔ Ndowe
         </p>
-        <div style="text-align: center; margin: 32px 0;">
-          <a href="{{MAGIC_LINK}}" 
-            style="display: inline-block; background-color: #D45B41; color: #FFFFFF; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: bold; font-size: 16px; transition: background 0.2s, box-shadow 0.2s;"
-            onmouseover="this.style.backgroundColor='#b94a34'; this.style.boxShadow='0 4px 16px rgba(212,91,65,0.15)';"
-            onmouseout="this.style.backgroundColor='#D45B41'; this.style.boxShadow='none';"
+        
+        <!-- Language preservation badge -->
+        <div style="display: inline-block; margin-top: 16px; padding: 6px 12px; background-color: rgba(255,255,255,0.15); border-radius: 20px; font-size: 12px; color: #ffffff; font-weight: 500;">
+          🌍 Preservando idiomas ancestrales
+        </div>
+      </div>
+      
+      <!-- Main content -->
+      <div class="email-content" style="padding: 40px 32px; background-color: #ffffff;">
+        
+        <!-- Welcome message -->
+        <div style="text-align: center; margin-bottom: 32px;">
+          <div style="width: 60px; height: 4px; background: linear-gradient(90deg, #D45B41, #b94a34); border-radius: 2px; margin: 0 auto 24px auto;"></div>
+          <h2 class="main-title" style="color: #333333; margin: 0 0 12px 0; font-size: 24px; font-weight: 600; letter-spacing: -0.3px;">
+            ¡Bienvenido de vuelta!
+          </h2>
+          <p style="color: #666666; margin: 0; font-size: 16px;">
+            Tu enlace seguro de acceso está listo
+          </p>
+        </div>
+        
+        <!-- Security message -->
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%); border-left: 4px solid #D45B41; padding: 20px; border-radius: 8px; margin-bottom: 32px;">
+          <p style="color: #555555; margin: 0; font-size: 15px; line-height: 1.5;">
+            <strong>🔐 Acceso seguro:</strong> Este enlace mágico te permite acceder sin contraseña. 
+            Solo tú puedes usarlo y expira en 15 minutos por tu seguridad.
+          </p>
+        </div>
+        
+        <!-- Main message -->
+        <p style="color: #555555; margin: 0 0 32px 0; font-size: 16px; line-height: 1.6; text-align: center;">
+          Hemos recibido una solicitud para acceder a tu cuenta en epàlwi-rèbbo. 
+          <br><strong>Haz clic en el botón de abajo para continuar:</strong>
+        </p>
+        
+        <!-- CTA Button with enhanced design -->
+        <div style="text-align: center; margin: 40px 0;">
+          <a href="{{MAGIC_LINK}}" class="cta-button"
+            style="display: inline-block; 
+                   background: linear-gradient(135deg, #D45B41 0%, #b94a34 100%); 
+                   color: #ffffff; 
+                   text-decoration: none; 
+                   padding: 16px 40px; 
+                   border-radius: 12px; 
+                   font-weight: 600; 
+                   font-size: 16px; 
+                   letter-spacing: 0.3px;
+                   box-shadow: 0 4px 16px rgba(212, 91, 65, 0.3), 0 2px 8px rgba(212, 91, 65, 0.15);
+                   transition: all 0.2s ease;
+                   text-shadow: 0 1px 2px rgba(0,0,0,0.1);"
+            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 24px rgba(212, 91, 65, 0.4), 0 4px 12px rgba(212, 91, 65, 0.2)';"
+            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(212, 91, 65, 0.3), 0 2px 8px rgba(212, 91, 65, 0.15)';"
           >
-            Acceder a mi cuenta
+            ✨ Acceder a mi cuenta
           </a>
         </div>
-        <p style="color: #999999; margin: 24px 0 0 0; font-size: 14px; line-height: 1.5;">
-          Este enlace es válido por 15 minutos. Si no solicitaste este acceso, puedes ignorar este correo.
-        </p>
-        <div style="border-top: 1px solid #E0E0E0; margin: 24px 0 0 0; padding: 16px 0 0 0;">
-          <p style="color: #999999; margin: 0; font-size: 12px;">
-            © 2025 epàlwi-rèbbo - Preservando el idioma Ndowe
+        
+        <!-- Trial reminder (if applicable) -->
+        <div style="background: linear-gradient(135deg, #fef7e0 0%, #fef3c7 100%); border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 32px 0; text-align: center;">
+          <p style="color: #92400e; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">
+            🎁 PRUEBA GRATUITA ACTIVA
+          </p>
+          <p style="color: #b45309; margin: 0; font-size: 15px; line-height: 1.4;">
+            Tienes acceso completo a todas las funciones durante tu período de prueba. 
+            ¡Explora el diccionario y descubre la riqueza del idioma Ndowe!
+          </p>
+        </div>
+        
+        <!-- Alternative access method -->
+        <div style="text-align: center; margin-top: 32px;">
+          <p style="color: #888888; font-size: 14px; margin: 0 0 12px 0;">
+            ¿Problemas con el botón? Copia y pega este enlace:
+          </p>
+          <p style="background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 12px; font-family: monospace; font-size: 12px; color: #495057; word-break: break-all; margin: 0;">
+            {{MAGIC_LINK}}
+          </p>
+        </div>
+        
+        <!-- Security notice -->
+        <div class="text-muted" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e9ecef;">
+          <p style="color: #999999; margin: 0 0 8px 0; font-size: 14px; line-height: 1.5;">
+            <strong>⏰ Este enlace expira en 15 minutos</strong> por tu seguridad.
+          </p>
+          <p style="color: #999999; margin: 0; font-size: 14px; line-height: 1.5;">
+            Si no solicitaste este acceso, puedes ignorar este correo de forma segura. 
+            Tu cuenta permanece protegida.
           </p>
         </div>
       </div>
+      
+      <!-- Footer with enhanced branding -->
+      <div style="background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%); padding: 24px 32px; text-align: center; border-top: 1px solid #e9ecef;">
+        <div style="margin-bottom: 16px;">
+          <img src="https://via.placeholder.com/32x32/D45B41/ffffff?text=E" alt="epàlwi-rèbbo" style="width: 32px; height: 32px; border-radius: 50%; margin-bottom: 8px;">
+        </div>
+        <p class="footer-text" style="color: #666666; margin: 0 0 8px 0; font-size: 13px; font-weight: 500;">
+          © 2025 epàlwi-rèbbo
+        </p>
+        <p class="footer-text" style="color: #888888; margin: 0; font-size: 12px;">
+          Preservando y digitalizando el patrimonio lingüístico Ndowe para las futuras generaciones
+        </p>
+        
+        <!-- Social proof / trust indicators -->
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e9ecef;">
+          <p style="color: #999999; margin: 0; font-size: 11px;">
+            🛡️ Comunicación segura y cifrada • 🌍 Apoyado por la comunidad Ndowe
+          </p>
+        </div>
+      </div>
+      
     </div>
+    
+    <!-- Email client compatibility spacer -->
+    <div style="height: 40px;"></div>
   </body>
 </html> 

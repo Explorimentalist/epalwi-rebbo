@@ -168,7 +168,7 @@ async function sendMagicLinkEmail(email: string, token: string, redirectUrl: str
     const emailParams = new EmailParams()
       .setFrom(sentFrom)
       .setTo(recipients)
-      .setSubject('Tu enlace de acceso - epàlwi-rèbbo')
+      .setSubject('Tu enlace de acceso a la cuenta de Epàlwi-Rèbbo')
       .setHtml(htmlTemplate)
       .setText(getPlainTextVersion(magicLink))
 
@@ -260,10 +260,28 @@ export default defineEventHandler(async (event): Promise<MagicLinkResponse> => {
       })
     }
 
-    const origin = getHeader(event, 'origin') || 'http://localhost:4000'
-    const { email, redirectUrl = `${origin}/auth/verify` } = body
+    const config = useRuntimeConfig()
+    
+    // Smart URL detection: try origin header, then Vercel URL, then configured URL, then localhost
+    let baseUrl = getHeader(event, 'origin')
+    
+    if (!baseUrl) {
+      // Check for Vercel deployment URL
+      const vercelUrl = getHeader(event, 'x-forwarded-host')
+      if (vercelUrl) {
+        baseUrl = `https://${vercelUrl}`
+      } else {
+        // Fall back to configured URL
+        baseUrl = config.public.appUrl
+      }
+    }
+    
+    const { email, redirectUrl = `${baseUrl}/auth/verify` } = body
     
     console.log('🔧 Debug: Origin header:', getHeader(event, 'origin'))
+    console.log('🔧 Debug: Vercel host header:', getHeader(event, 'x-forwarded-host'))
+    console.log('🔧 Debug: Configured app URL:', config.public.appUrl)
+    console.log('🔧 Debug: Final base URL:', baseUrl)
     console.log('🔧 Debug: Redirect URL:', redirectUrl)
 
 
