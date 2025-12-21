@@ -89,6 +89,11 @@ async function sendMagicLinkEmail(email: string, token: string, redirectUrl: str
   // Development Mode: Just log the magic link instead of sending email
   const isDevelopment = process.env.NODE_ENV === 'development' || !config.mailersendApiKey || config.mailersendApiKey === 'your_value_here'
   
+  // Temporary: Add debug logging to see what's happening
+  console.log('🔧 Debug: NODE_ENV:', process.env['NODE_ENV'])
+  console.log('🔧 Debug: Has MailerSend API Key:', !!config.mailersendApiKey)
+  console.log('🔧 Debug: isDevelopment:', isDevelopment)
+  
   if (isDevelopment) {
     const magicLink = `${redirectUrl}?token=${token}`
     console.log('\n🔗 DEVELOPMENT MODE: Magic Link Generated')
