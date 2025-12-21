@@ -87,7 +87,8 @@ async function sendMagicLinkEmail(email: string, token: string, redirectUrl: str
   const config = useRuntimeConfig()
   
   // Development Mode: Just log the magic link instead of sending email
-  const isDevelopment = process.env.NODE_ENV === 'development' || !config.mailersendApiKey || config.mailersendApiKey === 'your_value_here'
+  // Temporarily force development mode due to MailerSend trial quota limits
+  const isDevelopment = true // process.env['NODE_ENV'] === 'development' || !config.mailersendApiKey || config.mailersendApiKey === 'your_value_here'
   
   // Temporary: Add debug logging to see what's happening
   console.log('🔧 Debug: NODE_ENV:', process.env['NODE_ENV'])
