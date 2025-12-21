@@ -148,7 +148,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Private keys (only available on server-side)
     jwtSecret: process.env['JWT_SECRET'] || '',
-    mailersendApiKey: process.env['MAILERSEND_API_KEY'] || '',
+    resendApiKey: process.env['RESEND_API_KEY'] || '',
     stripeSecretKey: process.env['STRIPE_SECRET_KEY'] || '',
     stripeWebhookSecret: process.env['STRIPE_WEBHOOK_SECRET'] || '',
     googleSheetsApiKey: process.env['GOOGLE_SHEETS_API_KEY'] || '',

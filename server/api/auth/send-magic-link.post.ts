@@ -4,7 +4,7 @@
  */
 
 import jwt from 'jsonwebtoken'
-import { MailerSend, EmailParams, Sender, Recipient } from 'mailersend'
+import { Resend } from 'resend'
 import type { MagicLinkRequest, MagicLinkResponse, JWTPayload } from '~/types/auth'
 
 // Rate limiting storage (in production, use Redis or database)
@@ -81,18 +81,17 @@ function generateMagicLinkToken(email: string): string {
 }
 
 /**
- * Send magic link email via MailerSend or development mode
+ * Send magic link email via Resend or development mode
  */
 async function sendMagicLinkEmail(email: string, token: string, redirectUrl: string): Promise<void> {
   const config = useRuntimeConfig()
   
   // Development Mode: Just log the magic link instead of sending email
-  // Temporarily force development mode due to MailerSend trial quota limits
-  const isDevelopment = true // process.env['NODE_ENV'] === 'development' || !config.mailersendApiKey || config.mailersendApiKey === 'your_value_here'
+  const isDevelopment = process.env['NODE_ENV'] === 'development' || !config['resendApiKey'] || config['resendApiKey'] === 'your_value_here'
   
   // Temporary: Add debug logging to see what's happening
   console.log('🔧 Debug: NODE_ENV:', process.env['NODE_ENV'])
-  console.log('🔧 Debug: Has MailerSend API Key:', !!config.mailersendApiKey)
+  console.log('🔧 Debug: Has Resend API Key:', !!config['resendApiKey'])
   console.log('🔧 Debug: isDevelopment:', isDevelopment)
   
   if (isDevelopment) {
@@ -105,42 +104,37 @@ async function sendMagicLinkEmail(email: string, token: string, redirectUrl: str
     return
   }
   
-  console.log('🔧 Debug: Checking MailerSend API key...', !!config.mailersendApiKey)
-  console.log('🔧 Debug: MailerSend API key length:', config.mailersendApiKey?.length || 0)
-  console.log('🔧 Debug: MailerSend API key starts with:', config.mailersendApiKey?.substring(0, 10) || 'N/A')
+  console.log('🔧 Debug: Checking Resend API key...', !!config['resendApiKey'])
+  console.log('🔧 Debug: Resend API key length:', (config['resendApiKey'] as string)?.length || 0)
+  console.log('🔧 Debug: Resend API key starts with:', (config['resendApiKey'] as string)?.substring(0, 10) || 'N/A')
   
-  if (!config.mailersendApiKey) {
-    console.error('❌ MailerSend API key not configured')
-    throw new Error('MailerSend API key not configured')
+  if (!config['resendApiKey']) {
+    console.error('❌ Resend API key not configured')
+    throw new Error('Resend API key not configured')
   }
   
-  if (config.mailersendApiKey.length < 20) {
-    console.error('❌ MailerSend API key too short')
-    throw new Error('MailerSend API key too short')
+  if ((config['resendApiKey'] as string).length < 20) {
+    console.error('❌ Resend API key too short')
+    throw new Error('Resend API key too short')
   }
 
-  let mailerSend
+  let resend
   try {
-    console.log('🔧 Debug: Initializing MailerSend...')
-    mailerSend = new MailerSend({
-      apiKey: config.mailersendApiKey,
-    })
-    console.log('✅ MailerSend initialized successfully')
+    console.log('🔧 Debug: Initializing Resend...')
+    resend = new Resend(config['resendApiKey'] as string)
+    console.log('✅ Resend initialized successfully')
   } catch (initError: any) {
-    console.error('❌ Failed to initialize MailerSend:', initError)
-    throw new Error(`Failed to initialize MailerSend: ${initError.message}`)
+    console.error('❌ Failed to initialize Resend:', initError)
+    throw new Error(`Failed to initialize Resend: ${initError.message}`)
   }
 
   const magicLink = `${redirectUrl}?token=${token}`
   console.log('🔧 Debug: Magic link generated:', magicLink)
   
-  // Validate sender email format - this might be the issue
-  const senderEmail = "noreply@test-eqvygm0jevwl0p7w.mlsender.net"
+  // Use Resend sender format
+  const senderEmail = "epàlwi-rèbbo <noreply@sópu.com>"
   console.log('🔧 Debug: Sender email:', senderEmail)
-  console.log('🔧 Debug: API Key starts with mlsn.:', config.mailersendApiKey.startsWith('mlsn.'))
-  
-  const sentFrom = new Sender(senderEmail, "epàlwi-rèbbo")
-  const recipients = [new Recipient(email, email)]
+  console.log('🔧 Debug: API Key starts with re_:', (config['resendApiKey'] as string)?.startsWith('re_'))
   
   console.log('🔧 Debug: Recipient email:', email)
 
@@ -257,23 +251,24 @@ Preservando el patrimonio lingüístico Ndowe
 
     console.log('✅ Inline email template ready')
 
-    const emailParams = new EmailParams()
-      .setFrom(sentFrom)
-      .setTo(recipients)
-      .setSubject('Tu enlace de acceso a la cuenta de Epàlwi-Rèbbo')
-      .setHtml(htmlTemplate)
-      .setText(getPlainTextVersion(magicLink))
+    const emailData = {
+      from: senderEmail,
+      to: [email],
+      subject: 'Tu enlace de acceso - epàlwi-rèbbo',
+      html: htmlTemplate,
+      text: getPlainTextVersion(magicLink)
+    }
 
-    console.log('🔧 Debug: Sending email via MailerSend...')
+    console.log('🔧 Debug: Sending email via Resend...')
     console.log('🔧 Debug: Email params:', {
-      from: sentFrom.email,
-      to: recipients.map(r => r.email),
+      from: senderEmail,
+      to: [email],
       subject: 'Tu enlace de acceso - epàlwi-rèbbo',
       hasHtml: !!htmlTemplate,
       hasText: !!getPlainTextVersion(magicLink)
     })
     
-    const response = await mailerSend.email.send(emailParams)
+    const response = await resend.emails.send(emailData)
     console.log(`✅ Magic link sent to ${email}`, response)
   } catch (error: any) {
     console.error('❌ Failed to send magic link email:', error)
@@ -293,9 +288,9 @@ Preservando el patrimonio lingüístico Ndowe
     
     // Handle different error types
     if (error.response) {
-      console.error('❌ MailerSend response status:', error.response.status)
-      console.error('❌ MailerSend response data:', error.response.data)
-      console.error('❌ MailerSend response headers:', error.response.headers)
+      console.error('❌ Resend response status:', error.response.status)
+      console.error('❌ Resend response data:', error.response.data)
+      console.error('❌ Resend response headers:', error.response.headers)
     }
     
     if (error.code) {
@@ -306,7 +301,7 @@ Preservando el patrimonio lingüístico Ndowe
       console.error('❌ Error details:', error.details)
     }
     
-    // Check for common MailerSend error patterns
+    // Check for common Resend error patterns
     let errorMessage = 'Failed to send email'
     
     // Try to extract meaningful error information
@@ -325,7 +320,7 @@ Preservando el patrimonio lingüístico Ndowe
     } else if (error.name) {
       errorMessage += ` (${error.name})`
     } else {
-      errorMessage += ': MailerSend API call failed - check API key and sender domain'
+      errorMessage += ': Resend API call failed - check API key and sender domain'
     }
     
     console.error('❌ Final error message:', errorMessage)
