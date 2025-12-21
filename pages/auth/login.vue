@@ -80,8 +80,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-const config = useRuntimeConfig()
-const route = useRoute()
+// Removed unused config and route imports
 
 // Page metadata
 useHead({
@@ -140,15 +139,8 @@ const handleLogin = async () => {
   try {
     isLoading.value = true
     
-    // Use Firebase Email Link in production (devAuthMock=false). Fallback to mock endpoint in dev.
-    const useEmailLink = !Boolean((config as any).public?.devAuthMock)
-    let response
-    if (useEmailLink) {
-      const returnPath = (route.query['return'] as string) || undefined
-      response = await authStore.sendEmailLink(form.value.email, returnPath)
-    } else {
-      response = await authStore.sendMagicLink(form.value.email)
-    }
+    // Always use custom magic link system
+    const response = await authStore.sendMagicLink(form.value.email)
     
     if (response.success) {
       showSuccessModal.value = true
