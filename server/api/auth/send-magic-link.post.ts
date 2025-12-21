@@ -144,31 +144,117 @@ async function sendMagicLinkEmail(email: string, token: string, redirectUrl: str
   console.log('🔧 Debug: Recipient email:', email)
 
   try {
-    // Load email template
-    console.log('🔧 Debug: Loading email template...')
-    let loadEmailTemplate, getPlainTextVersion
-    
-    try {
-      const emailUtils = await import('~/server/utils/email-templates')
-      loadEmailTemplate = emailUtils.loadEmailTemplate
-      getPlainTextVersion = emailUtils.getPlainTextVersion
-      console.log('✅ Email utilities imported successfully')
-    } catch (importError: any) {
-      console.error('❌ Failed to import email utilities:', importError)
-      throw new Error(`Failed to import email utilities: ${importError.message}`)
-    }
-    
-    let htmlTemplate
-    try {
-      htmlTemplate = await loadEmailTemplate('magic-link', {
-        MAGIC_LINK: magicLink,
-        USER_EMAIL: email
-      })
-      console.log('✅ Email template loaded successfully')
-    } catch (templateError: any) {
-      console.error('❌ Failed to load email template:', templateError)
-      throw new Error(`Failed to load email template: ${templateError.message}`)
-    }
+    // Inline email template (temporary fix for Vercel build issues)
+    console.log('🔧 Debug: Using inline email template...')
+    const htmlTemplate = `
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu enlace de acceso - epàlwi-rèbbo</title>
+    <style>
+      @media only screen and (max-width: 600px) {
+        .email-container { width: 100% !important; margin: 0 !important; }
+        .email-content { padding: 24px !important; }
+        .cta-button { padding: 14px 24px !important; font-size: 15px !important; }
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 20px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f3eeec 0%, #e8ddd9 100%); line-height: 1.6;">
+    <div class="email-container" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);">
+      
+      <!-- Header -->
+      <div style="background: linear-gradient(135deg, #D45B41 0%, #b94a34 100%); padding: 40px 32px; text-align: center;">
+        <h1 style="color: #ffffff; margin: 0 0 8px 0; font-size: 32px; font-weight: 600;">
+          epàlwi-rèbbo
+        </h1>
+        <p style="color: #ffffff; margin: 0; opacity: 0.95; font-size: 16px;">
+          Tu diccionario Español ↔ Ndowe
+        </p>
+      </div>
+      
+      <!-- Main content -->
+      <div class="email-content" style="padding: 40px 32px; background-color: #ffffff;">
+        <div style="text-align: center; margin-bottom: 32px;">
+          <h2 style="color: #333333; margin: 0 0 12px 0; font-size: 24px; font-weight: 600;">
+            ¡Bienvenido de vuelta!
+          </h2>
+          <p style="color: #666666; margin: 0; font-size: 16px;">
+            Tu enlace seguro de acceso está listo
+          </p>
+        </div>
+        
+        <p style="color: #555555; margin: 0 0 32px 0; font-size: 16px; text-align: center;">
+          Hemos recibido una solicitud para acceder a tu cuenta en epàlwi-rèbbo. 
+          <br><strong>Haz clic en el botón de abajo para continuar:</strong>
+        </p>
+        
+        <!-- CTA Button -->
+        <div style="text-align: center; margin: 40px 0;">
+          <a href="${magicLink}" class="cta-button"
+            style="display: inline-block; 
+                   background: linear-gradient(135deg, #D45B41 0%, #b94a34 100%); 
+                   color: #ffffff; 
+                   text-decoration: none; 
+                   padding: 16px 40px; 
+                   border-radius: 12px; 
+                   font-weight: 600; 
+                   font-size: 16px;">
+            ✨ Acceder a mi cuenta
+          </a>
+        </div>
+        
+        <!-- Alternative link -->
+        <div style="text-align: center; margin-top: 32px;">
+          <p style="color: #888888; font-size: 14px; margin: 0 0 12px 0;">
+            ¿Problemas con el botón? Copia y pega este enlace:
+          </p>
+          <p style="background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 12px; font-family: monospace; font-size: 12px; color: #495057; word-break: break-all; margin: 0;">
+            ${magicLink}
+          </p>
+        </div>
+        
+        <!-- Security notice -->
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e9ecef;">
+          <p style="color: #999999; margin: 0; font-size: 14px;">
+            <strong>⏰ Este enlace expira en 15 minutos</strong> por tu seguridad.
+            Si no solicitaste este acceso, puedes ignorar este correo.
+          </p>
+        </div>
+      </div>
+      
+      <!-- Footer -->
+      <div style="background: #f8f9fa; padding: 24px 32px; text-align: center; border-top: 1px solid #e9ecef;">
+        <p style="color: #666666; margin: 0 0 8px 0; font-size: 13px; font-weight: 500;">
+          © 2025 epàlwi-rèbbo
+        </p>
+        <p style="color: #888888; margin: 0; font-size: 12px;">
+          Preservando el patrimonio lingüístico Ndowe
+        </p>
+      </div>
+      
+    </div>
+  </body>
+</html>`.trim()
+
+    const getPlainTextVersion = (link: string) => `
+epàlwi-rèbbo - Tu diccionario Español ↔ Ndowe
+¡Bienvenido de vuelta!
+
+Hemos recibido una solicitud para acceder a tu cuenta.
+
+ACCEDER A MI CUENTA:
+${link}
+
+Este enlace expira en 15 minutos por tu seguridad.
+Si no solicitaste este acceso, puedes ignorar este correo.
+
+© 2025 epàlwi-rèbbo
+Preservando el patrimonio lingüístico Ndowe
+`.trim()
+
+    console.log('✅ Inline email template ready')
 
     const emailParams = new EmailParams()
       .setFrom(sentFrom)
