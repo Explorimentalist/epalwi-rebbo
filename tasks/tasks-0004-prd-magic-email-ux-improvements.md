@@ -33,14 +33,14 @@ Based on PRD: `0004-prd-magic-email-ux-improvements.md`
   - [x] 1.5 Remove all emoji characters from email template (✨, ⏰, 🔐, etc.)
   - [x] 1.6 Test API endpoint with enhanced rate limiting using existing request patterns
 
-- [ ] 2.0 Update Magic Link Modal UI with Spam Reminder and Resend Functionality
-  - [ ] 2.1 Add spam folder reminder text to existing success modal in `login.vue`
-  - [ ] 2.2 Add "Resend Email" secondary button to modal using Design System V2 `ds-btn-secondary` class
-  - [ ] 2.3 Implement resend functionality that calls the same API endpoint with current email
-  - [ ] 2.4 Add email send count display (e.g., "Email sent (2/5)") below main message
-  - [ ] 2.5 Show success confirmation when email is successfully resent
-  - [ ] 2.6 Handle rate limiting errors with appropriate user feedback
-  - [ ] 2.7 Update modal styling to accommodate new elements while maintaining responsive design
+- [x] 2.0 Update Magic Link Modal UI with Spam Reminder and Resend Functionality
+  - [x] 2.1 Add spam folder reminder text to existing success modal in `login.vue`
+  - [x] 2.2 Add "Resend Email" secondary button to modal using Design System V2 `ds-btn-secondary` class
+  - [x] 2.3 Implement resend functionality that calls the same API endpoint with current email
+  - [x] 2.4 Add email send count display (e.g., "Email sent (2/5)") below main message
+  - [x] 2.5 Show success confirmation when email is successfully resent
+  - [x] 2.6 Handle rate limiting errors with appropriate user feedback
+  - [x] 2.7 Update modal styling to accommodate new elements while maintaining responsive design
 
 - [ ] 3.0 Integrate Logo and Custom Typography into Email Template
   - [ ] 3.1 Replace current email header logo reference with `/public/logo.svg` content
