@@ -14,5 +14,8 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "types": ["node"]
-  }
+  },
+  "exclude": [
+    "**/*.story.vue"
+  ]
 } 

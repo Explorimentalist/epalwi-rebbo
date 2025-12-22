@@ -25,6 +25,11 @@ export const useAuthStore = defineStore('auth', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const initialized = ref(false)
+  
+  // Magic link resend state management
+  const emailSendCount = ref<number>(0)
+  const isResending = ref(false)
+  const currentEmail = ref<string | null>(null)
 
   // Client-only state (not serialized) - use shallowRef for complex objects
   const firebaseUser = shallowRef<FirebaseUser | null>(null)
@@ -52,6 +57,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   const subscriptionStatus = computed(() => {
     return user.value?.subscription?.status ?? 'trial'
+  })
+
+  // Resend functionality computed properties
+  const canResend = computed(() => {
+    return emailSendCount.value < 5 // Rate limit is 5 attempts per hour
   })
 
   // Helper functions
@@ -109,6 +119,23 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = loading
   }
 
+  // Resend state management helper functions
+  const resetEmailSendCount = () => {
+    emailSendCount.value = 0
+    currentEmail.value = null
+  }
+
+  const incrementSendCount = (email: string) => {
+    if (currentEmail.value !== email) {
+      // Email changed, reset counter
+      emailSendCount.value = 1
+      currentEmail.value = email
+    } else {
+      // Same email, increment counter
+      emailSendCount.value += 1
+    }
+  }
+
   const sendMagicLink = async (email: string): Promise<MagicLinkResponse> => {
     setLoading(true)
     clearError()
@@ -127,6 +154,9 @@ export const useAuthStore = defineStore('auth', () => {
         throw new Error(response.error || 'Failed to send magic link')
       }
 
+      // Track successful send
+      incrementSendCount(email)
+      
       return response
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to send magic link'
@@ -138,6 +168,59 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const resendMagicLink = async (email?: string): Promise<MagicLinkResponse> => {
+    const targetEmail = email || currentEmail.value
+    
+    if (!targetEmail) {
+      return {
+        success: false,
+        message: 'No email address provided',
+        error: 'No email address provided'
+      }
+    }
+
+    if (!canResend.value) {
+      return {
+        success: false,
+        message: 'Rate limit exceeded. Please wait before trying again.',
+        error: 'Rate limit exceeded'
+      }
+    }
+
+    isResending.value = true
+    clearError()
+
+    try {
+      // Call the server API to send magic link
+      const response = await $fetch<MagicLinkResponse>('/api/auth/send-magic-link', {
+        method: 'POST',
+        body: { 
+          email: targetEmail,
+          redirectUrl: `${window.location.origin}/auth/verify`
+        }
+      })
+
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to resend magic link')
+      }
+
+      // Track successful resend
+      incrementSendCount(targetEmail)
+      
+      return response
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to resend magic link'
+      setError(errorMessage)
+      return {
+        success: false,
+        message: errorMessage,
+        error: errorMessage
+      }
+    } finally {
+      isResending.value = false
     }
   }
 
@@ -590,6 +673,9 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading: readonly(isLoading),
     error: readonly(error),
     initialized: readonly(initialized),
+    emailSendCount: readonly(emailSendCount),
+    isResending: readonly(isResending),
+    currentEmail: readonly(currentEmail),
     
     // Client-only state (not serialized)
     firebaseUser: readonly(firebaseUser),
@@ -601,9 +687,11 @@ export const useAuthStore = defineStore('auth', () => {
     trialDaysRemaining,
     canAccessFeatures,
     subscriptionStatus,
+    canResend,
     
     // Actions
     sendMagicLink,
+    resendMagicLink,
     sendEmailLink,
     completeEmailLink,
     isEmailLink,
@@ -614,6 +702,7 @@ export const useAuthStore = defineStore('auth', () => {
     deleteAccount,
     initializeAuth,
     setError,
-    clearError
+    clearError,
+    resetEmailSendCount
   }
 }) 

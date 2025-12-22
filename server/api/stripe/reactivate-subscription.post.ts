@@ -4,7 +4,7 @@ import Stripe from 'stripe'
 // Initialize Stripe with secret key
 const config = useRuntimeConfig()
 const stripe = new Stripe(config.stripeSecretKey, {
-  apiVersion: '2025-07-30.basil'
+  apiVersion: '2025-08-27.basil'
 })
 
 interface ReactivateSubscriptionRequest {

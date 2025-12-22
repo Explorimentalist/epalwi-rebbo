@@ -1,4 +1,4 @@
-# Task List: Magic Email UX Improvements
+1# Task List: Magic Email UX Improvements
 
 Based on PRD: `0004-prd-magic-email-ux-improvements.md`
 

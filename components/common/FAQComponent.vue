@@ -15,8 +15,7 @@
             <span class="question-text">{{ faq.question }}</span>
             <Icon 
               name="heroicons:chevron-down" 
-              class="chevron-icon"
-              :class="{ 'rotated': activeFAQ === index }"
+              :class="getChevronClasses(index)"
             />
           </div>
           
@@ -39,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, computed } from 'vue'
 
 export interface FAQ {
   question: string
@@ -75,6 +74,12 @@ const calculateAnswerHeights = () => {
       }
     }
   })
+}
+
+const getChevronClasses = (index: number): string => {
+  return activeFAQ.value === index 
+    ? 'chevron-icon rotated'
+    : 'chevron-icon'
 }
 
 onMounted(() => {

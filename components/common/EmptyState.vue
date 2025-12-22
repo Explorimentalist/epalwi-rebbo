@@ -38,7 +38,7 @@
     </button>
     
     <!-- Additional Content Slot -->
-    <div v-if="$slots.default" class="empty-state__content">
+    <div v-if="$slots['default']" class="empty-state__content">
       <slot />
     </div>
   </div>

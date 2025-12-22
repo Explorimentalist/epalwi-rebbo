@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
     const config = useRuntimeConfig()
     const stripe = new Stripe(config.stripeSecretKey, {
-      apiVersion: '2024-06-20'
+      apiVersion: '2025-08-27.basil'
     })
 
     const session = await stripe.checkout.sessions.retrieve(sessionId)

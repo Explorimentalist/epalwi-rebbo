@@ -97,6 +97,8 @@ export interface MagicLinkResponse {
   success: boolean
   message: string
   error?: string
+  attemptCount?: number
+  maxAttempts?: number
 }
 
 /**

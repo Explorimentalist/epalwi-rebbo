@@ -15,32 +15,18 @@ export default defineConfig({
       '@@': rootDir
     }
   },
-  test: { reporters: 'dot', globals: true },
-  projects: [
-    {
-      test: {
-        name: 'node',
-        environment: 'node',
-        include: [
-          'server/**/*.test.ts',
-          'middleware/**/*.test.ts',
-          'utils/**/*.test.ts',
-          'composables/**/*.test.ts'
-        ],
-        exclude: ['node_modules', '.nuxt', '.output']
-      }
-    },
-    {
-      test: {
-        name: 'dom',
-        environment: 'happy-dom',
-        setupFiles: [resolve(rootDir, 'tests/setup.ts')],
-        include: [
-          'components/**/*.test.ts',
-          'pages/**/*.test.ts'
-        ],
-        exclude: ['node_modules', '.nuxt', '.output']
-      }
-    }
-  ]
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+    setupFiles: [resolve(rootDir, 'tests/setup.ts')],
+    include: [
+      'server/**/*.test.ts',
+      'middleware/**/*.test.ts',
+      'utils/**/*.test.ts',
+      'composables/**/*.test.ts',
+      'components/**/*.test.ts',
+      'pages/**/*.test.ts'
+    ],
+    exclude: ['node_modules', '.nuxt', '.output']
+  }
 })

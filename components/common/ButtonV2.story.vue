@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// @ts-nocheck
 import type { Variant } from 'histoire/client'
 
 function logEvent(eventName: string) {

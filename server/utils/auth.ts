@@ -35,7 +35,11 @@ export async function validateUserToken(event: H3Event): Promise<{ uid: string; 
     // Ensure Firebase Admin is initialized before verifying
     const adminAuth = getFirebaseAdminAuth()
     const decoded = await adminAuth.verifyIdToken(token)
-    return { uid: decoded.uid, email: decoded.email ?? undefined }
+    const result: { uid: string; email?: string } = { uid: decoded.uid }
+    if (decoded.email) {
+      result.email = decoded.email
+    }
+    return result
   } catch (err) {
     console.error('Token validation failed:', err)
     return null

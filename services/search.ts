@@ -230,7 +230,9 @@ export class SearchService {
         score: 1.0, // Perfect match
         matchType: 'exact' as const,
         matchedFields: [query.language],
-        ...(sourceOverride ? { sourceOverride, crossRefFrom, crossRefTarget } : {})
+        ...(sourceOverride ? { sourceOverride } : {}),
+        ...(crossRefFrom ? { crossRefFrom } : {}),
+        ...(crossRefTarget ? { crossRefTarget } : {})
       }
     })
   }
@@ -353,7 +355,8 @@ export class SearchService {
       ndoweIndex: new Map(),
       fuseIndex: null, // Will be set later
       entryMap: new Map(),
-      normalizedMap: new Map()
+      totalEntries: 0, // Will be set after processing
+      lastUpdated: Date.now()
     }
 
     // Build entry map and process each entry
@@ -362,6 +365,7 @@ export class SearchService {
 
     for (const entry of entries) {
       searchIndex.entryMap.set(entry.id, entry)
+      searchIndex.totalEntries++ // Count entries
 
       // Track headword mapping for cross-ref resolution
       const headword = entry.españolNormalized
@@ -601,11 +605,12 @@ export class SearchService {
   /**
    * Create standardized error objects
    */
-  private createError(code: DictionaryError['code'], message: string, originalError?: any): DictionaryError {
+  private createError(code: DictionaryError['code'], message: string, _originalError?: any): DictionaryError {
     return {
+      name: 'DictionaryError',
       code,
       message,
-      details: originalError?.message || originalError?.toString()
+      timestamp: Date.now()
     }
   }
 }

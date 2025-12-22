@@ -27,7 +27,7 @@ const faqs: FAQ[] = [
   },
   {
     question: "¿Con quién contacto si tengo algún problema?",
-    answer: "Visita la sección de contacto o escribe a soporte@epalwi‑rebbo.com y te ayudaremos."
+    answer: "Visita la sección de contacto o escribe a ngatye@hey-oko.com y te ayudaremos."
   }
 ]
 </script>

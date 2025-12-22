@@ -19,7 +19,6 @@
       <div class="paywall__actions">
         <slot name="actions">
           <button v-if="showUpgrade" class="paywall__cta" @click="onUpgrade">
-            <Icon name="credit-card" class="cta__icon" />
             {{ ctaText }}
           </button>
           <button class="paywall__secondary" @click="onLogin">
@@ -118,19 +117,19 @@ const onLogin = () => {
   border: 1px solid var(--ds-border, #e5e7eb);
   border-radius: var(--ds-radius, 12px);
   box-shadow: var(--ds-shadow-md, 0 8px 24px rgba(0,0,0,0.08));
-  padding: 20px;
+  padding: 32px 24px;
 }
 
-.paywall__header { text-align: center; margin-bottom: 12px; }
+.paywall__header { text-align: left; margin-bottom: 20px; }
 .paywall__icon { width: 28px; height: 28px; color: var(--ds-primary, #D45B41); }
 .paywall__title { font-size: 1.25rem; margin-top: 8px; margin-bottom: 4px; }
 .paywall__subtitle { color: var(--ds-muted-foreground, #6b7280); font-size: 0.95rem; }
 
-.paywall__benefits { margin: 12px 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.paywall__benefits { margin: 20px 0; padding: 0; list-style: none; display: grid; gap: 12px; }
 .paywall__benefit { display: flex; gap: 8px; align-items: center; }
 .benefit__icon { width: 16px; height: 16px; color: var(--ds-primary, #D45B41); }
 
-.paywall__actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; justify-content: center; }
+.paywall__actions { display: flex; gap: 8px; margin-top: 24px; flex-wrap: wrap; justify-content: flex-start; }
 .paywall__cta { 
   display: inline-flex; align-items: center; gap: 6px; 
   background: var(--ds-primary, #D45B41); color: #fff; border: 1px solid var(--ds-primary, #D45B41);
@@ -146,6 +145,6 @@ const onLogin = () => {
 }
 .secondary__icon { width: 18px; height: 18px; }
 
-.paywall__support { margin-top: 12px; text-align: center; font-size: 0.875rem; color: var(--ds-muted-foreground, #6b7280); }
+.paywall__support { margin-top: 20px; text-align: left; font-size: 0.875rem; color: var(--ds-muted-foreground, #6b7280); }
 .paywall__link { color: var(--ds-primary, #D45B41); text-decoration: underline; }
 </style>

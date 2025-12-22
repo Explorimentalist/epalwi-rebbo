@@ -5,7 +5,7 @@ import { getFirebaseAdminDb } from '~/services/firebase-admin'
 // Initialize Stripe with secret key
 const config = useRuntimeConfig()
 const stripe = new Stripe(config.stripeSecretKey, {
-  apiVersion: '2024-06-20'
+  apiVersion: '2025-08-27.basil'
 })
 
 interface CreateCheckoutSessionRequest {
@@ -18,7 +18,7 @@ interface CreateCheckoutSessionRequest {
 
 interface CreateCheckoutSessionResponse {
   sessionId: string
-  url?: string
+  url: string
 }
 
 export default defineEventHandler(async (event): Promise<CreateCheckoutSessionResponse> => {
@@ -58,11 +58,19 @@ export default defineEventHandler(async (event): Promise<CreateCheckoutSessionRe
 
       if (!customerId) {
         // Create a lightweight customer with default billing country ES
-        const customer = await stripe.customers.create({
-          email: customerEmail,
-          address: { country: 'ES' },
-          metadata: userId ? { userId } : undefined
-        })
+        const customerData: any = {
+          address: { country: 'ES' }
+        }
+        
+        if (customerEmail) {
+          customerData.email = customerEmail
+        }
+        
+        if (userId) {
+          customerData.metadata = { userId }
+        }
+        
+        const customer = await stripe.customers.create(customerData)
         customerId = customer.id
 
         // Persist on user profile if available
@@ -88,7 +96,7 @@ export default defineEventHandler(async (event): Promise<CreateCheckoutSessionRe
              ],
              success_url: body.successUrl,
              cancel_url: body.cancelUrl,
-             customer: customerId,
+             ...(customerId ? { customer: customerId } : {}),
              client_reference_id: userId,
              subscription_data: {
                trial_period_days: 14, // 14-day free trial
@@ -113,9 +121,16 @@ export default defineEventHandler(async (event): Promise<CreateCheckoutSessionRe
              }
            })
 
+    if (!session.url) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Session URL not generated'
+      })
+    }
+
     const response: CreateCheckoutSessionResponse = {
       sessionId: session.id,
-      url: session.url || undefined
+      url: session.url
     }
 
     return response
