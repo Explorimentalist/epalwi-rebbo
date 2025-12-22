@@ -12,36 +12,81 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
 
 // Rate limiting configuration
 const RATE_LIMIT = {
-  maxAttempts: 3,
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  maxAttempts: 5,
+  windowMs: 60 * 60 * 1000, // 60 minutes (1 hour)
 }
 
 /**
- * Check if email is rate limited
+ * Rate limit check result
  */
-function isRateLimited(email: string): boolean {
+interface RateLimitResult {
+  isLimited: boolean
+  currentCount: number
+  maxAttempts: number
+  resetTime: number
+}
+
+/**
+ * Check email rate limit and return detailed information
+ */
+function checkRateLimit(email: string): RateLimitResult {
   const now = Date.now()
   const userLimit = rateLimitStore.get(email)
 
   if (!userLimit) {
     // First request
-    rateLimitStore.set(email, { count: 1, resetTime: now + RATE_LIMIT.windowMs })
-    return false
+    const newResetTime = now + RATE_LIMIT.windowMs
+    rateLimitStore.set(email, { count: 1, resetTime: newResetTime })
+    return {
+      isLimited: false,
+      currentCount: 1,
+      maxAttempts: RATE_LIMIT.maxAttempts,
+      resetTime: newResetTime
+    }
   }
 
   if (now > userLimit.resetTime) {
     // Reset window
-    rateLimitStore.set(email, { count: 1, resetTime: now + RATE_LIMIT.windowMs })
-    return false
+    const newResetTime = now + RATE_LIMIT.windowMs
+    rateLimitStore.set(email, { count: 1, resetTime: newResetTime })
+    return {
+      isLimited: false,
+      currentCount: 1,
+      maxAttempts: RATE_LIMIT.maxAttempts,
+      resetTime: newResetTime
+    }
   }
 
   if (userLimit.count >= RATE_LIMIT.maxAttempts) {
-    return true
+    return {
+      isLimited: true,
+      currentCount: userLimit.count,
+      maxAttempts: RATE_LIMIT.maxAttempts,
+      resetTime: userLimit.resetTime
+    }
   }
 
   // Increment count
   userLimit.count++
-  return false
+  return {
+    isLimited: false,
+    currentCount: userLimit.count,
+    maxAttempts: RATE_LIMIT.maxAttempts,
+    resetTime: userLimit.resetTime
+  }
+}
+
+/**
+ * Check if email is rate limited (legacy function for backward compatibility)
+ */
+function isRateLimited(email: string): boolean {
+  const result = checkRateLimit(email)
+  // Don't increment count for this check, so we need to decrement if it was incremented
+  const userLimit = rateLimitStore.get(email)
+  if (userLimit && !result.isLimited) {
+    userLimit.count--
+  }
+  return result.isLimited
 }
 
 /**
@@ -176,7 +221,7 @@ async function sendMagicLinkEmail(email: string, token: string, redirectUrl: str
             ¡Bienvenido de vuelta!
           </h2>
           <p style="color: #666666; margin: 0; font-size: 16px;">
-            Tu enlace seguro de acceso está listo
+            Un último paso y estas listo para encontrar la palabra que quieres
           </p>
         </div>
         
@@ -196,7 +241,7 @@ async function sendMagicLinkEmail(email: string, token: string, redirectUrl: str
                    border-radius: 12px; 
                    font-weight: 600; 
                    font-size: 16px;">
-            ✨ Acceder a mi cuenta
+            Acceder a mi cuenta
           </a>
         </div>
         
@@ -213,7 +258,7 @@ async function sendMagicLinkEmail(email: string, token: string, redirectUrl: str
         <!-- Security notice -->
         <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e9ecef;">
           <p style="color: #999999; margin: 0; font-size: 14px;">
-            <strong>⏰ Este enlace expira en 15 minutos</strong> por tu seguridad.
+            <strong>Este enlace expira en 15 minutos</strong> por tu seguridad.
             Si no solicitaste este acceso, puedes ignorar este correo.
           </p>
         </div>
@@ -381,12 +426,30 @@ export default defineEventHandler(async (event): Promise<MagicLinkResponse> => {
       })
     }
 
-    // Check rate limiting
-    if (isRateLimited(email)) {
-      console.error('❌ Rate limited:', email)
+    // Check rate limiting with detailed info
+    const rateLimitResult = checkRateLimit(email)
+    if (rateLimitResult.isLimited) {
+      console.error('❌ Rate limited:', email, `(${rateLimitResult.currentCount}/${rateLimitResult.maxAttempts})`)
+      
+      // Calculate remaining time in human-readable format
+      const now = Date.now()
+      const remainingMs = rateLimitResult.resetTime - now
+      const remainingMinutes = Math.ceil(remainingMs / (1000 * 60))
+      
+      // Create user-friendly error message
+      const userMessage = remainingMinutes > 60 
+        ? `Has alcanzado el límite de ${rateLimitResult.maxAttempts} intentos. Puedes intentar nuevamente en ${Math.ceil(remainingMinutes / 60)} hora(s).`
+        : `Has alcanzado el límite de ${rateLimitResult.maxAttempts} intentos. Puedes intentar nuevamente en ${remainingMinutes} minuto(s).`
+      
       throw createError({
         statusCode: 429,
-        statusMessage: 'Too many requests. Please try again in 15 minutes.'
+        statusMessage: userMessage,
+        data: {
+          currentCount: rateLimitResult.currentCount,
+          maxAttempts: rateLimitResult.maxAttempts,
+          resetTime: rateLimitResult.resetTime,
+          remainingMinutes: remainingMinutes
+        }
       })
     }
 
@@ -414,7 +477,9 @@ export default defineEventHandler(async (event): Promise<MagicLinkResponse> => {
     console.log('✅ Magic link process completed successfully')
     return {
       success: true,
-      message: 'Enlace de acceso enviado. Revisa tu correo electrónico.'
+      message: 'Enlace de acceso enviado. Revisa tu correo electrónico.',
+      attemptCount: rateLimitResult.currentCount,
+      maxAttempts: rateLimitResult.maxAttempts
     }
 
   } catch (error: any) {
