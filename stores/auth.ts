@@ -274,7 +274,15 @@ export const useAuthStore = defineStore('auth', () => {
       // In development mode with mock tokens, manually set the user state
       if (import.meta.dev && response.firebaseToken?.startsWith('dev_mock_token_') && response.user) {
         console.log('🔧 Debug: Development mode - manually setting user state')
-        user.value = response.user
+        
+        // Recalculate trial information to ensure it's current
+        const trial = calculateTrialInfo(response.user.createdAt)
+        console.log('🔧 Debug: Recalculated trial info:', trial)
+        
+        user.value = {
+          ...response.user,
+          trial
+        }
         // Create a mock Firebase user for compatibility
         firebaseUser.value = {
           uid: response.user.uid,
@@ -523,7 +531,15 @@ export const useAuthStore = defineStore('auth', () => {
                 const persisted = sessionStorage.getItem('dev-auth-user')
                 if (devAuth && persisted) {
                   const parsed = JSON.parse(persisted)
-                  user.value = parsed
+                  
+                  // Recalculate trial information when restoring from session storage
+                  const trial = calculateTrialInfo(parsed.createdAt)
+                  console.log('🔧 Debug: Restored auth - recalculated trial info:', trial)
+                  
+                  user.value = {
+                    ...parsed,
+                    trial
+                  }
                   // Provide a minimal mock firebase user for downstream consumers
                   firebaseUser.value = {
                     uid: parsed.uid,
