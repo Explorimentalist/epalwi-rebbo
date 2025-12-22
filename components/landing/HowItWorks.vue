@@ -161,19 +161,27 @@ const props = withDefaults(defineProps<Props>(), {
       .step-item {
         padding: 12px 16px;
         gap: 20px;
-        height: 70px;
+        height: auto;
+        min-height: 70px;
+        align-items: flex-start;
         
         .step-number {
           font-size: 28px;
           line-height: 40px;
-          height: 40px;
-          width: 15px;
+          height: auto;
+          width: auto;
+          margin-top: 4px;
+          align-self: flex-start;
         }
         
         .step-text {
           font-size: 28px;
           line-height: 40px;
-          height: 40px;
+          height: auto;
+          flex: 1;
+          white-space: normal;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
         }
         
         &:hover {
@@ -195,19 +203,27 @@ const props = withDefaults(defineProps<Props>(), {
       .step-item {
         padding: 8px 12px;
         gap: 16px;
-        height: 60px;
+        height: auto;
+        min-height: 60px;
+        align-items: flex-start;
         
         .step-number {
           font-size: 24px;
           line-height: 36px;
-          height: 36px;
-          width: 12px;
+          height: auto;
+          width: auto;
+          margin-top: 2px;
+          align-self: flex-start;
         }
         
         .step-text {
           font-size: 24px;
           line-height: 36px;
-          height: 36px;
+          height: auto;
+          flex: 1;
+          white-space: normal;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
         }
       }
     }
