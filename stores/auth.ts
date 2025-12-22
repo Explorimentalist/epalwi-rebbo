@@ -358,9 +358,27 @@ export const useAuthStore = defineStore('auth', () => {
       if (import.meta.dev && response.firebaseToken?.startsWith('dev_mock_token_') && response.user) {
         console.log('🔧 Debug: Development mode - manually setting user state')
         
-        // Recalculate trial information to ensure it's current
-        const trial = calculateTrialInfo(response.user.createdAt)
-        console.log('🔧 Debug: Recalculated trial info:', trial)
+        // In development mode, trust the trial data from the API response since it's correctly calculated
+        // Only recalculate if trial data is missing or invalid
+        let trial = response.user.trial
+        if (!trial || !trial.endDate || !trial.startDate) {
+          trial = calculateTrialInfo(response.user.createdAt)
+          console.log('🔧 Debug: Recalculated trial info due to missing data:', trial)
+        } else {
+          // Ensure dates are proper Date objects (they may have been serialized as strings)
+          trial = {
+            ...trial,
+            startDate: trial.startDate instanceof Date ? trial.startDate : new Date(trial.startDate),
+            endDate: trial.endDate instanceof Date ? trial.endDate : new Date(trial.endDate)
+          }
+          // Recalculate daysRemaining and isExpired to ensure they're current
+          const now = new Date()
+          const daysRemaining = Math.max(0, Math.ceil((trial.endDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)))
+          const isExpired = now > trial.endDate
+          trial.daysRemaining = daysRemaining
+          trial.isExpired = isExpired
+          console.log('🔧 Debug: Using trial info from API response (dates normalized):', trial)
+        }
         
         user.value = {
           ...response.user,
