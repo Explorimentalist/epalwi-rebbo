@@ -131,8 +131,8 @@ async function sendMagicLinkEmail(email: string, token: string, redirectUrl: str
   const magicLink = `${redirectUrl}?token=${token}`
   console.log('🔧 Debug: Magic link generated:', magicLink)
   
-  // Use Resend sender format with ASCII-only characters
-  const senderEmail = "Epalwi-Rebbo <noreply@epalwi-rebbo.com>"
+  // Use Resend sender format with verified domain
+  const senderEmail = "Epalwi-Rebbo <noreply@epalwi-rebbo.xn--spu-gna.com>"
   console.log('🔧 Debug: Sender email:', senderEmail)
   console.log('🔧 Debug: API Key starts with re_:', (config['resendApiKey'] as string)?.startsWith('re_'))
   
