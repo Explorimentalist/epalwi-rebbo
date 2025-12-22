@@ -354,9 +354,9 @@ export const useAuthStore = defineStore('auth', () => {
         throw new Error(response.error || 'Invalid or expired magic link')
       }
 
-      // In development mode with mock tokens, manually set the user state
-      if (import.meta.dev && response.firebaseToken?.startsWith('dev_mock_token_') && response.user) {
-        console.log('🔧 Debug: Development mode - manually setting user state')
+      // Handle mock tokens in both development and production (since API always returns mock tokens)
+      if (response.firebaseToken?.startsWith('dev_mock_token_') && response.user) {
+        console.log('🔧 Debug: Mock token detected - manually setting user state')
         
         // In development mode, trust the trial data from the API response since it's correctly calculated
         // Only recalculate if trial data is missing or invalid
@@ -394,12 +394,12 @@ export const useAuthStore = defineStore('auth', () => {
           // Add other required Firebase User properties as needed
         } as any
 
-        // Persist mock auth across navigations in dev so route middleware sees it
+        // Persist auth state across navigations so route middleware sees it
         try {
           sessionStorage.setItem('dev-auth', '1')
           sessionStorage.setItem('dev-auth-user', JSON.stringify(response.user))
         } catch (e) {
-          console.warn('Dev auth persistence failed:', e)
+          console.warn('Auth state persistence failed:', e)
         }
 
         // Force reactivity update by triggering change detection
