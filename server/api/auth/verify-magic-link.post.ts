@@ -4,9 +4,7 @@
  */
 
 import jwt from 'jsonwebtoken'
-import { getAuth } from 'firebase-admin/auth'
-import { getFirestore } from 'firebase-admin/firestore'
-import { initializeApp, getApps, cert } from 'firebase-admin/app'
+import { getFirebaseAdminAuth, getFirebaseAdminDb } from '~/services/firebase-admin'
 import type { 
   TokenVerificationPayload, 
   TokenVerificationResponse, 
@@ -14,26 +12,6 @@ import type {
   UserProfile,
   FirebaseCustomClaims 
 } from '~/types/auth'
-
-// Initialize Firebase Admin SDK
-function initFirebaseAdmin() {
-  if (getApps().length === 0) {
-    const config = useRuntimeConfig()
-    
-    try {
-      // For development, we'll use a mock approach since we don't have proper credentials
-      // In production, you should use Application Default Credentials or a service account key
-      console.log('🔧 Debug: Skipping Firebase Admin initialization for development')
-      console.log('⚠️ Note: This is a development-only approach. Production requires proper credentials.')
-      
-      // We'll handle user creation differently in development
-      return
-    } catch (error) {
-      console.error('❌ Failed to initialize Firebase Admin:', error)
-      throw error
-    }
-  }
-}
 
 /**
  * Verify JWT token
@@ -72,66 +50,122 @@ function verifyMagicLinkToken(token: string): JWTPayload {
 }
 
 /**
- * Create or get user profile (Development Mode)
- * In development, we'll create a mock user profile without Firebase Admin SDK
+ * Create or get user profile using Firebase Admin
  */
 async function createOrGetUserProfile(email: string): Promise<UserProfile> {
-  console.log('🔧 Debug: Creating mock user profile for development')
+  console.log('🔧 Debug: Creating/getting user profile via Firebase Admin')
   
   try {
-    // For development, create a mock user profile
+    const adminAuth = getFirebaseAdminAuth()
+    const adminDb = getFirebaseAdminDb()
+    
+    // Try to get existing user by email
+    let userRecord
+    try {
+      userRecord = await adminAuth.getUserByEmail(email)
+      console.log('✅ Existing user found:', userRecord.uid)
+    } catch (error) {
+      // User doesn't exist, create new one
+      console.log('🔧 Debug: User not found, creating new user...')
+      userRecord = await adminAuth.createUser({
+        email,
+        emailVerified: true
+      })
+      console.log('✅ New user created:', userRecord.uid)
+    }
+    
+    // Get or create user document in Firestore
+    const userDocRef = adminDb.collection('users').doc(userRecord.uid)
+    const userDoc = await userDocRef.get()
+    
     const now = new Date()
     const trialEndDate = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)) // 14 days trial
     
-    // Generate a mock UID
-    const mockUid = `dev_${email.replace('@', '_').replace('.', '_')}_${Date.now()}`
+    let userProfile: UserProfile
     
-    const userProfile: UserProfile = {
-      uid: mockUid,
-      email,
-      displayName: null,
-      photoURL: null,
-      role: 'user',
-      createdAt: now,
-      lastLoginAt: now,
-      subscription: {
-        status: 'trial'
-      },
-      trial: {
-        startDate: now,
-        endDate: trialEndDate,
-        daysRemaining: 14,
-        isExpired: false
-      },
-      emailVerified: true,
-      isActive: true
+    if (userDoc.exists) {
+      // Update existing profile
+      const data = userDoc.data()!
+      userProfile = {
+        uid: userRecord.uid,
+        email: userRecord.email!,
+        displayName: userRecord.displayName || undefined,
+        photoURL: userRecord.photoURL || undefined,
+        role: data['role'] || 'user',
+        createdAt: data['createdAt']?.toDate() || now,
+        lastLoginAt: now,
+        subscription: data['subscription'] || { status: 'trial' },
+        trial: data['trial'] || {
+          startDate: data['createdAt']?.toDate() || now,
+          endDate: trialEndDate,
+          daysRemaining: 14,
+          isExpired: false
+        },
+        emailVerified: userRecord.emailVerified,
+        isActive: data['isActive'] ?? true
+      }
+      
+      // Update last login
+      await userDocRef.update({
+        lastLoginAt: now,
+        emailVerified: userRecord.emailVerified
+      })
+    } else {
+      // Create new profile
+      userProfile = {
+        uid: userRecord.uid,
+        email: userRecord.email!,
+        displayName: userRecord.displayName || undefined,
+        photoURL: userRecord.photoURL || undefined,
+        role: 'user',
+        createdAt: now,
+        lastLoginAt: now,
+        subscription: {
+          status: 'trial'
+        },
+        trial: {
+          startDate: now,
+          endDate: trialEndDate,
+          daysRemaining: 14,
+          isExpired: false
+        },
+        emailVerified: userRecord.emailVerified,
+        isActive: true
+      }
+      
+      // Save to Firestore
+      await userDocRef.set({
+        ...userProfile,
+        createdAt: now,
+        lastLoginAt: now
+      })
     }
     
-    console.log('✅ Mock user profile created:', { uid: mockUid, email })
+    console.log('✅ User profile processed successfully')
     return userProfile
     
   } catch (error) {
-    console.error('❌ Error creating mock user profile:', error)
+    console.error('❌ Error creating/getting user profile:', error)
     throw error
   }
 }
 
 /**
- * Create Firebase custom token (Development Mode)
- * In development, we'll return a mock token
+ * Create Firebase custom token using Firebase Admin
  */
 async function createFirebaseCustomToken(uid: string, claims?: FirebaseCustomClaims): Promise<string> {
-  console.log('🔧 Debug: Creating mock Firebase custom token for development')
+  console.log('🔧 Debug: Creating Firebase custom token via Admin SDK')
   
   try {
-    // For development, create a mock custom token
-    // In production, this would use Firebase Admin SDK
-    const mockToken = `dev_mock_token_${uid}_${Date.now()}`
+    const adminAuth = getFirebaseAdminAuth()
     
-    console.log('✅ Mock Firebase custom token created:', mockToken)
-    return mockToken
+    // Create custom token with claims
+    const customToken = await adminAuth.createCustomToken(uid, claims || {})
+    
+    console.log('✅ Firebase custom token created successfully')
+    return customToken
   } catch (error) {
-    console.error('❌ Error creating mock custom token:', error)
+    console.error('❌ Error creating custom token:', error)
     throw error
   }
 }

@@ -5,7 +5,7 @@
 
 import { initializeApp, type FirebaseApp } from 'firebase/app'
 import { getAuth, type Auth, connectAuthEmulator } from 'firebase/auth'
-import { getFirestore, type Firestore, connectFirestoreEmulator } from 'firebase/firestore'
+import { getFirestore, type Firestore, connectFirestoreEmulator, initializeFirestore } from 'firebase/firestore'
 import { getFunctions, type Functions, connectFunctionsEmulator } from 'firebase/functions'
 
 // Firebase configuration interface
@@ -61,7 +61,23 @@ export function initFirebase(): {
     
     // Initialize services
     auth = getAuth(app)
-    db = getFirestore(app)
+    
+    // Initialize Firestore with proper settings for production stability
+    if (!import.meta.dev) {
+      try {
+        // Force long polling in production to avoid WebChannel "Unknown SID" errors on Vercel
+        db = initializeFirestore(app, {
+          experimentalForceLongPolling: true
+        })
+        console.log('🔥 Firestore configured with long polling for production')
+      } catch (error) {
+        console.warn('⚠️ Could not initialize Firestore with long polling, falling back to default:', error)
+        db = getFirestore(app)
+      }
+    } else {
+      db = getFirestore(app)
+    }
+    
     functions = getFunctions(app)
 
     // Connect to emulators in development (opt-in via runtime config)
