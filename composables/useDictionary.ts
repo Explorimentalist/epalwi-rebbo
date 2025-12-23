@@ -107,7 +107,22 @@ export const useDictionary = () => {
       // Fallback to API (only if $fetch is available)
       if (typeof $fetch === 'function') {
         console.log('🌐 Loading dictionary data from API')
-        const response = await $fetch('/api/dictionary')
+        
+        // Get authentication headers
+        const headers: Record<string, string> = {}
+        try {
+          const authStore = useAuthStore()
+          if (authStore.firebaseUser) {
+            const idToken = await (authStore.firebaseUser as any)?.getIdToken?.(true)
+            if (idToken) {
+              headers['Authorization'] = `Bearer ${idToken}`
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to get authentication token:', e)
+        }
+        
+        const response = await $fetch('/api/dictionary', { headers })
         
         if (response.success && response.data) {
           // Store in IndexedDB for offline use
