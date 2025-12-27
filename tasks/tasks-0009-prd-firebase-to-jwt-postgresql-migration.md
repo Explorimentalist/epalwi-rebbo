@@ -104,7 +104,7 @@ Each task will include comprehensive testing to ensure reliability during migrat
   - [x] 3.8 Replace Firebase user creation with PostgreSQL in `verify-magic-link.post.ts` **(Claude)**
   - [x] 3.9 Update `server/utils/auth.ts` to use PostgreSQL instead of Firestore **(Claude)**
 
-- [x] **4.0 Firebase Dependency Removal and Cleanup** 
+- [x] **4.0 Firebase Dependency Removal and Cleanup** ✅ COMPLETED
   - [x] 4.1 Remove firebase and firebase-admin packages from package.json **(Claude)**
   - [x] 4.2 Delete Firebase service files (`services/firebase.ts`, `services/firebase-admin.ts`) **(Claude)**
   - [x] 4.3 Remove Firebase configuration from `nuxt.config.ts` **(Claude)**
@@ -114,17 +114,17 @@ Each task will include comprehensive testing to ensure reliability during migrat
 
 - [ ] **5.0 API Route Migration (Auth and Dictionary)** 
   - [x] 5.1 Update magic link verification API to use PostgreSQL and JWT **(Claude)**
-  - [ ] 5.2 Update dictionary API to use JWT authentication **(Claude)**
+  - [x] 5.2 Update dictionary API to use JWT authentication **(Claude)**
   - [x] 5.3 Update Stripe webhook to store subscription data in PostgreSQL **(Claude)**
   - [x] 5.4 Update Stripe checkout session creation to use PostgreSQL **(Claude)**
   - [x] 5.5 Update subscription validation utilities (`server/utils/auth.ts`) **(Claude)**
-  - [ ] 5.6 Test all API endpoints with new authentication system **(Claude)**
+  - [x] 5.6 Test all API endpoints with new authentication system **(Claude)**
   - [ ] 5.7 Test Stripe integration with PostgreSQL storage **(Claude)**
 
 - [ ] **6.0 Frontend Store and Composable Updates** 
   - [x] 6.1 Update auth store to remove Firebase Auth integration **(Claude)**
   - [x] 6.2 Update auth store to handle JWT session tokens **(Claude)**
-  - [ ] 6.3 Update dictionary composable to use JWT headers instead of Firebase tokens **(Claude)**
+  - [x] 6.3 Update dictionary composable to use JWT headers instead of Firebase tokens **(Claude)**
   - [x] 6.4 Update preferences composable to use PostgreSQL via API **(Claude)**
   - [x] 6.5 Update search history service to use PostgreSQL via API **(Claude)**
   - [ ] 6.6 Test complete authentication flow from frontend **(Claude)**
