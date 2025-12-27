@@ -1,8 +1,9 @@
-import { getFirestore } from 'firebase-admin/firestore'
 import type { H3Event } from 'h3'
 import { getHeader } from 'h3'
-import { getFirebaseAdminAuth } from '~/services/firebase-admin'
+import { verifySessionToken, extractBearerToken } from '~/lib/auth/jwt'
+import { getUserById } from '~/server/utils/database'
 import { getGraceDaysRemaining as getGraceDaysRemainingUtil, isInGracePeriod as isInGracePeriodUtil } from '~/utils/gracePeriod'
+import type { UserProfile } from '~/types/auth'
 
 export interface UserSubscriptionInfo {
   uid: string
@@ -24,20 +25,18 @@ export interface AuthValidationResult {
 }
 
 /**
- * Extract and validate Firebase JWT token from request headers
+ * Extract and validate JWT session token from request headers
  */
 export async function validateUserToken(event: H3Event): Promise<{ uid: string; email?: string } | null> {
   const authHeader = getHeader(event, 'authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return null
+  const token = extractBearerToken(authHeader)
+  if (!token) return null
 
-  const token = authHeader.substring(7)
   try {
-    // Ensure Firebase Admin is initialized before verifying
-    const adminAuth = getFirebaseAdminAuth()
-    const decoded = await adminAuth.verifyIdToken(token)
-    const result: { uid: string; email?: string } = { uid: decoded.uid }
-    if (decoded.email) {
-      result.email = decoded.email
+    const payload = verifySessionToken(token)
+    const result: { uid: string; email?: string } = { uid: payload.uid }
+    if (payload.email) {
+      result.email = payload.email
     }
     return result
   } catch (err) {
@@ -47,29 +46,23 @@ export async function validateUserToken(event: H3Event): Promise<{ uid: string; 
 }
 
 /**
- * Get comprehensive user subscription status from Firestore
+ * Get comprehensive user subscription status from PostgreSQL
  * - Computes 14-day trial from createdAt if no explicit trial info exists
  * - Applies 3-day grace period after trial end
  * - Treats subscription.status in ['active','trialing'] as active
  */
 export async function getUserSubscriptionStatus(uid: string): Promise<UserSubscriptionInfo> {
-  const db = getFirestore()
-  const userRef = db.collection('users').doc(uid)
-  const snap = await userRef.get()
+  const user = await getUserById(uid)
 
-  if (!snap.exists) {
+  if (!user) {
     throw new Error('User not found')
   }
 
-  const data: any = snap.data()
   const now = new Date()
 
-  // CreatedAt handling (admin Timestamp -> Date)
-  const createdAt: Date | null = data?.createdAt?.toDate ? data.createdAt.toDate() : (data?.createdAt ? new Date(data.createdAt) : null)
-
-  // Trial end date: prefer explicit, else 14 days from createdAt
-  const explicitTrialEnd = data?.trial?.endDate?.toDate ? data.trial.endDate.toDate() : (data?.trial?.endDate ? new Date(data.trial.endDate) : null)
-  const trialEndDate = explicitTrialEnd || (createdAt ? new Date(createdAt.getTime() + 14 * 24 * 60 * 60 * 1000) : now)
+  // CreatedAt handling - already Date objects from PostgreSQL
+  const createdAt: Date = user.createdAt
+  const trialEndDate = user.trial?.endDate || new Date(createdAt.getTime() + 14 * 24 * 60 * 60 * 1000)
 
   const msPerDay = 24 * 60 * 60 * 1000
   const trialMsRemaining = trialEndDate.getTime() - now.getTime()
@@ -81,7 +74,7 @@ export async function getUserSubscriptionStatus(uid: string): Promise<UserSubscr
   const graceDaysRemaining = !isTrialActive ? getGraceDaysRemainingUtil(trialEndDate, now, 3) : 0
 
   // Paid subscription status
-  const rawStatus: string | undefined = data?.subscription?.status
+  const rawStatus: string | undefined = user.subscription?.status
   const hasActiveSubscription = rawStatus === 'active' || rawStatus === 'trialing'
 
   // Derived user-facing status
@@ -94,7 +87,7 @@ export async function getUserSubscriptionStatus(uid: string): Promise<UserSubscr
 
   return {
     uid,
-    email: data?.email,
+    email: user.email,
     hasActiveSubscription,
     isTrialActive,
     isInGracePeriod,

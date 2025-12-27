@@ -354,9 +354,9 @@ export const useAuthStore = defineStore('auth', () => {
         throw new Error(response.error || 'Invalid or expired magic link')
       }
 
-      // Handle mock tokens in both development and production (since API always returns mock tokens)
-      if (response.firebaseToken?.startsWith('dev_mock_token_') && response.user) {
-        console.log('🔧 Debug: Mock token detected - manually setting user state')
+      // Handle JWT session tokens
+      if (response.sessionToken && response.user) {
+        console.log('🔧 Debug: JWT session token received - setting user state')
         
         // In development mode, trust the trial data from the API response since it's correctly calculated
         // Only recalculate if trial data is missing or invalid

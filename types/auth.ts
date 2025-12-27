@@ -117,7 +117,8 @@ export interface TokenVerificationResponse {
   user?: UserProfile
   error?: string
   message: string
-  firebaseToken?: string
+  sessionToken?: string
+  expiresAt?: Date
 }
 
 /**

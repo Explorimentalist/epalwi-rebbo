@@ -3,172 +3,77 @@
  * POST /api/auth/verify-magic-link
  */
 
-import jwt from 'jsonwebtoken'
-import { getFirebaseAdminAuth, getFirebaseAdminDb } from '~/services/firebase-admin'
+import { verifyMagicLinkToken, generateSessionToken } from '~/lib/auth/jwt'
+import { createSession } from '~/lib/auth/session'
+import { createUser, getUserByEmail, getUserById, updateUser } from '~/server/utils/database'
 import type { 
   TokenVerificationPayload, 
   TokenVerificationResponse, 
   JWTPayload,
-  UserProfile,
-  FirebaseCustomClaims 
+  UserProfile
 } from '~/types/auth'
 
-/**
- * Verify JWT token
- */
-function verifyMagicLinkToken(token: string): JWTPayload {
-  const config = useRuntimeConfig()
-  const jwtSecret = config['jwtSecret'] as string
-  
-  if (!jwtSecret) {
-    throw new Error('JWT secret not configured')
-  }
-
-  try {
-    const payload = jwt.verify(token, jwtSecret, {
-      algorithms: ['HS256'],
-      issuer: 'epalwi-rebbo',
-      audience: 'epalwi-rebbo-users'
-    }) as JWTPayload
-
-    // Check if token is expired
-    const now = Math.floor(Date.now() / 1000)
-    if (payload.exp < now) {
-      throw new Error('Token expired')
-    }
-
-    return payload
-  } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      throw new Error('Token expired')
-    } else if (error instanceof jwt.JsonWebTokenError) {
-      throw new Error('Invalid token')
-    } else {
-      throw error
-    }
-  }
-}
 
 /**
- * Create or get user profile using Firebase Admin
+ * Create or get user profile using PostgreSQL
  */
 async function createOrGetUserProfile(email: string): Promise<UserProfile> {
-  console.log('🔧 Debug: Creating/getting user profile via Firebase Admin')
+  console.log('🔧 Debug: Attempting to create/get user profile via PostgreSQL')
   
   try {
-    const adminAuth = getFirebaseAdminAuth()
-    const adminDb = getFirebaseAdminDb()
-    
     // Try to get existing user by email
-    let userRecord
-    try {
-      userRecord = await adminAuth.getUserByEmail(email)
-      console.log('✅ Existing user found:', userRecord.uid)
-    } catch (error) {
-      // User doesn't exist, create new one
-      console.log('🔧 Debug: User not found, creating new user...')
-      userRecord = await adminAuth.createUser({
-        email,
-        emailVerified: true
+    let userProfile = await getUserByEmail(email)
+    
+    if (userProfile) {
+      console.log('✅ Existing user found:', userProfile.uid)
+      
+      // Update last login time
+      await updateUser(userProfile.uid, { 
+        lastLoginAt: new Date(),
+        emailVerified: true 
       })
-      console.log('✅ New user created:', userRecord.uid)
+      
+      // Update the profile with fresh lastLoginAt
+      userProfile.lastLoginAt = new Date()
+      userProfile.emailVerified = true
+      
+      return userProfile
     }
     
-    // Get or create user document in Firestore
-    const userDocRef = adminDb.collection('users').doc(userRecord.uid)
-    const userDoc = await userDocRef.get()
+    // User doesn't exist, create new one
+    console.log('🔧 Debug: User not found, creating new user...')
     
     const now = new Date()
     const trialEndDate = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)) // 14 days trial
     
-    let userProfile: UserProfile
-    
-    if (userDoc.exists) {
-      // Update existing profile
-      const data = userDoc.data()!
-      userProfile = {
-        uid: userRecord.uid,
-        email: userRecord.email!,
-        displayName: userRecord.displayName || undefined,
-        photoURL: userRecord.photoURL || undefined,
-        role: data['role'] || 'user',
-        createdAt: data['createdAt']?.toDate() || now,
-        lastLoginAt: now,
-        subscription: data['subscription'] || { status: 'trial' },
-        trial: data['trial'] || {
-          startDate: data['createdAt']?.toDate() || now,
-          endDate: trialEndDate,
-          daysRemaining: 14,
-          isExpired: false
-        },
-        emailVerified: userRecord.emailVerified,
-        isActive: data['isActive'] ?? true
-      }
-      
-      // Update last login
-      await userDocRef.update({
-        lastLoginAt: now,
-        emailVerified: userRecord.emailVerified
-      })
-    } else {
-      // Create new profile
-      userProfile = {
-        uid: userRecord.uid,
-        email: userRecord.email!,
-        displayName: userRecord.displayName || undefined,
-        photoURL: userRecord.photoURL || undefined,
-        role: 'user',
-        createdAt: now,
-        lastLoginAt: now,
-        subscription: {
-          status: 'trial'
-        },
-        trial: {
-          startDate: now,
-          endDate: trialEndDate,
-          daysRemaining: 14,
-          isExpired: false
-        },
-        emailVerified: userRecord.emailVerified,
-        isActive: true
-      }
-      
-      // Save to Firestore
-      await userDocRef.set({
-        ...userProfile,
-        createdAt: now,
-        lastLoginAt: now
-      })
+    const newUserData: {
+      email: string;
+      displayName?: string;
+      photoURL?: string;
+      role?: 'user' | 'admin';
+    } = {
+      email,
+      role: 'user'
     }
     
-    console.log('✅ User profile processed successfully')
+    const userId = await createUser(newUserData)
+    console.log('✅ New user created:', userId)
+    
+    // Get the full user profile
+    userProfile = await getUserById(userId)
+    if (!userProfile) {
+      throw new Error('Failed to retrieve created user profile')
+    }
+    
+    console.log('✅ User profile processed successfully via PostgreSQL')
     return userProfile
     
   } catch (error) {
-    console.error('❌ Error creating/getting user profile:', error)
+    console.error('❌ PostgreSQL user creation failed:', error)
     throw error
   }
 }
 
-/**
- * Create Firebase custom token using Firebase Admin
- */
-async function createFirebaseCustomToken(uid: string, claims?: FirebaseCustomClaims): Promise<string> {
-  console.log('🔧 Debug: Creating Firebase custom token via Admin SDK')
-  
-  try {
-    const adminAuth = getFirebaseAdminAuth()
-    
-    // Create custom token with claims
-    const customToken = await adminAuth.createCustomToken(uid, claims || {})
-    
-    console.log('✅ Firebase custom token created successfully')
-    return customToken
-  } catch (error) {
-    console.error('❌ Error creating custom token:', error)
-    throw error
-  }
-}
 
 export default defineEventHandler(async (event): Promise<TokenVerificationResponse> => {
   try {
@@ -210,23 +115,20 @@ export default defineEventHandler(async (event): Promise<TokenVerificationRespon
     const userProfile = await createOrGetUserProfile(payload.email)
     console.log('✅ User profile processed successfully')
 
-    // Create custom Firebase token
-    console.log('🔧 Debug: Creating Firebase custom token...')
-    const customClaims: FirebaseCustomClaims = {
-      role: userProfile.role,
-      subscriptionStatus: userProfile.subscription.status,
-      trialEndDate: userProfile.trial.endDate.getTime()
-    }
-
-    const firebaseToken = await createFirebaseCustomToken(userProfile.uid, customClaims)
-    console.log('✅ Firebase custom token created successfully')
+    // Create JWT session token
+    console.log('🔧 Debug: Creating JWT session token...')
+    const sessionInfo = await createSession(userProfile, { 
+      expiresIn: '7d' // 7-day session for magic link auth
+    })
+    console.log('✅ JWT session token created successfully')
 
     console.log('✅ Magic link verification completed successfully')
     return {
       success: true,
       message: 'Verificación exitosa',
       user: userProfile,
-      firebaseToken
+      sessionToken: sessionInfo.token,
+      expiresAt: sessionInfo.expiresAt
     }
 
   } catch (error: any) {

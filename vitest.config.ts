@@ -25,7 +25,8 @@ export default defineConfig({
       'utils/**/*.test.ts',
       'composables/**/*.test.ts',
       'components/**/*.test.ts',
-      'pages/**/*.test.ts'
+      'pages/**/*.test.ts',
+      'lib/**/*.test.ts'
     ],
     exclude: ['node_modules', '.nuxt', '.output']
   }
