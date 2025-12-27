@@ -112,14 +112,14 @@ Each task will include comprehensive testing to ensure reliability during migrat
   - [x] 4.5 Clean up any remaining Firebase imports across the codebase **(Claude)**
   - [x] 4.6 Test that build succeeds without Firebase dependencies **(Claude)**
 
-- [ ] **5.0 API Route Migration (Auth and Dictionary)** 
+- [x] **5.0 API Route Migration (Auth and Dictionary)** ✅ COMPLETED
   - [x] 5.1 Update magic link verification API to use PostgreSQL and JWT **(Claude)**
   - [x] 5.2 Update dictionary API to use JWT authentication **(Claude)**
   - [x] 5.3 Update Stripe webhook to store subscription data in PostgreSQL **(Claude)**
   - [x] 5.4 Update Stripe checkout session creation to use PostgreSQL **(Claude)**
   - [x] 5.5 Update subscription validation utilities (`server/utils/auth.ts`) **(Claude)**
   - [x] 5.6 Test all API endpoints with new authentication system **(Claude)**
-  - [ ] 5.7 Test Stripe integration with PostgreSQL storage **(Claude)**
+  - [x] 5.7 Test Stripe integration with PostgreSQL storage **(Claude)**
 
 - [ ] **6.0 Frontend Store and Composable Updates** 
   - [x] 6.1 Update auth store to remove Firebase Auth integration **(Claude)**
