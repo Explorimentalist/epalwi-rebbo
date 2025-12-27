@@ -1,7 +1,5 @@
 import { ref } from 'vue'
-import { collection, addDoc, getDocs, orderBy, limit, query } from 'firebase/firestore'
 import { track } from '~/utils/telemetry'
-import { getFirebaseDb } from '~/services/firebase'
 
 export type SearchLang = 'español' | 'ndowe'
 export interface SearchHistoryItem {
@@ -35,30 +33,30 @@ export const useSearchHistory = () => {
     const isSignedIn = Boolean((auth as any).isAuthenticated?.value)
     if (isSignedIn) {
       try {
-        const db = getFirebaseDb()
-        const q = query(collection(db, 'users', uid, 'searches'), orderBy('ts', 'desc'), limit(200))
-        const snap = await getDocs(q)
-        const remote: SearchHistoryItem[] = []
-        snap.forEach(d => {
-          const data: any = d.data()
-          if (data?.query && data?.language) remote.push({ query: data.query, language: data.language, ts: data.ts || Date.now() })
+        // Fetch search history from API
+        const response = await $fetch<{ success: boolean; searches: SearchHistoryItem[] }>('/api/search-history', {
+          method: 'GET'
         })
 
-        // Merge local + remote by newest timestamp
-        const map = new Map<string, SearchHistoryItem>()
-        for (const it of [...remote, ...list.value]) {
-          const k = keyFor(it)
-          const prev = map.get(k)
-          if (!prev || prev.ts < it.ts) map.set(k, it)
-        }
-        list.value = Array.from(map.values()).sort((a, b) => b.ts - a.ts).slice(0, MAX_ITEMS)
-        track('history.merged', { count: list.value.length })
+        if (response.success && response.searches) {
+          const remote = response.searches
 
-        // Persist cache
-        try {
-          const { indexedDBService } = await import('~/services/indexedDB')
-          await indexedDBService.setUserSearchHistory(uid, list.value)
-        } catch {}
+          // Merge local + remote by newest timestamp
+          const map = new Map<string, SearchHistoryItem>()
+          for (const it of [...remote, ...list.value]) {
+            const k = keyFor(it)
+            const prev = map.get(k)
+            if (!prev || prev.ts < it.ts) map.set(k, it)
+          }
+          list.value = Array.from(map.values()).sort((a, b) => b.ts - a.ts).slice(0, MAX_ITEMS)
+          track('history.merged', { count: list.value.length })
+
+          // Persist cache
+          try {
+            const { indexedDBService } = await import('~/services/indexedDB')
+            await indexedDBService.setUserSearchHistory(uid, list.value)
+          } catch {}
+        }
       } catch (e) {
         // ignore remote failures
       }
@@ -88,9 +86,10 @@ export const useSearchHistory = () => {
     const isSignedIn = Boolean((auth as any).isAuthenticated?.value)
     if (isSignedIn) {
       try {
-        const db = getFirebaseDb()
-        const uid = (auth as any).user?.value?.uid
-        await addDoc(collection(db, 'users', uid, 'searches'), item)
+        await $fetch('/api/search-history', {
+          method: 'POST',
+          body: item
+        })
       } catch {}
     }
   }

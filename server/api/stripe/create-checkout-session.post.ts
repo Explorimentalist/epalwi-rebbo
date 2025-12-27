@@ -1,6 +1,6 @@
 import { defineEventHandler, readBody } from 'h3'
 import Stripe from 'stripe'
-import { getFirebaseAdminDb } from '~/services/firebase-admin'
+import { getConnection } from '~/lib/db/connection'
 
 // Initialize Stripe with secret key
 const config = useRuntimeConfig()
@@ -47,12 +47,14 @@ export default defineEventHandler(async (event): Promise<CreateCheckoutSessionRe
 
     try {
       if (userId && userId !== 'authenticated-user') {
-        const db = getFirebaseAdminDb()
-        const userDoc = await db.collection('users').doc(userId).get()
-        if (userDoc.exists) {
-          const data = userDoc.data() as any
-          customerId = data?.stripeCustomerId || data?.subscription?.stripeCustomerId
-          customerEmail = data?.email
+        const db = await getConnection()
+        const userQuery = 'SELECT stripe_customer_id, email FROM users WHERE uid = $1'
+        const result = await db.query(userQuery, [userId])
+        
+        if (result.rows.length > 0) {
+          const userData = result.rows[0]
+          customerId = userData.stripe_customer_id
+          customerEmail = userData.email
         }
       }
 
@@ -75,8 +77,9 @@ export default defineEventHandler(async (event): Promise<CreateCheckoutSessionRe
 
         // Persist on user profile if available
         if (userId && userId !== 'authenticated-user') {
-          const db = getFirebaseAdminDb()
-          await db.collection('users').doc(userId).set({ stripeCustomerId: customerId }, { merge: true })
+          const db = await getConnection()
+          const updateQuery = 'UPDATE users SET stripe_customer_id = $1, updated_at = CURRENT_TIMESTAMP WHERE uid = $2'
+          await db.query(updateQuery, [customerId, userId])
         }
       }
     } catch (e) {

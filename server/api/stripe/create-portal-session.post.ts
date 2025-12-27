@@ -1,6 +1,6 @@
 import { defineEventHandler, readBody } from 'h3'
 import Stripe from 'stripe'
-import { getFirebaseAdminDb } from '~/services/firebase-admin'
+import { getConnection } from '~/lib/db/connection'
 
 // Initialize Stripe with secret key
 const config = useRuntimeConfig()
@@ -21,17 +21,17 @@ export default defineEventHandler(async (event): Promise<CreatePortalSessionResp
   try {
     const body = await readBody<CreatePortalSessionRequest>(event)
     
-    // Get user's Stripe customer ID from Firestore
+    // Get user's Stripe customer ID from PostgreSQL
     let customerId: string | null = null
     
     if (body.userId) {
       try {
-        const db = getFirebaseAdminDb()
-        const userDoc = await db.collection('users').doc(body.userId).get()
+        const db = await getConnection()
+        const userQuery = 'SELECT stripe_customer_id FROM users WHERE uid = $1'
+        const result = await db.query(userQuery, [body.userId])
         
-        if (userDoc.exists) {
-          const userData = userDoc.data()
-          customerId = userData?.['stripeCustomerId'] || userData?.['subscription']?.['stripeCustomerId']
+        if (result.rows.length > 0) {
+          customerId = result.rows[0].stripe_customer_id
         }
       } catch (error) {
         console.error('Error fetching user data:', error)

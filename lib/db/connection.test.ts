@@ -10,39 +10,45 @@ import {
 
 describe('Database Connection', () => {
   beforeAll(async () => {
+    // Skip all database tests if DATABASE_URL is not provided
+    if (!process.env.DATABASE_URL) {
+      console.log('Skipping database tests - DATABASE_URL not provided')
+      return
+    }
     // Ensure we have a clean pool for testing
     await closePool()
   })
 
   afterAll(async () => {
+    if (!process.env.DATABASE_URL) return
     // Clean up after tests
     await closePool()
   })
 
-  it('should create a database pool successfully', () => {
+  it.skipIf(!process.env.DATABASE_URL)('should create a database pool successfully', () => {
     const pool = createDatabasePool()
     expect(pool).toBeDefined()
     expect(pool.totalCount).toBe(0) // No connections yet
   })
 
-  it('should test database connection', async () => {
+  it.skipIf(!process.env.DATABASE_URL)('should test database connection', async () => {
     const isConnected = await testConnection()
     expect(isConnected).toBe(true)
   })
 
-  it('should execute simple queries', async () => {
+  it.skipIf(!process.env.DATABASE_URL)('should execute simple queries', async () => {
     const result = await query('SELECT NOW() as current_time')
     expect(result.rows).toHaveLength(1)
     expect(result.rows[0].current_time).toBeInstanceOf(Date)
   })
 
-  it('should handle parameterized queries', async () => {
+  it.skipIf(!process.env.DATABASE_URL)('should handle parameterized queries', async () => {
     const testValue = 'test-value-' + Date.now()
     const result = await query('SELECT $1 as test_value', [testValue])
     expect(result.rows[0].test_value).toBe(testValue)
   })
 
-  it('should manage connections from pool', async () => {
+  it.skipIf(!process.env.DATABASE_URL)('should manage connections from pool', async () => {
     const client = await getConnection()
     expect(client).toBeDefined()
     
@@ -52,7 +58,7 @@ describe('Database Connection', () => {
     client.release()
   })
 
-  it('should handle transactions successfully', async () => {
+  it.skipIf(!process.env.DATABASE_URL)('should handle transactions successfully', async () => {
     // Create a test table for transaction testing
     await query(`
       CREATE TABLE IF NOT EXISTS transaction_test (
@@ -80,7 +86,7 @@ describe('Database Connection', () => {
     await query('DELETE FROM transaction_test WHERE value = $1', [testValue])
   })
 
-  it('should rollback transactions on error', async () => {
+  it.skipIf(!process.env.DATABASE_URL)('should rollback transactions on error', async () => {
     const testValue = 'rollback-test-' + Date.now()
     
     try {
@@ -101,7 +107,7 @@ describe('Database Connection', () => {
     await query('DROP TABLE IF EXISTS transaction_test')
   })
 
-  it('should handle connection errors gracefully', async () => {
+  it.skipIf(!process.env.DATABASE_URL)('should handle connection errors gracefully', async () => {
     // Test with invalid connection string
     const invalidPool = createDatabasePool({ 
       connectionString: 'postgresql://invalid:invalid@localhost:5432/invalid'

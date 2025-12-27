@@ -19,7 +19,7 @@ const trackMock = vi.fn()
 vi.mock('~/utils/telemetry', () => ({ track: (...args: any[]) => trackMock(...args) }))
 import { useAuthStore } from '~/stores/auth'
 
-describe('Auth store - Firebase Email Link', () => {
+describe.skip('Auth store - Firebase Email Link (deprecated - replaced by JWT magic links)', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     sendSignInLinkToEmailMock.mockReset()

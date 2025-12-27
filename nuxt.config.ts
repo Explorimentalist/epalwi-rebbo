@@ -147,6 +147,7 @@ export default defineNuxtConfig({
   // Runtime config
   runtimeConfig: {
     // Private keys (only available on server-side)
+    databaseUrl: process.env['DATABASE_URL'] || '',
     jwtSecret: process.env['JWT_SECRET'] || '',
     resendApiKey: process.env['RESEND_API_KEY'] || '',
     stripeSecretKey: process.env['STRIPE_SECRET_KEY'] || '',
@@ -155,17 +156,12 @@ export default defineNuxtConfig({
     
     // Public keys (exposed to client-side)
     public: {
-      firebaseApiKey: process.env['NUXT_PUBLIC_FIREBASE_API_KEY'] || '',
-      firebaseAuthDomain: process.env['NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN'] || '',
-      firebaseProjectId: process.env['NUXT_PUBLIC_FIREBASE_PROJECT_ID'] || '',
       stripePublishableKey: process.env['NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'] || '',
       stripeMonthlyPriceId: process.env['NUXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID'] || '',
       stripeAnnualPriceId: process.env['NUXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID'] || '',
       appUrl: process.env['NUXT_PUBLIC_APP_URL'] || 'http://localhost:4000',
       // Dev fallback to mock auth endpoints by default unless explicitly disabled
-      devAuthMock: (process.env['NUXT_PUBLIC_DEV_AUTH_MOCK'] ?? (process.env['NODE_ENV'] !== 'production' ? 'true' : 'false')) === 'true',
-      // Connect to Firebase emulators in dev only when explicitly enabled
-      useFirebaseEmulators: (process.env['NUXT_PUBLIC_USE_FIREBASE_EMULATORS'] ?? 'false') === 'true'
+      devAuthMock: (process.env['NUXT_PUBLIC_DEV_AUTH_MOCK'] ?? (process.env['NODE_ENV'] !== 'production' ? 'true' : 'false')) === 'true'
     }
   },
   
@@ -181,7 +177,7 @@ export default defineNuxtConfig({
   // Nitro configuration for serverless
   nitro: {
     // Use the correct adapter based on the platform
-    preset: process.env.VERCEL ? 'vercel' : 'firebase'
+    preset: process.env.VERCEL ? 'vercel' : 'node-server'
   },
 
   // Components auto-import configuration

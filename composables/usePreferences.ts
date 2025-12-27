@@ -1,6 +1,4 @@
 import { ref, computed, watch } from 'vue'
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
-import { getFirebaseDb } from '~/services/firebase'
 import type { UserPreferences } from '~/types/auth'
 import { track } from '~/utils/telemetry'
 
@@ -38,45 +36,42 @@ export const usePreferences = () => {
         }
       } catch {}
 
-      // Then, try Firestore
+      // Then, try API to fetch preferences
       const isSignedIn = currentUser.value?.uid && (auth as any).isAuthenticated?.value
       if (isSignedIn) {
         try {
-          const db = getFirebaseDb()
-          const userRef = doc(db, 'users', currentUser.value!.uid)
-          const snap = await getDoc(userRef)
-          const data: any = snap.exists() ? snap.data() : null
-          const remotePrefs = data?.preferences || null
-          let remoteUpdatedAt = 0
-          try {
-            const ts = data?.preferencesUpdatedAt
-            if (ts?.toDate) remoteUpdatedAt = ts.toDate().getTime()
-            else if (typeof ts === 'number') remoteUpdatedAt = ts
-          } catch {}
+          const response = await $fetch<{ success: boolean; preferences?: UserPreferences; updatedAt?: string }>('/api/preferences', {
+            method: 'GET'
+          })
 
-          // Load local updatedAt
-          let localUpdatedAt = 0
-          try {
-            const { indexedDBService } = await import('~/services/indexedDB')
-            const cached = await indexedDBService.getUserPreferences(currentUser.value!.uid)
-            localUpdatedAt = cached?.updatedAt ?? 0
-          } catch {}
+          if (response.success && response.preferences) {
+            const remotePrefs = response.preferences
+            const remoteUpdatedAt = response.updatedAt ? new Date(response.updatedAt).getTime() : 0
 
-          // Last-write-wins
-          if (remotePrefs && remoteUpdatedAt >= localUpdatedAt) {
-            prefs.value = { ...DEFAULT_PREFS, ...remotePrefs }
+            // Load local updatedAt
+            let localUpdatedAt = 0
             try {
               const { indexedDBService } = await import('~/services/indexedDB')
-              await indexedDBService.setUserPreferences(currentUser.value!.uid, prefs.value, remoteUpdatedAt)
+              const cached = await indexedDBService.getUserPreferences(currentUser.value!.uid)
+              localUpdatedAt = cached?.updatedAt ?? 0
             } catch {}
-            track('prefs.load', { source: 'remote', merged: true })
-          } else {
-            // Local is newer or only local exists -> ensure cache is saved; Firestore update is handled in updatePreferences
-            try {
-              const { indexedDBService } = await import('~/services/indexedDB')
-              await indexedDBService.setUserPreferences(currentUser.value!.uid, prefs.value, localUpdatedAt || Date.now())
-            } catch {}
-            track('prefs.load', { source: 'cache', merged: true })
+
+            // Last-write-wins
+            if (remotePrefs && remoteUpdatedAt >= localUpdatedAt) {
+              prefs.value = { ...DEFAULT_PREFS, ...remotePrefs }
+              try {
+                const { indexedDBService } = await import('~/services/indexedDB')
+                await indexedDBService.setUserPreferences(currentUser.value!.uid, prefs.value, remoteUpdatedAt)
+              } catch {}
+              track('prefs.load', { source: 'remote', merged: true })
+            } else {
+              // Local is newer or only local exists -> ensure cache is saved
+              try {
+                const { indexedDBService } = await import('~/services/indexedDB')
+                await indexedDBService.setUserPreferences(currentUser.value!.uid, prefs.value, localUpdatedAt || Date.now())
+              } catch {}
+              track('prefs.load', { source: 'cache', merged: true })
+            }
           }
         } catch {}
       } else {
@@ -104,12 +99,13 @@ export const usePreferences = () => {
     prefs.value = next
 
     track('prefs.update', { keys: Object.keys(partial) })
-    // Update Firestore if authenticated
+    // Update via API if authenticated
     if (uid) {
       try {
-        const db = getFirebaseDb()
-        const userRef = doc(db, 'users', uid)
-        await updateDoc(userRef, { preferences: next, preferencesUpdatedAt: serverTimestamp() })
+        await $fetch('/api/preferences', {
+          method: 'PATCH',
+          body: { preferences: next }
+        })
       } catch (e) {
         // Enqueue for retry (offline or transient failure)
         try { pending.value.push({ uid, data: next }) } catch {}
@@ -125,12 +121,13 @@ export const usePreferences = () => {
 
   const flushPending = async () => {
     if (!pending.value.length) return
-    const db = getFirebaseDb()
     const rest: typeof pending.value = []
     for (const item of pending.value) {
       try {
-        const userRef = doc(db, 'users', item.uid)
-        await updateDoc(userRef, { preferences: item.data, preferencesUpdatedAt: serverTimestamp() })
+        await $fetch('/api/preferences', {
+          method: 'PATCH',
+          body: { preferences: item.data }
+        })
       } catch {
         rest.push(item)
       }
@@ -149,21 +146,22 @@ export const usePreferences = () => {
       // Fetch remote timestamp
       let remoteUpdatedAt = 0
       try {
-        const db = getFirebaseDb()
-        const userRef = doc(db, 'users', uid)
-        const snap = await getDoc(userRef)
-        const data: any = snap.exists() ? snap.data() : null
-        const ts = data?.preferencesUpdatedAt
-        if (ts?.toDate) remoteUpdatedAt = ts.toDate().getTime()
-        else if (typeof ts === 'number') remoteUpdatedAt = ts
+        const response = await $fetch<{ success: boolean; preferences?: UserPreferences; updatedAt?: string }>('/api/preferences', {
+          method: 'GET'
+        })
+
+        if (response.success && response.updatedAt) {
+          remoteUpdatedAt = new Date(response.updatedAt).getTime()
+        }
       } catch {}
 
       if ((guest.updatedAt ?? 0) >= remoteUpdatedAt) {
-        // Guest wins -> write to Firestore
+        // Guest wins -> write via API
         try {
-          const db = getFirebaseDb()
-          const userRef = doc(db, 'users', uid)
-          await updateDoc(userRef, { preferences: guest.data, preferencesUpdatedAt: serverTimestamp() })
+          await $fetch('/api/preferences', {
+            method: 'PATCH',
+            body: { preferences: guest.data }
+          })
           // Update local cache for user
           await indexedDBService.setUserPreferences(uid, guest.data, guest.updatedAt ?? Date.now())
         } catch {}

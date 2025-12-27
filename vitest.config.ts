@@ -19,6 +19,10 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: [resolve(rootDir, 'tests/setup.ts')],
+    env: {
+      NODE_ENV: 'test',
+      JWT_SECRET: 'test-jwt-secret-for-testing-only-32-characters-long'
+    },
     include: [
       'server/**/*.test.ts',
       'middleware/**/*.test.ts',

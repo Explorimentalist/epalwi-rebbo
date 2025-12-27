@@ -9,14 +9,13 @@ const __dirname = path.dirname(__filename);
 
 console.log('🔧 Setting up environment variables for epàlwi-rèbbo...\n');
 
-const envTemplate = `# Firebase Configuration
-# Get these from Firebase Console > Project Settings > General > Your apps > Web app
-NUXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key_here
-NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
-NUXT_PUBLIC_FIREBASE_PROJECT_ID=your_firebase_project_id
-NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
-NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-NUXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
+const envTemplate = `# Database Configuration  
+# Get these from your PostgreSQL provider (Neon, Railway, Supabase, etc.)
+DATABASE_URL=postgresql://username:password@hostname:port/database
+
+# JWT Authentication
+# Generate a secure random string (32+ characters) for signing tokens
+JWT_SECRET=your_jwt_secret_here_minimum_32_characters
 
 # Stripe Configuration
 # Get these from Stripe Dashboard > Developers > API keys
@@ -61,7 +60,7 @@ try {
   console.log('2. Replace all placeholder values in your .env file');
   console.log('3. Run "npm run dev" to start development server');
   console.log('\n🔗 Useful links:');
-  console.log('- Firebase Console: https://console.firebase.google.com/');
+  console.log('- Neon PostgreSQL: https://neon.tech/');
   console.log('- Stripe Dashboard: https://dashboard.stripe.com/');
   console.log('- MailerSend: https://www.mailersend.com/');
   console.log('- Google Cloud Console: https://console.cloud.google.com/');

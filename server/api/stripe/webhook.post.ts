@@ -1,6 +1,6 @@
 import { defineEventHandler, readBody, getHeader } from 'h3'
 import Stripe from 'stripe'
-import { getFirebaseAdminDb } from '~/services/firebase-admin'
+import { getConnection } from '~/lib/db/connection'
 
 // Initialize Stripe with secret key
 const config = useRuntimeConfig()
@@ -112,20 +112,20 @@ async function handleCheckoutSessionCompleted(session: any) {
     const subscriptionId = session.subscription
     
     if (userId && userId !== 'anonymous') {
-      const db = getFirebaseAdminDb()
-      const userRef = db.collection('users').doc(userId)
+      const db = await getConnection()
       
       // Update user profile with Stripe customer ID and subscription
-      await userRef.update({
-        stripeCustomerId: customerId,
-        stripeSubscriptionId: subscriptionId,
-        subscription: {
-          status: 'active',
-          stripeSubscriptionId: subscriptionId,
-          stripeCustomerId: customerId
-        },
-        updatedAt: new Date().toISOString()
-      })
+      const updateQuery = `
+        UPDATE users 
+        SET stripe_customer_id = $1,
+            stripe_subscription_id = $2,
+            subscription_status = $3,
+            subscription_current_period_start = NOW(),
+            updated_at = CURRENT_TIMESTAMP
+        WHERE uid = $4
+      `
+      
+      await db.query(updateQuery, [customerId, subscriptionId, 'active', userId])
       
       console.log(`User ${userId} subscription created: customer ${customerId}, subscription ${subscriptionId}`)
     }
@@ -146,24 +146,36 @@ async function handleSubscriptionCreated(subscription: any) {
     const customerId = subscription.customer
     
     if (userId && userId !== 'anonymous') {
-      const db = getFirebaseAdminDb()
-      const userRef = db.collection('users').doc(userId)
+      const db = await getConnection()
       
-      // Update user subscription status in Firestore
-      await userRef.update({
-        subscription: {
-          status: subscription.status,
-          stripeSubscriptionId: subscription.id,
-          stripeCustomerId: customerId,
-          planType: planType,
-          currentPeriodStart: new Date(subscription.current_period_start * 1000).toISOString(),
-          currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
-          cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
-          trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null
-        },
-        updatedAt: new Date().toISOString()
-      })
+      // Update user subscription status in PostgreSQL
+      const updateQuery = `
+        UPDATE users 
+        SET subscription_status = $1,
+            stripe_subscription_id = $2,
+            stripe_customer_id = $3,
+            subscription_plan_type = $4,
+            subscription_current_period_start = $5,
+            subscription_current_period_end = $6,
+            subscription_cancel_at_period_end = $7,
+            subscription_trial_start = $8,
+            subscription_trial_end = $9,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE uid = $10
+      `
+      
+      await db.query(updateQuery, [
+        subscription.status,
+        subscription.id,
+        customerId,
+        planType,
+        new Date(subscription.current_period_start * 1000),
+        new Date(subscription.current_period_end * 1000),
+        subscription.cancel_at_period_end,
+        subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
+        subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+        userId
+      ])
       
       console.log(`User ${userId} subscription created: ${planType}, status: ${subscription.status}`)
     }
@@ -183,24 +195,36 @@ async function handleSubscriptionUpdated(subscription: any) {
     const status = subscription.status
     
     if (userId && userId !== 'anonymous') {
-      const db = getFirebaseAdminDb()
-      const userRef = db.collection('users').doc(userId)
+      const db = await getConnection()
       
-      // Update user subscription status in Firestore
-      await userRef.update({
-        subscription: {
-          status: status,
-          stripeSubscriptionId: subscription.id,
-          stripeCustomerId: customerId,
-          planType: subscription.metadata?.planType,
-          currentPeriodStart: new Date(subscription.current_period_start * 1000).toISOString(),
-          currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
-          cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
-          trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null
-        },
-        updatedAt: new Date().toISOString()
-      })
+      // Update user subscription status in PostgreSQL
+      const updateQuery = `
+        UPDATE users 
+        SET subscription_status = $1,
+            stripe_subscription_id = $2,
+            stripe_customer_id = $3,
+            subscription_plan_type = $4,
+            subscription_current_period_start = $5,
+            subscription_current_period_end = $6,
+            subscription_cancel_at_period_end = $7,
+            subscription_trial_start = $8,
+            subscription_trial_end = $9,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE uid = $10
+      `
+      
+      await db.query(updateQuery, [
+        status,
+        subscription.id,
+        customerId,
+        subscription.metadata?.planType,
+        new Date(subscription.current_period_start * 1000),
+        new Date(subscription.current_period_end * 1000),
+        subscription.cancel_at_period_end,
+        subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
+        subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+        userId
+      ])
       
       console.log(`User ${userId} subscription status updated: ${status}`)
     }
@@ -218,25 +242,37 @@ async function handleSubscriptionDeleted(subscription: any) {
     const userId = subscription.metadata?.userId
     
     if (userId && userId !== 'anonymous') {
-      const db = getFirebaseAdminDb()
-      const userRef = db.collection('users').doc(userId)
+      const db = await getConnection()
       
-      // Update user subscription status to cancelled in Firestore
-      await userRef.update({
-        subscription: {
-          status: 'canceled',
-          stripeSubscriptionId: subscription.id,
-          stripeCustomerId: subscription.customer,
-          planType: subscription.metadata?.planType,
-          currentPeriodStart: new Date(subscription.current_period_start * 1000).toISOString(),
-          currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
-          cancelAtPeriodEnd: true,
-          canceledAt: new Date().toISOString(),
-          trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
-          trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null
-        },
-        updatedAt: new Date().toISOString()
-      })
+      // Update user subscription status to cancelled in PostgreSQL
+      const updateQuery = `
+        UPDATE users 
+        SET subscription_status = $1,
+            stripe_subscription_id = $2,
+            stripe_customer_id = $3,
+            subscription_plan_type = $4,
+            subscription_current_period_start = $5,
+            subscription_current_period_end = $6,
+            subscription_cancel_at_period_end = $7,
+            subscription_canceled_at = CURRENT_TIMESTAMP,
+            subscription_trial_start = $8,
+            subscription_trial_end = $9,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE uid = $10
+      `
+      
+      await db.query(updateQuery, [
+        'canceled',
+        subscription.id,
+        subscription.customer,
+        subscription.metadata?.planType,
+        new Date(subscription.current_period_start * 1000),
+        new Date(subscription.current_period_end * 1000),
+        true,
+        subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
+        subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+        userId
+      ])
       
       console.log(`User ${userId} subscription cancelled`)
     }

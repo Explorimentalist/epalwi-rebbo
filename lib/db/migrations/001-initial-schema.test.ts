@@ -11,13 +11,18 @@ import {
 } from './001-initial-schema'
 import { query, closePool } from '../connection'
 
-describe('Database Migrations', () => {
+describe.skipIf(!process.env.DATABASE_URL)('Database Migrations', () => {
   beforeAll(async () => {
+    if (!process.env.DATABASE_URL) {
+      console.log('Skipping database migration tests - DATABASE_URL not provided')
+      return
+    }
     // Ensure clean state
     await closePool()
   })
 
   afterAll(async () => {
+    if (!process.env.DATABASE_URL) return
     await closePool()
   })
 

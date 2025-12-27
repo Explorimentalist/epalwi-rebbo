@@ -1,7 +1,7 @@
 /**
  * Global $fetch interceptor to attach Authorization header
- * - In production: attaches Firebase ID token if available
- * - In development with devAuthMock: attaches X-Dev-Auth-User header from sessionStorage
+ * - Attaches JWT session token if available from sessionStorage
+ * - Falls back to development auth header if configured
  */
 export default defineNuxtPlugin((nuxtApp) => {
   const runtime = useRuntimeConfig()
@@ -17,27 +17,22 @@ export default defineNuxtPlugin((nuxtApp) => {
 
         options.headers = options.headers || {}
 
-        // Try to attach Firebase ID token if user is signed in
+        // Try to attach JWT session token if available
         try {
-          const { getFirebaseAuth } = await import('~/services/firebase')
-          const auth = getFirebaseAuth()
-          const currentUser: any = auth?.currentUser
-          if (currentUser?.getIdToken) {
-            const idToken = await currentUser.getIdToken()
-            if (idToken) {
-              ;(options.headers as any)['Authorization'] = `Bearer ${idToken}`
-              return
-            }
+          const sessionToken = sessionStorage.getItem('auth-session-token')
+          if (sessionToken) {
+            ;(options.headers as any)['Authorization'] = `Bearer ${sessionToken}`
+            return
           }
         } catch {
-          // ignore and fall back to dev header if enabled
+          // ignore if sessionStorage is not available
         }
 
         // Development fallback: send dev auth user via custom header
         const devMock = Boolean((runtime as any)?.public?.devAuthMock)
         if (import.meta.dev && devMock) {
           try {
-            const persisted = sessionStorage.getItem('dev-auth-user')
+            const persisted = sessionStorage.getItem('auth-user')
             if (persisted) {
               const base64 = btoa(persisted)
               ;(options.headers as any)['X-Dev-Auth-User'] = base64

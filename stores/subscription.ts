@@ -5,8 +5,6 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
-import { doc, getDoc } from 'firebase/firestore'
-import { getFirebaseDb } from '~/services/firebase'
 import type { 
   SubscriptionPlan, 
   UserSubscription, 
@@ -126,39 +124,36 @@ export const useSubscriptionStore = defineStore('subscription', () => {
         return
       }
       
-      const db = getFirebaseDb()
-      const userRef = doc(db, 'users', userId)
-      const snap = await getDoc(userRef)
+      // Fetch subscription data from API
+      const response = await $fetch<{ success: boolean; subscription?: UserSubscription }>('/api/subscription', {
+        method: 'GET'
+      })
 
-      if (snap.exists()) {
-        const data: any = snap.data()
-        const sub = data?.subscription
+      if (response.success && response.subscription) {
+        const sub = response.subscription
 
         const toDate = (v: any): Date | undefined => {
           if (!v) return undefined
-          if (typeof v?.toDate === 'function') return v.toDate()
           if (typeof v === 'string' || typeof v === 'number') return new Date(v)
           return v as Date
         }
 
-        if (sub) {
-          updateUserSubscription({
-            status: sub.status,
-            stripeSubscriptionId: sub.stripeSubscriptionId,
-            stripeCustomerId: sub.stripeCustomerId,
-            planType: sub.planType,
-            currentPeriodStart: toDate(sub.currentPeriodStart),
-            currentPeriodEnd: toDate(sub.currentPeriodEnd),
-            cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
-            trialStart: toDate(sub.trialStart),
-            trialEnd: toDate(sub.trialEnd)
-          } as UserSubscription)
-        }
+        updateUserSubscription({
+          status: sub.status,
+          stripeSubscriptionId: sub.stripeSubscriptionId,
+          stripeCustomerId: sub.stripeCustomerId,
+          planType: sub.planType,
+          currentPeriodStart: toDate(sub.currentPeriodStart),
+          currentPeriodEnd: toDate(sub.currentPeriodEnd),
+          cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
+          trialStart: toDate(sub.trialStart),
+          trialEnd: toDate(sub.trialEnd)
+        } as UserSubscription)
       }
       
     } catch (err: any) {
-      // Handle Firebase offline errors gracefully
-      if (err.code === 'failed-precondition' || err.message?.includes('client is offline')) {
+      // Handle API errors gracefully
+      if (err.statusCode === 401 || err.message?.includes('unauthorized')) {
         console.log('📴 Firebase is offline, subscription data unavailable')
         // Don't show error to user for offline state
         setLoading(false)

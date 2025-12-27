@@ -12,6 +12,9 @@ export function createDatabasePool(config?: DatabaseConfig): Pool {
     const connectionString = config?.connectionString || process.env.DATABASE_URL
     
     if (!connectionString) {
+      if (process.env.NODE_ENV === 'test') {
+        throw new Error('DATABASE_URL environment variable is required for database tests. Set DATABASE_URL or skip database tests.')
+      }
       throw new Error('DATABASE_URL environment variable is required')
     }
 

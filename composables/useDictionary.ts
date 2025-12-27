@@ -112,11 +112,8 @@ export const useDictionary = () => {
         const headers: Record<string, string> = {}
         try {
           const authStore = useAuthStore()
-          if (authStore.firebaseUser) {
-            const idToken = await (authStore.firebaseUser as any)?.getIdToken?.(true)
-            if (idToken) {
-              headers['Authorization'] = `Bearer ${idToken}`
-            }
+          if (authStore.sessionToken) {
+            headers['Authorization'] = `Bearer ${authStore.sessionToken}`
           }
         } catch (e) {
           console.warn('Failed to get authentication token:', e)

@@ -3,8 +3,6 @@
  * TypeScript definitions for the authentication system
  */
 
-import type { User as FirebaseUser } from 'firebase/auth'
-
 /**
  * Subscription status types
  */
@@ -75,7 +73,6 @@ export interface UserProfile {
  */
 export interface AuthState {
   user: UserProfile | null
-  firebaseUser: FirebaseUser | null
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
@@ -209,15 +206,6 @@ export interface MailerSendParams {
   }>
 }
 
-/**
- * Firebase Custom Claims
- */
-export interface FirebaseCustomClaims {
-  role: UserRole
-  subscriptionStatus: SubscriptionStatus
-  stripeCustomerId?: string
-  trialEndDate?: number
-}
 
 /**
  * Utility type for creating new users
@@ -230,7 +218,4 @@ export type CreateUserData = Omit<UserProfile, 'uid' | 'createdAt' | 'lastLoginA
 /**
  * Utility type for updating users
  */
-export type UpdateUserData = Partial<Omit<UserProfile, 'uid' | 'createdAt'>>
-
-// Re-export Firebase auth types for convenience
-export type { User as FirebaseUser } from 'firebase/auth' 
+export type UpdateUserData = Partial<Omit<UserProfile, 'uid' | 'createdAt'>> 

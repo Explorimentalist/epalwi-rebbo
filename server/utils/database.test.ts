@@ -19,11 +19,15 @@ import { initializeDatabase } from '~/lib/db/migrations/001-initial-schema'
 import { query, closePool } from '~/lib/db/connection'
 import type { SubscriptionStatus } from '~/types/auth'
 
-describe('Database Utilities', () => {
+describe.skipIf(!process.env.DATABASE_URL)('Database Utilities', () => {
   let testUserId: string
   let testUserEmail: string
 
   beforeAll(async () => {
+    if (!process.env.DATABASE_URL) {
+      console.log('Skipping database utilities tests - DATABASE_URL not provided')
+      return
+    }
     // Initialize database schema for testing
     await initializeDatabase()
   })

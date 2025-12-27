@@ -1,6 +1,9 @@
 // Global test setup for component/page tests
 import { vi } from 'vitest'
 
+// Set test environment variables
+process.env.NODE_ENV = 'test'
+
 // Stub Nuxt navigate and route helpers
 vi.stubGlobal('navigateTo', vi.fn())
 vi.stubGlobal('useRoute', () => ({ fullPath: '/', path: '/' }))
@@ -32,6 +35,28 @@ vi.stubGlobal('useRuntimeConfig', () => ({ public: { appUrl: 'http://localhost:3
 // Design system stub
 vi.stubGlobal('useDesignSystem', () => ({
   createComponentClasses: () => 'trial-banner'
+}))
+
+// Nuxt server utilities
+vi.stubGlobal('createError', vi.fn((options) => {
+  const error = new Error(options.statusMessage || 'Error')
+  error.statusCode = options.statusCode || 500
+  return error
+}))
+
+// Nuxt server API handler and utilities
+vi.stubGlobal('defineEventHandler', vi.fn((handler) => handler))
+vi.stubGlobal('assertMethod', vi.fn())
+vi.stubGlobal('readBody', vi.fn())
+vi.stubGlobal('getQuery', vi.fn())
+
+// Mock #app imports for Nuxt
+vi.mock('#app', () => ({
+  useRuntimeConfig: vi.fn(() => ({ 
+    public: { 
+      devAuthMock: false 
+    }
+  }))
 }))
 
 // Stub useDictionary composable used in pages/dictionary

@@ -163,7 +163,7 @@ onMounted(async () => {
     }
   }
 
-  if (authStore.firebaseUser) {
+  if (authStore.isAuthenticated) {
     await authStore.refreshUser()
     if (authStore.user?.uid) {
       await subscriptionStore.loadUserSubscription(authStore.user.uid)

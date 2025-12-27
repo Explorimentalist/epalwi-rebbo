@@ -18,6 +18,7 @@ import {
 } from './middleware'
 import { generateSessionToken } from './jwt'
 import { getUserById } from '~/server/utils/database'
+import { useRuntimeConfig } from '#app'
 import type { UserProfile } from '~/types/auth'
 
 // Mock dependencies
@@ -588,7 +589,7 @@ describe('Authentication Middleware', () => {
   describe('Development Authentication Fallback', () => {
     beforeEach(() => {
       // Reset runtime config mock
-      vi.mocked(require('#app').useRuntimeConfig).mockReturnValue({
+      vi.mocked(useRuntimeConfig).mockReturnValue({
         jwtSecret: mockJWTSecret,
         public: { devAuthMock: true }
       })
@@ -615,7 +616,7 @@ describe('Authentication Middleware', () => {
     })
 
     it('should return null when dev auth is disabled', async () => {
-      vi.mocked(require('#app').useRuntimeConfig).mockReturnValue({
+      vi.mocked(useRuntimeConfig).mockReturnValue({
         jwtSecret: mockJWTSecret,
         public: { devAuthMock: false }
       })
@@ -647,7 +648,7 @@ describe('Authentication Middleware', () => {
 
   describe('authenticateWithFallback', () => {
     it('should use dev fallback when available', async () => {
-      vi.mocked(require('#app').useRuntimeConfig).mockReturnValue({
+      vi.mocked(useRuntimeConfig).mockReturnValue({
         jwtSecret: mockJWTSecret,
         public: { devAuthMock: true }
       })
@@ -668,7 +669,7 @@ describe('Authentication Middleware', () => {
     })
 
     it('should fall back to JWT authentication when dev auth unavailable', async () => {
-      vi.mocked(require('#app').useRuntimeConfig).mockReturnValue({
+      vi.mocked(useRuntimeConfig).mockReturnValue({
         jwtSecret: mockJWTSecret,
         public: { devAuthMock: false }
       })
