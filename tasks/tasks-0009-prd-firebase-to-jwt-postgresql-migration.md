@@ -127,6 +127,6 @@ Each task will include comprehensive testing to ensure reliability during migrat
   - [x] 6.3 Update dictionary composable to use JWT headers instead of Firebase tokens **(Claude)**
   - [x] 6.4 Update preferences composable to use PostgreSQL via API **(Claude)**
   - [x] 6.5 Update search history service to use PostgreSQL via API **(Claude)**
-  - [ ] 6.6 Test complete authentication flow from frontend **(Claude)**
+  - [x] 6.6 Test complete authentication flow from frontend **(Claude)**
   - [ ] 6.7 Test dictionary access and subscription enforcement **(Claude)**
   - [ ] 6.8 Perform end-to-end testing of magic link → authentication → dictionary access **(Claude)**
