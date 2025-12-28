@@ -121,12 +121,12 @@ Each task will include comprehensive testing to ensure reliability during migrat
   - [x] 5.6 Test all API endpoints with new authentication system **(Claude)**
   - [x] 5.7 Test Stripe integration with PostgreSQL storage **(Claude)**
 
-- [ ] **6.0 Frontend Store and Composable Updates** 
+- [x] **6.0 Frontend Store and Composable Updates** ✅ COMPLETED
   - [x] 6.1 Update auth store to remove Firebase Auth integration **(Claude)**
   - [x] 6.2 Update auth store to handle JWT session tokens **(Claude)**
   - [x] 6.3 Update dictionary composable to use JWT headers instead of Firebase tokens **(Claude)**
   - [x] 6.4 Update preferences composable to use PostgreSQL via API **(Claude)**
   - [x] 6.5 Update search history service to use PostgreSQL via API **(Claude)**
   - [x] 6.6 Test complete authentication flow from frontend **(Claude)**
-  - [ ] 6.7 Test dictionary access and subscription enforcement **(Claude)**
-  - [ ] 6.8 Perform end-to-end testing of magic link → authentication → dictionary access **(Claude)**
+  - [x] 6.7 Test dictionary access and subscription enforcement **(Claude)**
+  - [x] 6.8 Perform end-to-end testing of magic link → authentication → dictionary access **(Claude)**
