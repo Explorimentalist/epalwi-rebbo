@@ -61,8 +61,9 @@ async function getDictionaryData(): Promise<DictionaryData> {
  */
 export default defineEventHandler(async (event): Promise<DictionaryApiResponse> => {
   try {
-    console.log('🔧 Debug [dictionary.get]: Request received with headers:', Object.keys(getHeaders(event)))
-    console.log('🔧 Debug [dictionary.get]: Auth header present:', !!getHeader(event, 'authorization'))
+    console.log('🔧 Debug [dictionary.get] v2: Request received with headers:', Object.keys(getHeaders(event)))
+    console.log('🔧 Debug [dictionary.get] v2: Auth header present:', !!getHeader(event, 'authorization'))
+    console.log('🔧 Debug [dictionary.get] v2: Node.js version:', process.version)
     
     // Set CORS headers for development
     if (process.dev) {
