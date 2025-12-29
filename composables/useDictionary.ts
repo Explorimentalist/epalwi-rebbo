@@ -131,9 +131,13 @@ export const useDictionary = () => {
         // Get authentication headers
         const headers: Record<string, string> = {}
         try {
-          const authStore = useAuthStore()
-          if (authStore.sessionToken) {
-            headers['Authorization'] = `Bearer ${authStore.sessionToken}`
+          // Read directly from sessionStorage instead of reactive store
+          const sessionToken = sessionStorage.getItem('auth-session-token')
+          if (sessionToken) {
+            headers['Authorization'] = `Bearer ${sessionToken}`
+            console.log('🔐 Added auth header to dictionary API request')
+          } else {
+            console.warn('⚠️ No session token found in sessionStorage')
           }
         } catch (e) {
           console.warn('Failed to get authentication token:', e)
