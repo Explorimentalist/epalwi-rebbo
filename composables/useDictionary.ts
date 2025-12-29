@@ -65,6 +65,26 @@ export const useDictionary = () => {
       // Initialize IndexedDB
       await indexedDBService.initialize()
       
+      // Wait for auth to be ready before loading dictionary data
+      console.log('🔧 Waiting for auth initialization...')
+      const authStore = useAuthStore()
+      let attempts = 0
+      const maxAttempts = 20 // Max 10 seconds wait (500ms * 20)
+      
+      while (!authStore.sessionToken && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+        attempts++
+        if (attempts % 4 === 0) { // Log every 2 seconds
+          console.log(`🔧 Still waiting for auth... (${attempts}/${maxAttempts})`)
+        }
+      }
+      
+      if (authStore.sessionToken) {
+        console.log('✅ Auth ready, proceeding with dictionary load...')
+      } else {
+        console.warn('⚠️ Auth not ready after 10s, proceeding anyway...')
+      }
+      
       // Load dictionary data
       const dictionaryData = await loadDictionaryData()
       
