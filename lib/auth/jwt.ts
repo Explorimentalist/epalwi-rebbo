@@ -120,21 +120,42 @@ export function generateSessionToken(
 export function verifySessionToken(token: string): JWTSessionPayload {
   const jwtSecret = getJWTSecret()
   
+  console.log('🔧 Debug [verifySessionToken]: Starting verification...')
+  console.log('🔧 Debug [verifySessionToken]: JWT secret available:', !!jwtSecret, jwtSecret ? `${jwtSecret.substring(0, 10)}...` : 'null')
+  console.log('🔧 Debug [verifySessionToken]: Token length:', token?.length)
+  
   try {
+    // First decode without verification to see the payload structure
+    const decoded = jwt.decode(token) as any
+    console.log('🔧 Debug [verifySessionToken]: Decoded token (unverified):', {
+      iss: decoded?.iss,
+      aud: decoded?.aud, 
+      exp: decoded?.exp,
+      uid: decoded?.uid?.substring(0, 8) + '...' 
+    })
+    
     const payload = jwt.verify(token, jwtSecret, {
       algorithms: ['HS256'],
       issuer: 'epalwi-rebbo',
       audience: 'epalwi-rebbo-app'
     }) as JWTSessionPayload
 
+    console.log('✅ Debug [verifySessionToken]: JWT verification successful')
+    
     // Check if token is expired
     const now = Math.floor(Date.now() / 1000)
+    console.log('🔧 Debug [verifySessionToken]: Token exp:', payload.exp, 'Current time:', now, 'Expired:', payload.exp < now)
+    
     if (payload.exp < now) {
       throw new Error('Session expired')
     }
 
+    console.log('✅ Debug [verifySessionToken]: Session token is valid and not expired')
     return payload
   } catch (error) {
+    console.error('❌ [verifySessionToken]: Verification failed:', (error as any)?.message)
+    console.error('❌ [verifySessionToken]: Error type:', (error as any)?.constructor?.name)
+    
     if (error instanceof jwt.TokenExpiredError) {
       throw new Error('Session expired')
     } else if (error instanceof jwt.JsonWebTokenError) {

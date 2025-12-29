@@ -30,17 +30,26 @@ export interface AuthValidationResult {
 export async function validateUserToken(event: H3Event): Promise<{ uid: string; email?: string } | null> {
   const authHeader = getHeader(event, 'authorization')
   const token = extractBearerToken(authHeader)
+  
+  console.log('🔧 Debug [validateUserToken]: Auth header present:', !!authHeader)
+  console.log('🔧 Debug [validateUserToken]: Token extracted:', !!token, token ? `${token.substring(0, 20)}...` : 'null')
+  
   if (!token) return null
 
   try {
+    console.log('🔧 Debug [validateUserToken]: Attempting to verify session token...')
     const payload = verifySessionToken(token)
+    console.log('✅ Debug [validateUserToken]: Session token verified successfully for uid:', payload.uid)
+    
     const result: { uid: string; email?: string } = { uid: payload.uid }
     if (payload.email) {
       result.email = payload.email
     }
     return result
   } catch (err) {
-    console.error('Token validation failed:', err)
+    console.error('❌ [validateUserToken]: Token validation failed:', err)
+    console.error('❌ [validateUserToken]: Error type:', err?.constructor?.name)
+    console.error('❌ [validateUserToken]: Error message:', err?.message)
     return null
   }
 }
