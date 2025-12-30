@@ -131,13 +131,24 @@ export const useDictionary = () => {
         // Get authentication headers
         const headers: Record<string, string> = {}
         try {
+          console.log('=== TOKEN CHECK DURING DICTIONARY CALL ===')
+          console.log('🔧 SessionStorage keys:', Object.keys(sessionStorage))
+          
           // Read directly from sessionStorage instead of reactive store
           const sessionToken = sessionStorage.getItem('auth-session-token')
+          const authUser = sessionStorage.getItem('auth-user')
+          
+          console.log('🔧 Token at dictionary time:', sessionToken ? `${sessionToken.substring(0, 20)}...` : 'NULL')
+          console.log('🔧 User at dictionary time:', authUser ? 'PRESENT' : 'NULL')
+          console.log('🔧 Token length:', sessionToken?.length || 0)
+          
           if (sessionToken) {
             headers['Authorization'] = `Bearer ${sessionToken}`
             console.log('🔐 Added auth header to dictionary API request')
+            console.log('🔧 Headers being sent:', Object.keys(headers))
           } else {
             console.warn('⚠️ No session token found in sessionStorage')
+            console.warn('⚠️ Available storage keys:', Object.keys(sessionStorage))
           }
         } catch (e) {
           console.warn('Failed to get authentication token:', e)
