@@ -69,9 +69,11 @@ export async function getUserSubscriptionStatus(uid: string): Promise<UserSubscr
 
   const now = new Date()
 
-  // CreatedAt handling - already Date objects from PostgreSQL
-  const createdAt: Date = user.createdAt
-  const trialEndDate = user.trial?.endDate || new Date(createdAt.getTime() + 14 * 24 * 60 * 60 * 1000)
+  // Ensure dates are proper Date objects (PostgreSQL returns strings)
+  const createdAt: Date = user.createdAt instanceof Date ? user.createdAt : new Date(user.createdAt)
+  const trialEndDate = user.trial?.endDate 
+    ? (user.trial.endDate instanceof Date ? user.trial.endDate : new Date(user.trial.endDate))
+    : new Date(createdAt.getTime() + 14 * 24 * 60 * 60 * 1000)
 
   const msPerDay = 24 * 60 * 60 * 1000
   const trialMsRemaining = trialEndDate.getTime() - now.getTime()
