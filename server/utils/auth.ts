@@ -161,7 +161,11 @@ export async function validateUserSubscription(event: H3Event): Promise<AuthVali
       return { success: false, error: 'Invalid or missing authentication token', errorCode: 'INVALID_TOKEN' }
     }
 
+    console.log('🔧 Debug [validateUserSubscription]: JWT validated successfully, uid:', tokenData.uid)
+    console.log('🔧 Debug [validateUserSubscription]: Attempting database lookup...')
+    
     const userInfo = await getUserSubscriptionStatus(tokenData.uid)
+    console.log('✅ Debug [validateUserSubscription]: Database lookup successful')
     return { success: true, user: userInfo }
   } catch (err: any) {
     console.error('Subscription validation failed:', err)
