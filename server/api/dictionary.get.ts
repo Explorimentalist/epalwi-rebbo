@@ -4,10 +4,9 @@
  * GET /api/dictionary
  */
 
-import { readFile } from 'fs/promises'
-import { join } from 'path'
 import type { DictionaryData, DictionaryApiResponse } from '~/types/dictionary'
 import { enforceSubscription } from '~/server/utils/validateSubscription'
+import { dictionary } from '~/server/data/dictionary'
 
 // Cache the dictionary data in memory for performance
 let cachedDictionary: DictionaryData | null = null
@@ -15,21 +14,17 @@ let cacheTimestamp: number = 0
 const CACHE_DURATION = 10 * 60 * 1000 // 10 minutes in milliseconds
 
 /**
- * Load dictionary from file system
+ * Load dictionary from imported module (Vercel-compatible)
  */
-async function loadDictionaryFromFile(): Promise<DictionaryData> {
+async function loadDictionaryFromModule(): Promise<DictionaryData> {
   try {
-    const dataPath = join(process.cwd(), 'server/data/diccionario_consolidado.json')
-    const fileContent = await readFile(dataPath, 'utf-8')
-    const data = JSON.parse(fileContent) as DictionaryData
-    
     // Validate the data structure
-    if (!data.metadata || !data.entries || !Array.isArray(data.entries)) {
+    if (!dictionary.metadata || !dictionary.entries || !Array.isArray(dictionary.entries)) {
       throw new Error('Invalid dictionary data structure')
     }
     
-    console.log(`📚 Dictionary loaded: ${data.metadata.total_entries} entries`)
-    return data
+    console.log(`📚 Dictionary loaded from module: ${dictionary.metadata.total_entries} entries`)
+    return dictionary
   } catch (error) {
     console.error('❌ Failed to load dictionary:', error)
     throw error
@@ -50,7 +45,7 @@ async function getDictionaryData(): Promise<DictionaryData> {
   
   // Load fresh data
   console.log('🔄 Loading fresh dictionary data')
-  cachedDictionary = await loadDictionaryFromFile()
+  cachedDictionary = await loadDictionaryFromModule()
   cacheTimestamp = now
   
   return cachedDictionary
