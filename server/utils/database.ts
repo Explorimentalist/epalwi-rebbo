@@ -82,6 +82,57 @@ export async function deleteUser(id: string): Promise<void> {
 }
 
 // Subscription management utilities
+
+/**
+ * Upsert a subscription record in the subscriptions table.
+ * This is the correct function for webhook handlers to use.
+ *
+ * @param userId - The UUID from users.id (NOT the uid alias from user_profiles view)
+ * @param subscriptionData - Subscription data from Stripe
+ */
+export async function upsertSubscription(
+  userId: string,
+  subscriptionData: {
+    stripeCustomerId?: string
+    stripeSubscriptionId?: string
+    status: SubscriptionStatus
+    planId?: string
+    currentPeriodStart?: Date
+    currentPeriodEnd?: Date
+    cancelAtPeriodEnd?: boolean
+  }
+): Promise<void> {
+  await query(
+    `INSERT INTO subscriptions
+     (user_id, stripe_customer_id, stripe_subscription_id, status, plan_id,
+      current_period_start, current_period_end, cancel_at_period_end)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     ON CONFLICT (user_id)
+     DO UPDATE SET
+       stripe_customer_id = COALESCE(EXCLUDED.stripe_customer_id, subscriptions.stripe_customer_id),
+       stripe_subscription_id = COALESCE(EXCLUDED.stripe_subscription_id, subscriptions.stripe_subscription_id),
+       status = EXCLUDED.status,
+       plan_id = COALESCE(EXCLUDED.plan_id, subscriptions.plan_id),
+       current_period_start = COALESCE(EXCLUDED.current_period_start, subscriptions.current_period_start),
+       current_period_end = COALESCE(EXCLUDED.current_period_end, subscriptions.current_period_end),
+       cancel_at_period_end = EXCLUDED.cancel_at_period_end,
+       updated_at = CURRENT_TIMESTAMP`,
+    [
+      userId,
+      subscriptionData.stripeCustomerId || null,
+      subscriptionData.stripeSubscriptionId || null,
+      subscriptionData.status,
+      subscriptionData.planId || null,
+      subscriptionData.currentPeriodStart || null,
+      subscriptionData.currentPeriodEnd || null,
+      subscriptionData.cancelAtPeriodEnd ?? false
+    ]
+  )
+}
+
+/**
+ * @deprecated Use upsertSubscription instead
+ */
 export async function createOrUpdateSubscription(
   userId: string,
   subscriptionData: {
@@ -131,9 +182,9 @@ export async function getSubscriptionByStripeId(
      WHERE s.stripe_subscription_id = $1`,
     [stripeSubscriptionId]
   )
-  
+
   if (result.rows.length === 0) return null
-  
+
   const row = result.rows[0]
   return {
     userId: row.user_id,
@@ -147,6 +198,70 @@ export async function getSubscriptionByStripeId(
       stripeSubscriptionId: row.stripe_subscription_id
     }
   }
+}
+
+/**
+ * Update subscription status and optionally period dates.
+ * Use this for invoice.payment_succeeded/failed events.
+ *
+ * @param stripeSubscriptionId - The Stripe subscription ID
+ * @param status - New subscription status
+ * @param periodEnd - Optional new period end date
+ */
+export async function updateSubscriptionStatus(
+  stripeSubscriptionId: string,
+  status: SubscriptionStatus,
+  periodEnd?: Date
+): Promise<boolean> {
+  const result = periodEnd
+    ? await query(
+        `UPDATE subscriptions
+         SET status = $1, current_period_end = $2, updated_at = CURRENT_TIMESTAMP
+         WHERE stripe_subscription_id = $3`,
+        [status, periodEnd, stripeSubscriptionId]
+      )
+    : await query(
+        `UPDATE subscriptions
+         SET status = $1, updated_at = CURRENT_TIMESTAMP
+         WHERE stripe_subscription_id = $2`,
+        [status, stripeSubscriptionId]
+      )
+  return (result.rowCount ?? 0) > 0
+}
+
+/**
+ * Get user ID directly from users table by ID.
+ * Use this to verify a user exists before upserting subscription.
+ *
+ * @param id - The user's UUID (users.id column)
+ * @returns The user's ID and email if found, null otherwise
+ */
+export async function getUserIdAndEmail(
+  id: string
+): Promise<{ id: string; email: string } | null> {
+  const result = await query(
+    'SELECT id, email FROM users WHERE id = $1 AND is_active = true',
+    [id]
+  )
+  if (result.rows.length === 0) return null
+  return { id: result.rows[0].id, email: result.rows[0].email }
+}
+
+/**
+ * Find user by Stripe customer ID from subscriptions table.
+ *
+ * @param stripeCustomerId - The Stripe customer ID
+ * @returns User ID if found
+ */
+export async function getUserIdByStripeCustomerId(
+  stripeCustomerId: string
+): Promise<string | null> {
+  const result = await query(
+    `SELECT user_id FROM subscriptions WHERE stripe_customer_id = $1`,
+    [stripeCustomerId]
+  )
+  if (result.rows.length === 0) return null
+  return result.rows[0].user_id
 }
 
 export async function getUserByStripeCustomerId(

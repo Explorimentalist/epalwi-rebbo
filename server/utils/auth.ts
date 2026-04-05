@@ -84,15 +84,37 @@ export async function getUserSubscriptionStatus(uid: string): Promise<UserSubscr
   const isInGracePeriod = !isTrialActive && isInGracePeriodUtil(trialEndDate, now, 3)
   const graceDaysRemaining = !isTrialActive ? getGraceDaysRemainingUtil(trialEndDate, now, 3) : 0
 
-  // Paid subscription status
+  // Paid subscription status - MUST check both status AND currentPeriodEnd
   const rawStatus: string | undefined = user.subscription?.status
-  const hasActiveSubscription = rawStatus === 'active' || rawStatus === 'trialing'
+
+  // Convert currentPeriodEnd to Date object (PostgreSQL may return strings)
+  const currentPeriodEndRaw = user.subscription?.currentPeriodEnd
+  const currentPeriodEnd: Date | null = currentPeriodEndRaw
+    ? (currentPeriodEndRaw instanceof Date ? currentPeriodEndRaw : new Date(currentPeriodEndRaw))
+    : null
+
+  // Subscription is only active if:
+  // 1. Status is 'active' or 'trialing' AND
+  // 2. currentPeriodEnd exists AND is in the future
+  const statusIsActive = rawStatus === 'active' || rawStatus === 'trialing'
+  const periodIsValid = currentPeriodEnd ? currentPeriodEnd > now : false
+  const hasActiveSubscription = statusIsActive && periodIsValid
+
+  // Check if subscription has status active but period has expired
+  const isSubscriptionExpiredByDate = statusIsActive && currentPeriodEnd && currentPeriodEnd <= now
 
   // Derived user-facing status
   let subscriptionStatus: UserSubscriptionInfo['subscriptionStatus'] = 'trial'
-  if (hasActiveSubscription) subscriptionStatus = 'active'
-  else if (rawStatus === 'cancelled' || rawStatus === 'canceled') subscriptionStatus = 'cancelled'
-  else if (!isTrialActive && !isInGracePeriod) subscriptionStatus = 'expired'
+  if (hasActiveSubscription) {
+    subscriptionStatus = 'active'
+  } else if (isSubscriptionExpiredByDate) {
+    // Subscription status says active but period has passed - treat as expired
+    subscriptionStatus = 'expired'
+  } else if (rawStatus === 'cancelled' || rawStatus === 'canceled') {
+    subscriptionStatus = 'cancelled'
+  } else if (!isTrialActive && !isInGracePeriod) {
+    subscriptionStatus = 'expired'
+  }
 
   const canAccessFeatures = hasActiveSubscription || isTrialActive || isInGracePeriod
 
@@ -134,9 +156,22 @@ export async function validateUserSubscription(event: H3Event): Promise<AuthVali
           const isInGrace = !isTrialActive && isInGracePeriodUtil(trialEnd, now, 3)
           const graceDaysRemaining = !isTrialActive ? getGraceDaysRemainingUtil(trialEnd, now, 3) : 0
           const rawStatus = devUser?.subscription?.status as string | undefined
-          const hasActiveSubscription = rawStatus === 'active' || rawStatus === 'trialing'
+
+          // Convert currentPeriodEnd for dev mock
+          const devPeriodEndRaw = devUser?.subscription?.currentPeriodEnd
+          const devPeriodEnd: Date | null = devPeriodEndRaw
+            ? (devPeriodEndRaw instanceof Date ? devPeriodEndRaw : new Date(devPeriodEndRaw))
+            : null
+
+          // Check both status AND period end date
+          const devStatusIsActive = rawStatus === 'active' || rawStatus === 'trialing'
+          const devPeriodIsValid = devPeriodEnd ? devPeriodEnd > now : false
+          const hasActiveSubscription = devStatusIsActive && devPeriodIsValid
+          const isDevExpiredByDate = devStatusIsActive && devPeriodEnd && devPeriodEnd <= now
+
           let subscriptionStatus: UserSubscriptionInfo['subscriptionStatus'] = 'trial'
           if (hasActiveSubscription) subscriptionStatus = 'active'
+          else if (isDevExpiredByDate) subscriptionStatus = 'expired'
           else if (rawStatus === 'cancelled' || rawStatus === 'canceled') subscriptionStatus = 'cancelled'
           else if (!isTrialActive && !isInGrace) subscriptionStatus = 'expired'
 

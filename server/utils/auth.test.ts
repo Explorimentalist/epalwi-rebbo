@@ -6,7 +6,12 @@ import type { H3Event } from 'h3'
 let mockVerifySessionToken = vi.fn()
 
 vi.mock('~/lib/auth/jwt', () => ({
-  verifySessionToken: (token: string) => mockVerifySessionToken(token)
+  verifySessionToken: (token: string) => mockVerifySessionToken(token),
+  extractBearerToken: (header: string | undefined) => {
+    if (!header) return null
+    const match = header.match(/^Bearer\s+(.+)$/i)
+    return match ? match[1] : null
+  }
 }))
 
 // Provide minimal getHeader implementation used by validateUserToken
@@ -48,19 +53,107 @@ describe('server/utils/auth', () => {
     expect(res).toEqual({ uid: 'u1', email: 'a@b.com' })
   })
 
-  it('computes active subscription', async () => {
+  it('computes active subscription with valid currentPeriodEnd', async () => {
+    // Active subscription with future currentPeriodEnd
     const mockUser = {
       uid: 'u1',
       email: 'a@b.com',
       createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-      subscription: { status: 'active' },
+      subscription: {
+        status: 'active',
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+      },
       trial: null
     }
     vi.mocked(getUserById).mockResolvedValue(mockUser as any)
-    
+
     const info = await getUserSubscriptionStatus('u1')
     expect(info.hasActiveSubscription).toBe(true)
     expect(info.canAccessFeatures).toBe(true)
+    expect(info.subscriptionStatus).toBe('active')
+  })
+
+  it('treats subscription with status active but past currentPeriodEnd as expired', async () => {
+    // Subscription status says active but period has ended - this is the BUG we fixed!
+    const mockUser = {
+      uid: 'u1',
+      email: 'expired-by-date@example.com',
+      createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000), // Created 45 days ago
+      subscription: {
+        status: 'active', // Status says active...
+        currentPeriodEnd: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) // ...but period ended yesterday
+      },
+      trial: null
+    }
+    vi.mocked(getUserById).mockResolvedValue(mockUser as any)
+
+    const info = await getUserSubscriptionStatus('u1')
+    expect(info.hasActiveSubscription).toBe(false) // Must be false!
+    expect(info.canAccessFeatures).toBe(false) // No access
+    expect(info.subscriptionStatus).toBe('expired') // Should show as expired
+  })
+
+  it('handles subscription with trialing status and valid period', async () => {
+    const mockUser = {
+      uid: 'u1',
+      email: 'trialing@example.com',
+      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      subscription: {
+        status: 'trialing',
+        currentPeriodEnd: new Date(Date.now() + 11 * 24 * 60 * 60 * 1000) // 11 days left
+      },
+      trial: {
+        startDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        endDate: new Date(Date.now() + 11 * 24 * 60 * 60 * 1000)
+      }
+    }
+    vi.mocked(getUserById).mockResolvedValue(mockUser as any)
+
+    const info = await getUserSubscriptionStatus('u1')
+    expect(info.hasActiveSubscription).toBe(true)
+    expect(info.subscriptionStatus).toBe('active')
+    expect(info.canAccessFeatures).toBe(true)
+  })
+
+  it('handles subscription with status active but no currentPeriodEnd gracefully', async () => {
+    // Edge case: status is active but no period end date (shouldn't happen but be defensive)
+    const mockUser = {
+      uid: 'u1',
+      email: 'no-period@example.com',
+      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+      subscription: {
+        status: 'active'
+        // No currentPeriodEnd - defensive handling
+      },
+      trial: null
+    }
+    vi.mocked(getUserById).mockResolvedValue(mockUser as any)
+
+    const info = await getUserSubscriptionStatus('u1')
+    // Without a valid period end, we can't confirm subscription is active
+    expect(info.hasActiveSubscription).toBe(false)
+    // But trial may still be active
+    expect(info.isTrialActive).toBe(true) // 10 days < 14 day trial
+    expect(info.canAccessFeatures).toBe(true) // Can access via trial
+  })
+
+  it('handles PostgreSQL date strings for currentPeriodEnd', async () => {
+    // PostgreSQL returns dates as ISO strings
+    const futureDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    const mockUser = {
+      uid: 'u1',
+      email: 'datestring@example.com',
+      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+      subscription: {
+        status: 'active',
+        currentPeriodEnd: futureDate.toISOString() // String instead of Date object
+      },
+      trial: null
+    }
+    vi.mocked(getUserById).mockResolvedValue(mockUser as any)
+
+    const info = await getUserSubscriptionStatus('u1')
+    expect(info.hasActiveSubscription).toBe(true) // Should correctly parse string
     expect(info.subscriptionStatus).toBe('active')
   })
 

@@ -1,5 +1,12 @@
 <template>
   <div class="success-page">
+    <!-- Logo -->
+    <div class="success-logo">
+      <NuxtLink to="/">
+        <img src="/logo.svg" alt="epàlwi-rèbbo" class="logo-image" />
+      </NuxtLink>
+    </div>
+
     <div class="success-container">
       <!-- Success Icon -->
       <div class="success-icon">
@@ -24,7 +31,13 @@
           </div>
           <div class="detail-item">
             <span class="detail-label">Estado:</span>
-            <span class="detail-value status-active">Activo</span>
+            <span class="detail-value" :class="subscriptionDetails.statusClass">
+              {{ subscriptionDetails.status }}
+            </span>
+          </div>
+          <div v-if="subscriptionDetails.trialInfo" class="detail-item">
+            <span class="detail-label">Prueba:</span>
+            <span class="detail-value status-trial">{{ subscriptionDetails.trialInfo }}</span>
           </div>
           <div class="detail-item">
             <span class="detail-label">Próximo cobro:</span>
@@ -40,35 +53,20 @@
       <!-- Next Steps -->
       <div class="next-steps">
         <h2 class="ds-text-display-sm">Próximos Pasos</h2>
-        <div class="steps-list">
-          <div class="step-item">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <h3 class="ds-card-title">Accede al Diccionario</h3>
-              <p class="step-description">
-                Comienza a usar todas las funciones del diccionario
-              </p>
-            </div>
-          </div>
-          <div class="step-item">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <h3 class="ds-card-title">Descarga para Offline</h3>
-              <p class="step-description">
-                Sincroniza el diccionario para uso sin internet
-              </p>
-            </div>
-          </div>
-          <div class="step-item">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <h3 class="ds-card-title">Gestiona tu Cuenta</h3>
-              <p class="step-description">
-                Accede a la configuración de tu suscripción
-              </p>
-            </div>
-          </div>
-        </div>
+        <ol class="steps-list" role="list">
+          <li class="step-item">
+            <span class="step-number">1</span>
+            <span class="step-text">Accede al Diccionario - Comienza a usar todas las funciones del diccionario</span>
+          </li>
+          <li class="step-item">
+            <span class="step-number">2</span>
+            <span class="step-text">Descarga para Offline - Sincroniza el diccionario para uso sin internet</span>
+          </li>
+          <li class="step-item">
+            <span class="step-number">3</span>
+            <span class="step-text">Gestiona tu Cuenta - Accede a la configuración de tu suscripción</span>
+          </li>
+        </ol>
       </div>
 
       <!-- Action Buttons -->
@@ -129,23 +127,66 @@ const subscriptionDetails = computed(() => {
 
   if (!sub || !user) {
     return {
-      plan: 'Cargando...',
-      nextBilling: 'Cargando...',
-      paymentMethod: 'Cargando...'
+      plan: 'Plan Mensual',
+      status: 'Activo',
+      nextBilling: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      }),
+      paymentMethod: 'Tarjeta terminada en ••••',
+      trialInfo: null
     }
   }
 
-  const plan = sub.planType === 'monthly' ? 'Plan Mensual' : 'Plan Anual'
+  // Determine plan name
+  let planName = 'Plan Mensual'
+  if (sub.planType === 'annual') {
+    planName = 'Plan Anual'
+  } else if (sub.planType === 'monthly') {
+    planName = 'Plan Mensual'
+  }
+
+  // Determine status
+  let statusText = 'Activo'
+  let statusClass = 'status-active'
+  
+  if (sub.status === 'trialing') {
+    statusText = 'Prueba Gratuita'
+    statusClass = 'status-trial'
+  } else if (sub.status === 'active') {
+    statusText = 'Activo'
+    statusClass = 'status-active'
+  } else if (sub.status === 'canceled') {
+    statusText = 'Cancelado'
+    statusClass = 'status-canceled'
+  } else if (sub.status === 'past_due') {
+    statusText = 'Pago Pendiente'
+    statusClass = 'status-past-due'
+  }
+
+  // Billing date
   const nextBilling = sub.currentPeriodEnd
     ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-ES', {
         year: 'numeric', month: 'long', day: 'numeric'
       })
-    : 'No disponible'
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      })
+
+  // Trial information
+  let trialInfo = null
+  if (sub.status === 'trialing' && sub.trialEnd) {
+    const trialEnd = new Date(sub.trialEnd)
+    const daysLeft = Math.max(0, Math.ceil((trialEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    trialInfo = `${daysLeft} días de prueba restantes`
+  }
 
   return {
-    plan,
+    plan: planName,
+    status: statusText,
+    statusClass,
     nextBilling,
-    paymentMethod: 'Método de pago registrado'
+    paymentMethod: 'Tarjeta terminada en ••••',
+    trialInfo
   }
 })
 
@@ -190,83 +231,110 @@ const goToAccount = () => {
 <style lang="scss" scoped>
 .success-page {
   min-height: 100vh;
-  background: var(--color-background);
-  padding: var(--space-8) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-spacing-6);
+  background: var(--ds-background);
+  position: relative;
+}
+
+.success-logo {
+  position: absolute;
+  top: var(--ds-spacing-3);
+  left: var(--ds-spacing-3);
+  z-index: 10;
+  
+  .logo-image {
+    height: 32px;
+    width: auto;
+  }
 }
 
 .success-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 var(--space-6);
+  background: var(--ds-card);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-lg);
+  padding: var(--ds-spacing-4);
+  max-width: 600px;
+  width: 100%;
 }
 
 .success-icon {
   text-align: center;
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--ds-spacing-3);
   
   .check-icon {
     width: 80px;
     height: 80px;
-    color: var(--color-success);
+    color: var(--ds-primary);
   }
 }
 
 .success-header {
   text-align: center;
-  margin-bottom: var(--space-10);
-  
-  .success-title {
-    font-size: var(--font-size-4xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    margin-bottom: var(--space-4);
-  }
+  margin-bottom: var(--ds-spacing-4);
   
   .success-subtitle {
-    font-size: var(--font-size-lg);
-    color: var(--color-text-muted);
-    line-height: var(--line-height-normal);
+    font-size: var(--ds-font-size-copy-16);
+    color: var(--ds-muted-foreground);
+    line-height: 1.4;
+    font-weight: 400;
+    margin-top: var(--ds-spacing-1);
   }
 }
 
 .subscription-details {
-  background: var(--color-primary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: var(--space-8);
-  margin-bottom: var(--space-10);
+  background: var(--ds-muted);
+  border-radius: var(--ds-radius-lg);
+  border: 1px solid var(--ds-border);
+  padding: var(--ds-spacing-3);
+  margin-bottom: var(--ds-spacing-4);
   
-  .details-title {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--space-6);
+  h2 {
+    font-size: var(--ds-font-size-copy-18);
+    font-weight: 600;
+    color: var(--ds-foreground);
+    margin-bottom: var(--ds-spacing-3);
     text-align: center;
   }
   
   .details-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-6);
+    gap: var(--ds-spacing-025);
     
     .detail-item {
       display: flex;
       flex-direction: column;
-      gap: var(--space-2);
+      gap: var(--ds-spacing-075);
       
       .detail-label {
-        font-size: var(--font-size-sm);
-        color: var(--color-text-muted);
-        font-weight: var(--font-weight-medium);
+        font-size: var(--ds-font-size-copy-14);
+        color: var(--ds-muted-foreground);
+        font-weight: 500;
       }
       
       .detail-value {
-        font-size: var(--font-size-base);
-        color: var(--color-text);
-        font-weight: var(--font-weight-semibold);
+        font-size: var(--ds-font-size-copy-16);
+        color: var(--ds-foreground);
+        font-weight: 600;
         
         &.status-active {
-          color: var(--color-success);
+          color: var(--ds-primary);
+        }
+        
+        &.status-trial {
+          color: var(--ds-primary);
+        }
+        
+        &.status-canceled {
+          color: var(--ds-destructive);
+        }
+        
+        &.status-past-due {
+          color: var(--ds-warning);
         }
       }
     }
@@ -274,54 +342,116 @@ const goToAccount = () => {
 }
 
 .next-steps {
-  margin-bottom: var(--space-10);
+  background: #ffffff;
+  border-radius: var(--ds-radius-lg);
+  border: 1px solid var(--ds-border);
+  padding: var(--ds-spacing-3);
+  margin-bottom: var(--ds-spacing-4);
   
-  .steps-title {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--space-6);
+  h2 {
+    font-size: var(--ds-font-size-copy-18);
+    font-weight: 600;
+    color: var(--ds-foreground);
+    margin-bottom: var(--ds-spacing-3);
     text-align: center;
   }
   
   .steps-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-6);
+    width: 100%;
+    margin: 0;
+    list-style: none;
+    padding: 0;
+    counter-reset: step-counter;
     
     .step-item {
+      box-sizing: border-box;
       display: flex;
-      align-items: flex-start;
-      gap: var(--space-4);
+      flex-direction: row;
+      align-items: center;
+      padding: 16px 32px;
+      gap: 34px;
+      position: relative;
+      width: 100%;
+      height: 94px;
+      border-bottom: 2px solid #D45B41;
+      animation: fadeInUp 0.8s var(--ds-ease) both;
+      transition: transform var(--ds-duration) var(--ds-ease);
+      cursor: pointer;
+      overflow: hidden;
       
-      .step-number {
-        width: 32px;
-        height: 32px;
-        background: var(--color-secondary);
-        color: white;
-        border-radius: var(--border-radius-full);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-bold);
-        flex-shrink: 0;
+      &::before {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #D45B41;
+        transition: top 0.2s cubic-bezier(0, 0.83, 0.32, 1);
+        z-index: 1;
       }
       
-      .step-content {
-        flex: 1;
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .step-number {
+        flex: none;
+        order: 0;
+        flex-grow: 0;
+        width: auto;
+        height: auto;
+        font-family: 'Geist', var(--ds-font-sans);
+        font-style: normal;
+        font-weight: 400;
+        font-size: var(--ds-font-size-xs);
+        line-height: 1.2;
+        text-align: center;
+        color: #D45B41;
+        background: none;
+        border-radius: 0;
+        box-shadow: none;
+        transition: color 0.2s cubic-bezier(0, 0.83, 0.32, 1);
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        min-width: 20px;
+      }
+      
+      .step-text {
+        flex: none;
+        order: 1;
+        flex-grow: 0;
+        height: auto;
+        font-family: 'Geist', var(--ds-font-sans);
+        font-style: normal;
+        font-weight: 400;
+        font-size: var(--ds-font-size-xs);
+        line-height: 1.2;
+        text-align: left;
+        color: #D45B41;
+        margin-top: 0;
+        display: flex;
+        align-items: center;
+        transition: color 0.2s cubic-bezier(0, 0.83, 0.32, 1);
+        position: relative;
+        z-index: 2;
+      }
+      
+      &:hover {
+        transform: translateX(4px);
         
-        .step-title {
-          font-size: var(--font-size-lg);
-          font-weight: var(--font-weight-semibold);
-          color: var(--color-text);
-          margin-bottom: var(--space-2);
+        &::before {
+          top: 0;
         }
         
-        .step-description {
-          font-size: var(--font-size-base);
-          color: var(--color-text-muted);
-          line-height: var(--line-height-normal);
+        .step-number {
+          color: #ffffff;
+        }
+        
+        .step-text {
+          color: #ffffff;
         }
       }
     }
@@ -331,22 +461,22 @@ const goToAccount = () => {
 .action-buttons {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  margin-bottom: var(--space-10);
+  gap: var(--ds-spacing-2);
+  margin-bottom: var(--ds-spacing-4);
   
   .primary-button,
   .secondary-button {
-    height: var(--space-11);
+    height: 48px;
     border: none;
-    border-radius: var(--border-radius);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
+    border-radius: var(--ds-radius);
+    font-size: var(--ds-font-size-copy-16);
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease-in-out;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-3);
+    gap: var(--ds-spacing-2);
     text-decoration: none;
     
     .button-icon {
@@ -356,53 +486,176 @@ const goToAccount = () => {
   }
   
   .primary-button {
-    background: var(--color-secondary);
+    background: var(--ds-primary);
     color: white;
     
     &:hover {
-      background: var(--color-secondary-dark);
-      transform: translateY(-1px);
+      background: var(--ds-primary-dark);
+      box-shadow: var(--ds-shadow-md);
     }
   }
   
   .secondary-button {
     background: transparent;
-    color: var(--color-secondary);
-    border: 1px solid var(--color-secondary);
+    color: var(--ds-primary);
+    border: 1px solid var(--ds-border);
     
     &:hover {
-      background: var(--color-secondary);
-      color: white;
+      background: var(--ds-muted);
     }
   }
 }
 
 .welcome-message {
   text-align: center;
+  padding: var(--ds-spacing-3);
+  background: var(--ds-muted);
+  border-radius: var(--ds-radius);
+  border-left: 4px solid var(--ds-primary);
   
   .welcome-text {
-    font-size: var(--font-size-base);
-    color: var(--color-text-muted);
-    line-height: var(--line-height-normal);
+    font-size: var(--ds-font-size-copy-14);
+    color: var(--ds-muted-foreground);
+    line-height: 1.5;
     font-style: italic;
   }
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
-  .details-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 640px) {
+  .success-page {
+    padding: var(--ds-spacing-2);
+  }
+  
+  .success-container {
+    padding: var(--ds-spacing-2);
+    margin: var(--ds-spacing-1);
+  }
+  
+  .subscription-details {
+    .details-grid {
+      grid-template-columns: 1fr;
+      gap: var(--ds-spacing-025);
+    }
+  }
+  
+  .next-steps {
+    .steps-list {
+      .step-item {
+        padding: 12px 16px;
+        gap: 20px;
+        height: auto;
+        min-height: 70px;
+        align-items: flex-start;
+        
+        .step-number {
+          font-size: 28px;
+          line-height: 40px;
+          height: auto;
+          width: auto;
+          margin-top: 4px;
+          align-self: flex-start;
+        }
+        
+        .step-text {
+          font-size: 28px;
+          line-height: 40px;
+          height: auto;
+          flex: 1;
+          white-space: normal;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+        }
+        
+        &:hover {
+          transform: translateX(2px);
+          
+          .step-number,
+          .step-text {
+            color: #ffffff;
+          }
+        }
+      }
+    }
   }
   
   .action-buttons {
     .primary-button,
     .secondary-button {
       width: 100%;
+      height: 44px;
+      font-size: var(--ds-font-size-copy-15);
     }
   }
   
-  .success-title {
-    font-size: var(--font-size-3xl);
+  .success-icon .check-icon {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .next-steps {
+    .steps-list {
+      .step-item {
+        padding: 8px 12px;
+        gap: 16px;
+        height: auto;
+        min-height: 60px;
+        align-items: flex-start;
+        
+        .step-number {
+          font-size: 24px;
+          line-height: 36px;
+          height: auto;
+          width: auto;
+          margin-top: 2px;
+          align-self: flex-start;
+        }
+        
+        .step-text {
+          font-size: 24px;
+          line-height: 36px;
+          height: auto;
+          flex: 1;
+          white-space: normal;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+        }
+      }
+    }
+  }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .step-item {
+    animation: none !important;
+  }
+  
+  .step-item:hover {
+    transform: none !important;
+    
+    &::before {
+      transition: none !important;
+    }
+  }
+  
+  .step-item::before {
+    transition: none !important;
   }
 }
 </style>

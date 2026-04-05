@@ -17,6 +17,8 @@
     "test": "vitest --run",
     "test:ui": "vitest --ui",
     "test:types:watch": "vue-tsc --noEmit --watch",
+    "reconcile:subscriptions": "node scripts/reconcile-subscriptions.js",
+    "reconcile:subscriptions:live": "node scripts/reconcile-subscriptions.js --live",
     "story:dev": "histoire dev",
     "story:build": "histoire build",
     "story:preview": "histoire preview",

@@ -1,11 +1,16 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest'
-import { 
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
+import {
   createUser,
   getUserById,
   getUserByEmail,
   updateUser,
   deleteUser,
   createOrUpdateSubscription,
+  upsertSubscription,
+  updateSubscriptionStatus,
+  getUserIdAndEmail,
+  getUserIdByStripeCustomerId,
+  getSubscriptionByStripeId,
   updateUserPreferences,
   addSearchHistory,
   getUserSearchHistory,
@@ -18,6 +23,273 @@ import {
 import { initializeDatabase } from '~/lib/db/migrations/001-initial-schema'
 import { query, closePool } from '~/lib/db/connection'
 import type { SubscriptionStatus } from '~/types/auth'
+
+// ============================================
+// UNIT TESTS (Mocked Database)
+// These tests verify the function logic without requiring a database
+// ============================================
+
+// Mock the database connection for unit tests
+vi.mock('~/lib/db/connection', async (importOriginal) => {
+  const original = await importOriginal() as any
+  return {
+    ...original,
+    query: vi.fn()
+  }
+})
+
+const mockQuery = vi.mocked(query)
+
+describe('server/utils/database - Unit Tests (Mocked)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('upsertSubscription', () => {
+    it('inserts a new subscription with all fields', async () => {
+      mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 1 })
+
+      const userId = 'user-123'
+      const subscriptionData = {
+        stripeCustomerId: 'cus_abc123',
+        stripeSubscriptionId: 'sub_xyz789',
+        status: 'active' as SubscriptionStatus,
+        planId: 'monthly',
+        currentPeriodStart: new Date('2026-01-13'),
+        currentPeriodEnd: new Date('2026-02-13'),
+        cancelAtPeriodEnd: false
+      }
+
+      await upsertSubscription(userId, subscriptionData)
+
+      expect(mockQuery).toHaveBeenCalledTimes(1)
+      const [sql, params] = mockQuery.mock.calls[0]
+
+      // Verify the SQL contains INSERT INTO subscriptions
+      expect(sql).toContain('INSERT INTO subscriptions')
+      expect(sql).toContain('ON CONFLICT (user_id)')
+      expect(sql).toContain('DO UPDATE SET')
+      expect(sql).toContain('COALESCE')
+
+      // Verify parameters
+      expect(params[0]).toBe(userId)
+      expect(params[1]).toBe('cus_abc123')
+      expect(params[2]).toBe('sub_xyz789')
+      expect(params[3]).toBe('active')
+      expect(params[4]).toBe('monthly')
+      expect(params[5]).toEqual(new Date('2026-01-13'))
+      expect(params[6]).toEqual(new Date('2026-02-13'))
+      expect(params[7]).toBe(false)
+    })
+
+    it('handles partial subscription data with COALESCE', async () => {
+      mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 1 })
+
+      const userId = 'user-456'
+      const subscriptionData = {
+        status: 'active' as SubscriptionStatus
+        // Only status provided, other fields should use COALESCE
+      }
+
+      await upsertSubscription(userId, subscriptionData)
+
+      expect(mockQuery).toHaveBeenCalledTimes(1)
+      const [sql, params] = mockQuery.mock.calls[0]
+
+      // Verify COALESCE is used in the UPDATE clause
+      expect(sql).toContain('COALESCE(EXCLUDED.stripe_customer_id, subscriptions.stripe_customer_id)')
+
+      // Verify null is passed for optional fields
+      expect(params[1]).toBeNull() // stripeCustomerId
+      expect(params[2]).toBeNull() // stripeSubscriptionId
+      expect(params[3]).toBe('active') // status is required
+      expect(params[4]).toBeNull() // planId
+    })
+
+    it('correctly passes cancelAtPeriodEnd as false by default', async () => {
+      mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 1 })
+
+      await upsertSubscription('user-789', {
+        status: 'cancelled' as SubscriptionStatus,
+        cancelAtPeriodEnd: undefined // Should default to false
+      })
+
+      const [, params] = mockQuery.mock.calls[0]
+      expect(params[7]).toBe(false) // cancelAtPeriodEnd defaults to false
+    })
+
+    it('sets cancelAtPeriodEnd to true when specified', async () => {
+      mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 1 })
+
+      await upsertSubscription('user-abc', {
+        status: 'active' as SubscriptionStatus,
+        cancelAtPeriodEnd: true
+      })
+
+      const [, params] = mockQuery.mock.calls[0]
+      expect(params[7]).toBe(true)
+    })
+  })
+
+  describe('updateSubscriptionStatus', () => {
+    it('updates status without periodEnd', async () => {
+      mockQuery.mockResolvedValueOnce({ rowCount: 1 })
+
+      const result = await updateSubscriptionStatus('sub_123', 'active')
+
+      expect(result).toBe(true)
+      expect(mockQuery).toHaveBeenCalledTimes(1)
+
+      const [sql, params] = mockQuery.mock.calls[0]
+      expect(sql).toContain('UPDATE subscriptions')
+      expect(sql).toContain('SET status = $1')
+      expect(sql).toContain('WHERE stripe_subscription_id = $2')
+      expect(params).toEqual(['active', 'sub_123'])
+    })
+
+    it('updates status with periodEnd', async () => {
+      mockQuery.mockResolvedValueOnce({ rowCount: 1 })
+
+      const periodEnd = new Date('2026-02-13')
+      const result = await updateSubscriptionStatus('sub_456', 'active', periodEnd)
+
+      expect(result).toBe(true)
+      expect(mockQuery).toHaveBeenCalledTimes(1)
+
+      const [sql, params] = mockQuery.mock.calls[0]
+      expect(sql).toContain('SET status = $1, current_period_end = $2')
+      expect(sql).toContain('WHERE stripe_subscription_id = $3')
+      expect(params).toEqual(['active', periodEnd, 'sub_456'])
+    })
+
+    it('returns false when no rows updated', async () => {
+      mockQuery.mockResolvedValueOnce({ rowCount: 0 })
+
+      const result = await updateSubscriptionStatus('sub_nonexistent', 'expired')
+
+      expect(result).toBe(false)
+    })
+
+    it('handles null rowCount gracefully', async () => {
+      mockQuery.mockResolvedValueOnce({ rowCount: null })
+
+      const result = await updateSubscriptionStatus('sub_unknown', 'trial')
+
+      expect(result).toBe(false)
+    })
+  })
+
+  describe('getUserIdAndEmail', () => {
+    it('returns user when found', async () => {
+      mockQuery.mockResolvedValueOnce({
+        rows: [{ id: 'user-123', email: 'test@example.com' }]
+      })
+
+      const result = await getUserIdAndEmail('user-123')
+
+      expect(result).toEqual({ id: 'user-123', email: 'test@example.com' })
+      expect(mockQuery).toHaveBeenCalledWith(
+        'SELECT id, email FROM users WHERE id = $1 AND is_active = true',
+        ['user-123']
+      )
+    })
+
+    it('returns null when user not found', async () => {
+      mockQuery.mockResolvedValueOnce({ rows: [] })
+
+      const result = await getUserIdAndEmail('nonexistent-user')
+
+      expect(result).toBeNull()
+    })
+
+    it('only returns active users', async () => {
+      mockQuery.mockResolvedValueOnce({ rows: [] }) // Simulates inactive user filtered out
+
+      const result = await getUserIdAndEmail('inactive-user')
+
+      expect(result).toBeNull()
+      // Verify the query includes is_active = true
+      const [sql] = mockQuery.mock.calls[0]
+      expect(sql).toContain('is_active = true')
+    })
+  })
+
+  describe('getUserIdByStripeCustomerId', () => {
+    it('returns user_id when found', async () => {
+      mockQuery.mockResolvedValueOnce({
+        rows: [{ user_id: 'user-abc' }]
+      })
+
+      const result = await getUserIdByStripeCustomerId('cus_stripe123')
+
+      expect(result).toBe('user-abc')
+      expect(mockQuery).toHaveBeenCalledWith(
+        'SELECT user_id FROM subscriptions WHERE stripe_customer_id = $1',
+        ['cus_stripe123']
+      )
+    })
+
+    it('returns null when customer not found', async () => {
+      mockQuery.mockResolvedValueOnce({ rows: [] })
+
+      const result = await getUserIdByStripeCustomerId('cus_nonexistent')
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('getSubscriptionByStripeId', () => {
+    it('returns subscription info when found', async () => {
+      const mockRow = {
+        user_id: 'user-xyz',
+        status: 'active',
+        plan_id: 'yearly',
+        current_period_start: new Date('2026-01-01'),
+        current_period_end: new Date('2027-01-01'),
+        cancel_at_period_end: false,
+        stripe_customer_id: 'cus_abc',
+        stripe_subscription_id: 'sub_xyz'
+      }
+      mockQuery.mockResolvedValueOnce({ rows: [mockRow] })
+
+      const result = await getSubscriptionByStripeId('sub_xyz')
+
+      expect(result).not.toBeNull()
+      expect(result?.userId).toBe('user-xyz')
+      expect(result?.subscription).toEqual({
+        status: 'active',
+        planId: 'yearly',
+        currentPeriodStart: mockRow.current_period_start,
+        currentPeriodEnd: mockRow.current_period_end,
+        cancelAtPeriodEnd: false,
+        stripeCustomerId: 'cus_abc',
+        stripeSubscriptionId: 'sub_xyz'
+      })
+    })
+
+    it('returns null when subscription not found', async () => {
+      mockQuery.mockResolvedValueOnce({ rows: [] })
+
+      const result = await getSubscriptionByStripeId('sub_nonexistent')
+
+      expect(result).toBeNull()
+    })
+
+    it('joins with users table to get user_id', async () => {
+      mockQuery.mockResolvedValueOnce({ rows: [] })
+
+      await getSubscriptionByStripeId('sub_test')
+
+      const [sql] = mockQuery.mock.calls[0]
+      expect(sql).toContain('JOIN users u ON s.user_id = u.id')
+    })
+  })
+})
+
+// ============================================
+// INTEGRATION TESTS (Real Database)
+// These tests require DATABASE_URL and test against a real database
+// ============================================
 
 describe.skipIf(!process.env.DATABASE_URL)('Database Utilities', () => {
   let testUserId: string
