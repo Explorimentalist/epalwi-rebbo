@@ -87,13 +87,18 @@ Related PRD: `tasks/0001-prd-fix-stripe-subscription-sync.md`
   - [x] 6.2 For each mismatch, upsert local `subscriptions` from Stripe source of truth
   - [x] 6.3 Add dry-run mode and idempotent behavior
   - [x] 6.4 Add script usage docs (`how to run`, required env vars, rollback notes)
-  - [ ] 6.5 Run dry-run in production and record mismatch count
-  - [ ] 6.6 Run live reconciliation and capture before/after counts
-  - [ ] 6.7 Exit criteria: mismatch count is zero (or all residual cases explicitly documented)
+  - [x] 6.5 Run dry-run in production and record mismatch count
+  - [x] 6.6 Run live reconciliation and capture before/after counts
+  - [x] 6.7 Exit criteria: mismatch count is zero (or all residual cases explicitly documented)
   - Progress log (2026-03-06 UTC): Added `scripts/reconcile-subscriptions.js` (dry-run default, `--live` apply mode, idempotent upsert).
   - Progress log (2026-03-06 UTC): Added npm scripts `reconcile:subscriptions` and `reconcile:subscriptions:live`.
   - Progress log (2026-03-06 UTC): Added runbook `tasks/0001-reconciliation-runbook-stripe-subscriptions.md`.
-  - Blocker (2026-03-06 UTC): `6.5` and `6.6` require access to production `STRIPE_SECRET_KEY` + `DATABASE_URL`.
+  - Progress log (2026-04-05 UTC): Added email-based 4th fallback to reconcile script — recovers subscriptions with broken `userId: 'authenticated-user'` metadata by looking up user via Stripe customer email.
+  - Progress log (2026-04-05 UTC): Added trialing subscription period date handling (`trial_start`/`trial_end` fallback).
+  - Progress log (2026-04-05 UTC): Applied production DB migration — `ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_user_id_key UNIQUE (user_id)`. This fixes the silent `42P10` error in `upsertSubscription` that prevented ALL webhook events from persisting.
+  - Evidence (2026-04-05 UTC): Dry-run: 2 subscriptions inspected, 1 already in sync, 1 would upsert (brianoko@gmail.com via email fallback), 0 unresolved.
+  - Evidence (2026-04-05 UTC): Live run: 1 upsert applied (brianoko@gmail.com). 0 unresolved.
+  - Evidence (2026-04-05 UTC): Carlos (cendje@gmail.com) manually recovered via direct DB insert from Stripe source of truth.
 
 - [ ] 7.0 Add Monitoring and Alerting Guardrails (Missing in original task list)
   - [x] 7.1 Define webhook error signal (5xx rate, signature failures, processing exceptions)
@@ -135,6 +140,7 @@ Related PRD: `tasks/0001-prd-fix-stripe-subscription-sync.md`
 - `4.5` completed: 2026-03-06
 - `4.7` completed: 2026-03-06
 - `6.1` - `6.4` completed: 2026-03-06
+- `6.5` - `6.7` completed: 2026-04-05 (0 unresolved; email fallback added; UNIQUE constraint applied to production DB)
 - `7.1`, `7.3`, `7.4` completed: 2026-03-06
 - `8.1`, `8.2` completed: 2026-03-06
 - `9.2` completed: 2026-03-06
