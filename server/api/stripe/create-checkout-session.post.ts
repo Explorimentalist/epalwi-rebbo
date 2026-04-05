@@ -1,6 +1,7 @@
 import { defineEventHandler, readBody } from 'h3'
 import Stripe from 'stripe'
 import { getConnection } from '~/lib/db/connection'
+import { validateUserToken } from '~/server/utils/auth'
 
 // Initialize Stripe with secret key
 const config = useRuntimeConfig()
@@ -13,7 +14,6 @@ interface CreateCheckoutSessionRequest {
   planType: 'monthly' | 'annual'
   successUrl: string
   cancelUrl: string
-  userId?: string
 }
 
 interface CreateCheckoutSessionResponse {
@@ -23,8 +23,17 @@ interface CreateCheckoutSessionResponse {
 
 export default defineEventHandler(async (event): Promise<CreateCheckoutSessionResponse> => {
   try {
+    // Authenticate the request — get the Firebase uid from the JWT
+    const tokenData = await validateUserToken(event)
+    if (!tokenData) {
+      throw createError({
+        statusCode: 401,
+        statusMessage: 'Authentication required'
+      })
+    }
+
     const body = await readBody<CreateCheckoutSessionRequest>(event)
-    
+
     // Validate required fields
     if (!body.priceId || !body.planType || !body.successUrl || !body.cancelUrl) {
       throw createError({
@@ -33,57 +42,42 @@ export default defineEventHandler(async (event): Promise<CreateCheckoutSessionRe
       })
     }
 
-    // Get userId from auth context if not provided
-    let userId = body.userId
-    if (!userId || userId === 'anonymous') {
-      // In a real app, you'd get this from the JWT token or session
-      // For now, we'll use a placeholder
-      userId = 'authenticated-user'
+    // Resolve the authenticated user's internal UUID and email from the database.
+    // The JWT uid maps to users.uid (Firebase UID); the webhook handler needs users.id (internal UUID).
+    const db = await getConnection()
+    const userResult = await db.query(
+      'SELECT id, email, stripe_customer_id FROM users WHERE uid = $1 AND is_active = true',
+      [tokenData.uid]
+    )
+    if (userResult.rows.length === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'User not found'
+      })
     }
+    const userId: string = userResult.rows[0].id               // internal UUID — required by webhook handler
+    const customerEmail: string = userResult.rows[0].email
+    let customerId: string | undefined = userResult.rows[0].stripe_customer_id || undefined
 
     // Try to use an existing Stripe customer or create one with ES as default country
-    let customerId: string | undefined
-    let customerEmail: string | undefined
-
     try {
-      if (userId && userId !== 'authenticated-user') {
-        const db = await getConnection()
-        const userQuery = 'SELECT stripe_customer_id, email FROM users WHERE uid = $1'
-        const result = await db.query(userQuery, [userId])
-        
-        if (result.rows.length > 0) {
-          const userData = result.rows[0]
-          customerId = userData.stripe_customer_id
-          customerEmail = userData.email
-        }
-      }
-
       if (!customerId) {
         // Create a lightweight customer with default billing country ES
-        const customerData: any = {
-          address: { country: 'ES' }
-        }
-        
-        if (customerEmail) {
-          customerData.email = customerEmail
-        }
-        
-        if (userId) {
-          customerData.metadata = { userId }
-        }
-        
-        const customer = await stripe.customers.create(customerData)
+        const customer = await stripe.customers.create({
+          email: customerEmail,
+          address: { country: 'ES' },
+          metadata: { userId }
+        })
         customerId = customer.id
 
-        // Persist on user profile if available
-        if (userId && userId !== 'authenticated-user') {
-          const db = await getConnection()
-          const updateQuery = 'UPDATE users SET stripe_customer_id = $1, updated_at = CURRENT_TIMESTAMP WHERE uid = $2'
-          await db.query(updateQuery, [customerId, userId])
-        }
+        // Persist the new Stripe customer ID on the user record
+        await db.query(
+          'UPDATE users SET stripe_customer_id = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+          [customerId, userId]
+        )
       }
     } catch (e) {
-      // If admin access fails, proceed without a pre-created customer
+      // If customer creation fails, proceed without a pre-created customer
       console.warn('Customer prefill skipped:', (e as any)?.message)
     }
 
