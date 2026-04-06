@@ -45,10 +45,12 @@ function logWebhook(
 
 export default defineEventHandler(async (event) => {
   let requestId = randomUUID()
+  let logRequestId: string = requestId
   try {
-    requestId = getHeader(event, 'x-vercel-id')
-      || getHeader(event, 'x-request-id')
-      || requestId
+    const headerValue = getHeader(event, "x-vercel-id") || getHeader(event, "x-request-id")
+    if (headerValue) {
+      logRequestId = headerValue as string
+    }
     const body = await readBody(event)
     const signature = getHeader(event, 'stripe-signature')
     

@@ -4,20 +4,20 @@
  * GET /api/debug-user-lookup?uid=USER_ID
  */
 
-import { getUserById, getUserSubscriptionStatus } from '~/server/utils/database'
-import { getUserSubscriptionStatus as getAuthUserSubscription } from '~/server/utils/auth'
+import { getUserById } from '~/server/utils/database'
+import { getUserSubscriptionStatus } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
     console.log('🔧 Debug [debug-user-lookup]: Starting user lookup test')
     
     // Get UID from query or use default test UID
-    const query = getQuery(event)
-    const testUid = (query.uid as string) || 'fe42b058-caa4-4161-b89b-f48377c63889'
+    const queryParams = getQuery(event)
+    const testUid = (queryParams['uid'] as string) || 'fe42b058-caa4-4161-b89b-f48377c63889'
     
     console.log('🔧 Debug [debug-user-lookup]: Testing UID:', testUid)
     
-    const result = {
+    const result: Record<string, any> = {
       timestamp: new Date().toISOString(),
       testUid,
       getUserByIdTest: 'NOT_TESTED',
@@ -31,8 +31,8 @@ export default defineEventHandler(async (event) => {
     console.log('🔧 Debug [debug-user-lookup]: Testing getUserById...')
     try {
       const user = await getUserById(testUid)
-      result.getUserByIdTest = user ? 'FOUND' : 'NOT_FOUND'
-      result.userRecord = user ? {
+      result['getUserByIdTest'] = user ? 'FOUND' : 'NOT_FOUND'
+      result['userRecord'] = user ? {
         uid: user.uid,
         email: user.email,
         role: user.role,
@@ -43,10 +43,10 @@ export default defineEventHandler(async (event) => {
         trial: user.trial
       } : null
       
-      console.log('✅ Debug [debug-user-lookup]: getUserById result:', result.getUserByIdTest)
+      console.log('✅ Debug [debug-user-lookup]: getUserById result:', result['getUserByIdTest'])
     } catch (userError: any) {
-      result.getUserByIdTest = 'ERROR'
-      result.error = userError.message
+      result['getUserByIdTest'] = 'ERROR'
+      result['error'] = userError.message
       console.error('❌ Debug [debug-user-lookup]: getUserById failed:', userError.message)
       return { success: false, debug: result }
     }
@@ -54,9 +54,9 @@ export default defineEventHandler(async (event) => {
     // Test 2: Subscription status lookup (the one that's actually failing)
     console.log('🔧 Debug [debug-user-lookup]: Testing getUserSubscriptionStatus...')
     try {
-      const subscriptionInfo = await getAuthUserSubscription(testUid)
-      result.getUserSubscriptionStatusTest = 'SUCCESS'
-      result.subscriptionInfo = {
+      const subscriptionInfo = await getUserSubscriptionStatus(testUid)
+      result['getUserSubscriptionStatusTest'] = 'SUCCESS'
+      result['subscriptionInfo'] = {
         uid: subscriptionInfo.uid,
         email: subscriptionInfo.email,
         hasActiveSubscription: subscriptionInfo.hasActiveSubscription,
@@ -70,10 +70,10 @@ export default defineEventHandler(async (event) => {
       
       console.log('✅ Debug [debug-user-lookup]: getUserSubscriptionStatus successful')
     } catch (subscriptionError: any) {
-      result.getUserSubscriptionStatusTest = 'ERROR'
-      result.subscriptionError = subscriptionError.message
-      result.subscriptionErrorType = subscriptionError.constructor.name
-      result.subscriptionErrorStack = subscriptionError.stack
+      result['getUserSubscriptionStatusTest'] = 'ERROR'
+      result['subscriptionError'] = subscriptionError.message
+      result['subscriptionErrorType'] = subscriptionError.constructor.name
+      result['subscriptionErrorStack'] = subscriptionError.stack
       console.error('❌ Debug [debug-user-lookup]: getUserSubscriptionStatus failed:', subscriptionError.message)
       console.error('❌ Debug [debug-user-lookup]: Error stack:', subscriptionError.stack)
     }

@@ -21,7 +21,8 @@ export async function createUser(userData: {
      RETURNING id`,
     [userData.email, userData.displayName, userData.photoURL, userData.role || 'user']
   )
-  return result.rows[0].id
+  if (result.rows.length === 0) throw new Error("Failed to create user")
+  return (result.rows[0] as any)["id"]
 }
 
 export async function getUserById(id: string): Promise<UserProfile | null> {
@@ -185,17 +186,18 @@ export async function getSubscriptionByStripeId(
 
   if (result.rows.length === 0) return null
 
-  const row = result.rows[0]
+  if (result.rows.length === 0) return null
+  const row = (result.rows[0] as any)
   return {
-    userId: row.user_id,
+    userId: row['user_id'],
     subscription: {
-      status: row.status,
-      planId: row.plan_id,
-      currentPeriodStart: row.current_period_start,
-      currentPeriodEnd: row.current_period_end,
-      cancelAtPeriodEnd: row.cancel_at_period_end,
-      stripeCustomerId: row.stripe_customer_id,
-      stripeSubscriptionId: row.stripe_subscription_id
+      status: row['status'],
+      planId: row['plan_id'],
+      currentPeriodStart: row['current_period_start'],
+      currentPeriodEnd: row['current_period_end'],
+      cancelAtPeriodEnd: row['cancel_at_period_end'],
+      stripeCustomerId: row['stripe_customer_id'],
+      stripeSubscriptionId: row['stripe_subscription_id']
     }
   }
 }
@@ -244,7 +246,7 @@ export async function getUserIdAndEmail(
     [id]
   )
   if (result.rows.length === 0) return null
-  return { id: result.rows[0].id, email: result.rows[0].email }
+  return { id: (result.rows[0] as any)["id"], email: (result.rows[0] as any)["email"] }
 }
 
 /**
@@ -261,7 +263,7 @@ export async function getUserIdByStripeCustomerId(
     [stripeCustomerId]
   )
   if (result.rows.length === 0) return null
-  return result.rows[0].user_id
+  return (result.rows[0] as any)["user_id"]
 }
 
 export async function getUserByStripeCustomerId(
@@ -292,13 +294,13 @@ export async function updateUserPreferences(
     fields.push(`dark_mode = $${paramIndex++}`)
     values.push(preferences.darkMode)
   }
-  if (preferences.notifications?.productUpdates !== undefined) {
+  if (preferences.notifications?.['productUpdates'] !== undefined) {
     fields.push(`product_updates_notifications = $${paramIndex++}`)
-    values.push(preferences.notifications.productUpdates)
+    values.push(preferences.notifications['productUpdates'])
   }
-  if (preferences.notifications?.languageTips !== undefined) {
+  if (preferences.notifications?.['languageTips'] !== undefined) {
     fields.push(`language_tips_notifications = $${paramIndex++}`)
-    values.push(preferences.notifications.languageTips)
+    values.push(preferences.notifications['languageTips'])
   }
 
   if (fields.length === 0) return
@@ -343,10 +345,10 @@ export async function getUserSearchHistory(
   )
   
   return result.rows.map(row => ({
-    searchTerm: row.search_term,
-    searchLanguage: row.search_language,
-    resultCount: row.result_count,
-    searchTimestamp: row.search_timestamp
+    searchTerm: row['search_term'],
+    searchLanguage: row['search_language'],
+    resultCount: row['result_count'],
+    searchTimestamp: row['search_timestamp']
   }))
 }
 
@@ -377,7 +379,7 @@ export async function validateMagicLinkToken(
     return { email: '', isValid: false }
   }
   
-  const token = result.rows[0]
+  const token = (result.rows[0] as any)
   const now = new Date()
   const isValid = !token.used_at && new Date(token.expires_at) > now
   
@@ -428,7 +430,24 @@ export async function getUserStats(): Promise<{
     FROM user_profiles
   `)
   
-  return result.rows[0]
+  if (result.rows.length === 0) {
+    return {
+      totalUsers: 0,
+      activeUsers: 0,
+      trialUsers: 0,
+      subscribedUsers: 0,
+      expiredUsers: 0
+    }
+  }
+  
+  const row = (result.rows[0] as any) as any
+  return {
+    totalUsers: parseInt(row["total_users"] || "0", 10),
+    activeUsers: parseInt(row["active_users"] || "0", 10),
+    trialUsers: parseInt(row["trial_users"] || "0", 10),
+    subscribedUsers: parseInt(row["subscribed_users"] || "0", 10),
+    expiredUsers: parseInt(row["expired_users"] || "0", 10)
+  }
 }
 
 export async function getActiveUsersWithAccess(): Promise<UserProfile[]> {
@@ -443,20 +462,24 @@ export async function getActiveUsersWithAccess(): Promise<UserProfile[]> {
 // Helper function to format database row to UserProfile
 function formatUserProfile(row: any): UserProfile {
   return {
-    uid: row.uid,
-    email: row.email,
-    displayName: row.display_name,
-    photoURL: row.photo_url,
-    role: row.role,
-    emailVerified: row.email_verified,
-    isActive: row.is_active,
-    createdAt: new Date(row.created_at),
-    lastLoginAt: new Date(row.last_login_at),
-    subscription: row.subscription,
-    trial: row.trial,
-    preferences: row.preferences,
-    preferencesUpdatedAt: row.preferences_updated_at ? new Date(row.preferences_updated_at) : undefined
-  }
+    uid: row['uid'],
+    email: row['email'],
+    name: row['name'],
+    displayName: row['display_name'],
+    photoURL: row['photo_url'],
+    role: row['role'],
+    subscriptionStatus: (row['subscription']?.status as any) || 'trial',
+    subscription: row['subscription'] as any,
+    trial: row['trial'] as any,
+    isActive: row['is_active'],
+    emailVerified: row['email_verified'],
+    preferences: row['preferences'],
+    createdAt: new Date(row['created_at']),
+    updatedAt: row['updated_at'] ? new Date(row['updated_at']) : new Date(),
+    lastLogin: row['last_login'],
+    lastLoginAt: new Date(row['last_login_at']),
+    preferencesUpdatedAt: row['preferences_updated_at'] ? new Date(row['preferences_updated_at']) : undefined
+  } as UserProfile
 }
 
 // Batch operations for data migration
@@ -478,7 +501,8 @@ export async function batchCreateUsers(
          RETURNING id`,
         [userData.email, userData.displayName, userData.photoURL, userData.role || 'user']
       )
-      userIds.push(result.rows[0].id)
+      if (result.rows.length === 0) continue
+      userIds.push(result.rows[0]["id"])
     }
     
     return userIds

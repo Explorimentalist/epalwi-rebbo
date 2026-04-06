@@ -275,7 +275,7 @@ describe('Stripe Webhook Real Event Processing', () => {
 
       // Verify handlers would skip processing for events without user metadata
       expect(eventWithoutMetadata.metadata).toBeNull()
-      expect(eventWithEmptyMetadata.metadata.userId).toBeUndefined()
+      expect((eventWithEmptyMetadata.metadata as any).userId).toBeUndefined()
     })
 
     it('should validate customer and subscription ID formats', () => {

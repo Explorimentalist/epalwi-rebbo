@@ -50,7 +50,7 @@ describe('Frontend Authentication Flow', () => {
       })
 
       const email = 'test@example.com'
-      const result = await authStore.sendMagicLink(email)
+      const result = await authStore['sendMagicLink'](email)
 
       // Verify API was called correctly
       expect(mockFetch).toHaveBeenCalledWith('/api/auth/send-magic-link', {
@@ -90,6 +90,8 @@ describe('Frontend Authentication Flow', () => {
         },
         emailVerified: true,
         isActive: true
+      ,
+        updatedAt: new Date()
       }
 
       // Mock successful verification response
@@ -101,7 +103,7 @@ describe('Frontend Authentication Flow', () => {
       })
 
       const token = 'magic_link_jwt_token'
-      const result = await authStore.verifyMagicLink(token)
+      const result = await authStore['verifyMagicLink'](token)
 
       // Verify API was called correctly
       expect(mockFetch).toHaveBeenCalledWith('/api/auth/verify-magic-link', {
@@ -115,9 +117,9 @@ describe('Frontend Authentication Flow', () => {
       expect(result.user).toEqual(mockUser)
 
       // Verify auth state is updated
-      expect(authStore.isAuthenticated).toBe(true)
-      expect(authStore.user?.email).toBe('test@example.com')
-      expect(authStore.sessionToken).toBe(mockSessionToken)
+      expect(authStore['isAuthenticated']).toBe(true)
+      expect(authStore['user']?.email).toBe('test@example.com')
+      expect(authStore['sessionToken']).toBe(mockSessionToken)
     })
 
     it('should persist session data to sessionStorage', async () => {
@@ -139,6 +141,8 @@ describe('Frontend Authentication Flow', () => {
         preferences: { defaultLanguage: 'español', darkMode: false },
         emailVerified: true,
         isActive: true
+      ,
+        updatedAt: new Date()
       }
 
       mockFetch.mockResolvedValue({
@@ -147,7 +151,7 @@ describe('Frontend Authentication Flow', () => {
         user: mockUser
       })
 
-      await authStore.verifyMagicLink('test_token')
+      await authStore['verifyMagicLink']('test_token')
 
       // Verify session storage calls
       expect(mockSessionStorage.setItem).toHaveBeenCalledWith(
@@ -176,23 +180,24 @@ describe('Frontend Authentication Flow', () => {
       })
 
       // Initialize auth store (simulating page reload)
-      await authStore.initializeAuth()
+      await authStore['initializeAuth']()
 
       // Verify session is restored
-      expect(authStore.sessionToken).toBe(mockSessionToken)
-      expect(authStore.user?.email).toBe('test@example.com')
-      expect(authStore.isAuthenticated).toBe(true)
+      expect(authStore['sessionToken']).toBe(mockSessionToken)
+      expect(authStore['user']?.email).toBe('test@example.com')
+      expect(authStore['isAuthenticated']).toBe(true)
     })
   })
 
   describe('Session Management', () => {
     beforeEach(() => {
       // Set up authenticated state
-      authStore.user = {
+      authStore['user'] = {
         uid: 'user123',
         email: 'test@example.com',
         displayName: 'Test User',
         role: 'user',
+        subscriptionStatus: 'trial',
         createdAt: new Date(),
         lastLoginAt: new Date(),
         subscription: { status: 'active' },
@@ -205,13 +210,15 @@ describe('Frontend Authentication Flow', () => {
         preferences: { defaultLanguage: 'español', darkMode: false },
         emailVerified: true,
         isActive: true
+      ,
+        updatedAt: new Date()
       }
-      authStore.sessionToken = 'test_session_token'
+      authStore['sessionToken'] = 'test_session_token'
     })
 
     it('should refresh user data successfully', async () => {
       const updatedUser = {
-        ...authStore.user!,
+        ...authStore['user']!,
         displayName: 'Updated User Name'
       }
 
@@ -220,7 +227,7 @@ describe('Frontend Authentication Flow', () => {
         user: updatedUser
       })
 
-      await authStore.refreshUser()
+      await authStore['refreshUser']()
 
       expect(mockFetch).toHaveBeenCalledWith('/api/auth/refresh', {
         method: 'GET',
@@ -229,13 +236,13 @@ describe('Frontend Authentication Flow', () => {
         }
       })
 
-      expect(authStore.user?.displayName).toBe('Updated User Name')
+      expect(authStore['user']?.displayName).toBe('Updated User Name')
     })
 
     it('should sign out and clear session data', async () => {
       mockFetch.mockResolvedValue({ success: true })
 
-      await authStore.signOut()
+      await authStore['signOut']()
 
       // Verify API call
       expect(mockFetch).toHaveBeenCalledWith('/api/auth/signout', {
@@ -246,9 +253,9 @@ describe('Frontend Authentication Flow', () => {
       })
 
       // Verify state is cleared
-      expect(authStore.user).toBeNull()
-      expect(authStore.sessionToken).toBeNull()
-      expect(authStore.isAuthenticated).toBe(false)
+      expect(authStore['user']).toBeNull()
+      expect(authStore['sessionToken']).toBeNull()
+      expect(authStore['isAuthenticated']).toBe(false)
 
       // Verify sessionStorage is cleared
       expect(mockSessionStorage.removeItem).toHaveBeenCalledWith('auth-session-token')
@@ -258,11 +265,12 @@ describe('Frontend Authentication Flow', () => {
 
   describe('Subscription Status Computed Properties', () => {
     it('should correctly identify active subscription', () => {
-      authStore.user = {
+      authStore['user'] = {
         uid: 'user123',
         email: 'test@example.com',
         displayName: 'Test User',
         role: 'user',
+        subscriptionStatus: 'trial',
         createdAt: new Date(),
         lastLoginAt: new Date(),
         subscription: { status: 'active' },
@@ -275,18 +283,21 @@ describe('Frontend Authentication Flow', () => {
         preferences: { defaultLanguage: 'español', darkMode: false },
         emailVerified: true,
         isActive: true
+      ,
+        updatedAt: new Date()
       }
 
-      expect(authStore.isSubscriptionActive).toBe(true)
-      expect(authStore.canAccessFeatures).toBe(true)
+      expect(authStore['isSubscriptionActive']).toBe(true)
+      expect(authStore['canAccessFeatures']).toBe(true)
     })
 
     it('should correctly identify active trial', () => {
-      authStore.user = {
+      authStore['user'] = {
         uid: 'user123',
         email: 'test@example.com',
         displayName: 'Test User',
         role: 'user',
+        subscriptionStatus: 'trial',
         createdAt: new Date(),
         lastLoginAt: new Date(),
         subscription: { status: 'trial' },
@@ -299,19 +310,22 @@ describe('Frontend Authentication Flow', () => {
         preferences: { defaultLanguage: 'español', darkMode: false },
         emailVerified: true,
         isActive: true
+      ,
+        updatedAt: new Date()
       }
 
-      expect(authStore.isTrialActive).toBe(true)
-      expect(authStore.trialDaysRemaining).toBe(7)
-      expect(authStore.canAccessFeatures).toBe(true)
+      expect(authStore['isTrialActive']).toBe(true)
+      expect(authStore['trialDaysRemaining']).toBe(7)
+      expect(authStore['canAccessFeatures']).toBe(true)
     })
 
     it('should deny access for expired trial and no subscription', () => {
-      authStore.user = {
+      authStore['user'] = {
         uid: 'user123',
         email: 'test@example.com',
         displayName: 'Test User',
         role: 'user',
+        subscriptionStatus: 'trial',
         createdAt: new Date(),
         lastLoginAt: new Date(),
         subscription: { status: 'trial' },
@@ -324,11 +338,13 @@ describe('Frontend Authentication Flow', () => {
         preferences: { defaultLanguage: 'español', darkMode: false },
         emailVerified: true,
         isActive: true
+      ,
+        updatedAt: new Date()
       }
 
-      expect(authStore.isTrialActive).toBe(false)
-      expect(authStore.isSubscriptionActive).toBe(false)
-      expect(authStore.canAccessFeatures).toBe(false)
+      expect(authStore['isTrialActive']).toBe(false)
+      expect(authStore['isSubscriptionActive']).toBe(false)
+      expect(authStore['canAccessFeatures']).toBe(false)
     })
   })
 
@@ -342,26 +358,26 @@ describe('Frontend Authentication Flow', () => {
       })
 
       // Send first email
-      await authStore.sendMagicLink(email)
-      expect(authStore.emailSendCount).toBe(1)
-      expect(authStore.currentEmail).toBe(email)
+      await authStore['sendMagicLink'](email)
+      expect(authStore['emailSendCount']).toBe(1)
+      expect(authStore['currentEmail']).toBe(email)
 
       // Send second email to same address
-      await authStore.sendMagicLink(email)
-      expect(authStore.emailSendCount).toBe(2)
+      await authStore['sendMagicLink'](email)
+      expect(authStore['emailSendCount']).toBe(2)
 
       // Send to different email (should reset counter)
-      await authStore.sendMagicLink('different@example.com')
-      expect(authStore.emailSendCount).toBe(1)
-      expect(authStore.currentEmail).toBe('different@example.com')
+      await authStore['sendMagicLink']('different@example.com')
+      expect(authStore['emailSendCount']).toBe(1)
+      expect(authStore['currentEmail']).toBe('different@example.com')
     })
 
     it('should respect rate limiting', async () => {
       // Simulate reaching rate limit
-      authStore.emailSendCount = 5
-      authStore.currentEmail = 'test@example.com'
+      authStore['emailSendCount'] = 5
+      authStore['currentEmail'] = 'test@example.com'
 
-      const result = await authStore.resendMagicLink('test@example.com')
+      const result = await authStore['resendMagicLink']('test@example.com')
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Rate limit exceeded')
@@ -373,21 +389,21 @@ describe('Frontend Authentication Flow', () => {
     it('should handle magic link send errors gracefully', async () => {
       mockFetch.mockRejectedValue(new Error('Network error'))
 
-      const result = await authStore.sendMagicLink('test@example.com')
+      const result = await authStore['sendMagicLink']('test@example.com')
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Network error')
-      expect(authStore.error).toBe('Network error')
+      expect(authStore['error']).toBe('Network error')
     })
 
     it('should handle verification errors gracefully', async () => {
       mockFetch.mockRejectedValue(new Error('Invalid token'))
 
-      const result = await authStore.verifyMagicLink('invalid_token')
+      const result = await authStore['verifyMagicLink']('invalid_token')
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Invalid token')
-      expect(authStore.error).toBe('Invalid token')
+      expect(authStore['error']).toBe('Invalid token')
     })
 
     it('should handle session restoration failures gracefully', async () => {
@@ -395,11 +411,11 @@ describe('Frontend Authentication Flow', () => {
         throw new Error('Storage error')
       })
 
-      await authStore.initializeAuth()
+      await authStore['initializeAuth']()
 
-      expect(authStore.user).toBeNull()
-      expect(authStore.sessionToken).toBeNull()
-      expect(authStore.initialized).toBe(true)
+      expect(authStore['user']).toBeNull()
+      expect(authStore['sessionToken']).toBeNull()
+      expect(authStore['initialized']).toBe(true)
     })
   })
 })

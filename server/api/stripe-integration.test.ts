@@ -60,7 +60,7 @@ describe('Stripe PostgreSQL Integration', () => {
             subscription: 'sub_test_789'
           }
         }
-      }
+      } as any
 
       // Mock request/response objects for H3
       const mockRequest = {

@@ -1,4 +1,5 @@
-import { Pool, PoolClient, QueryResult } from 'pg'
+import { Pool } from 'pg'
+import type { PoolClient, QueryResult } from 'pg'
 
 let pool: Pool | null = null
 
@@ -9,10 +10,10 @@ export interface DatabaseConfig {
 
 export function createDatabasePool(config?: DatabaseConfig): Pool {
   if (!pool) {
-    const connectionString = config?.connectionString || process.env.DATABASE_URL
+    const connectionString = config?.connectionString || process.env['DATABASE_URL']
     
     if (!connectionString) {
-      if (process.env.NODE_ENV === 'test') {
+      if (process.env['NODE_ENV'] === 'test') {
         throw new Error('DATABASE_URL environment variable is required for database tests. Set DATABASE_URL or skip database tests.')
       }
       throw new Error('DATABASE_URL environment variable is required')
@@ -40,20 +41,20 @@ export async function getConnection(): Promise<PoolClient> {
   return await dbPool.connect()
 }
 
-export async function query<T = any>(
+export async function query<T extends Record<string, any> = Record<string, any>>(
   text: string,
   params?: any[]
 ): Promise<QueryResult<T>> {
   const dbPool = createDatabasePool()
-  return await dbPool.query(text, params)
+  return await dbPool.query<T>(text, params)
 }
 
-export async function queryWithConnection<T = any>(
+export async function queryWithConnection<T extends Record<string, any> = Record<string, any>>(
   client: PoolClient,
   text: string,
   params?: any[]
 ): Promise<QueryResult<T>> {
-  return await client.query(text, params)
+  return await client.query<T>(text, params)
 }
 
 export async function transaction<T>(

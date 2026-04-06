@@ -2,14 +2,14 @@ import type { H3Event } from 'h3'
 import { getHeader } from 'h3'
 import { verifySessionToken, extractBearerToken, type JWTSessionPayload } from './jwt'
 import { getUserById } from '~/server/utils/database'
-import type { UserProfile } from '~/types/auth'
+import type { User } from '~/types/auth'
 
 export interface AuthenticatedUser {
   uid: string
   email: string
   role: 'user' | 'admin'
   subscriptionStatus: 'trial' | 'active' | 'expired' | 'cancelled'
-  profile: UserProfile
+  profile: User
 }
 
 export interface AuthMiddlewareResult {
@@ -81,7 +81,7 @@ export async function authenticateRequest(
     }
 
     // Load user profile from PostgreSQL database
-    let userProfile: UserProfile | null
+    let userProfile: User | null
     try {
       userProfile = await getUserById(payload.uid)
     } catch (error) {
@@ -121,8 +121,9 @@ export async function authenticateRequest(
 
     // Check subscription requirements
     if (requireActiveSubscription) {
-      const hasActiveSubscription = userProfile.subscription.status === 'active'
+      const hasActiveSubscription = userProfile?.subscription?.status === 'active'
       const isTrialValid = allowTrial && 
+                          userProfile?.trial && 
                           userProfile.trial.daysRemaining > 0 && 
                           !userProfile.trial.isExpired
 
@@ -246,7 +247,7 @@ export function hasPermission(
       return user.subscriptionStatus === 'active'
     
     case 'trial_access':
-      return user.profile.trial.daysRemaining > 0 && !user.profile.trial.isExpired
+      return (user?.profile?.trial && user.profile.trial.daysRemaining > 0 && !user.profile.trial.isExpired) || false
     
     default:
       return false
@@ -303,7 +304,9 @@ export async function devAuthFallback(event: H3Event): Promise<AuthenticatedUser
           endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
           daysRemaining: 14,
           isExpired: false
-        }
+        },
+        subscriptionStatus: devUser?.subscription?.status || 'trial',
+        updatedAt: new Date()
       }
     }
 

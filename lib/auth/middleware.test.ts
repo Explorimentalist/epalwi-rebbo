@@ -19,7 +19,7 @@ import {
 import { generateSessionToken } from './jwt'
 import { getUserById } from '~/server/utils/database'
 import { useRuntimeConfig } from '#app'
-import type { UserProfile } from '~/types/auth'
+import type { User } from '~/types/auth'
 
 // Mock dependencies
 vi.mock('~/server/utils/database', () => ({
@@ -34,22 +34,22 @@ vi.mock('h3', () => ({
 vi.mock('#app', () => ({
   useRuntimeConfig: vi.fn(() => ({
     jwtSecret: 'test-jwt-secret-for-testing-only-32-chars',
-    public: { devAuthMock: false }
+    public: { devAuthMock: false, stripePublishableKey: '', stripeMonthlyPriceId: '', stripeAnnualPriceId: '', appUrl: '' }
   }))
 }))
 
 const mockJWTSecret = 'test-jwt-secret-for-testing-only-32-chars'
-const originalEnv = process.env.JWT_SECRET
+const originalEnv = process.env['JWT_SECRET']
 
 beforeAll(() => {
-  process.env.JWT_SECRET = mockJWTSecret
+  process.env['JWT_SECRET'] = mockJWTSecret
 })
 
 afterAll(() => {
   if (originalEnv) {
-    process.env.JWT_SECRET = originalEnv
+    process.env['JWT_SECRET'] = originalEnv
   } else {
-    delete process.env.JWT_SECRET
+    delete process.env['JWT_SECRET']
   }
 })
 
@@ -74,16 +74,14 @@ describe('Authentication Middleware', () => {
     mockCreateError = vi.mocked(createError)
   })
 
-  const createMockUser = (overrides: Partial<UserProfile> = {}): UserProfile => ({
+  const createMockUser = (overrides: Partial<User> = {}): User => ({
     uid: 'test-user-123',
     email: 'test@example.com',
+    name: undefined,
     displayName: 'Test User',
     photoURL: undefined,
     role: 'user',
-    emailVerified: true,
-    isActive: true,
-    createdAt: new Date(),
-    lastLoginAt: new Date(),
+    subscriptionStatus: 'trial',
     subscription: {
       status: 'trial'
     },
@@ -93,6 +91,8 @@ describe('Authentication Middleware', () => {
       daysRemaining: 14,
       isExpired: false
     },
+    isActive: true,
+    emailVerified: true,
     preferences: {
       defaultLanguage: 'español',
       darkMode: false,
@@ -101,8 +101,12 @@ describe('Authentication Middleware', () => {
         languageTips: true
       }
     },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    lastLogin: undefined,
+    lastLoginAt: new Date(),
     ...overrides
-  })
+  } as User)
 
   describe('authenticateRequest', () => {
     it('should authenticate valid JWT token', async () => {
@@ -111,7 +115,7 @@ describe('Authentication Middleware', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -160,7 +164,7 @@ describe('Authentication Middleware', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -179,7 +183,7 @@ describe('Authentication Middleware', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -198,7 +202,7 @@ describe('Authentication Middleware', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -218,7 +222,7 @@ describe('Authentication Middleware', () => {
           uid: adminUser.uid,
           email: adminUser.email,
           role: adminUser.role,
-          subscriptionStatus: adminUser.subscription.status
+          subscriptionStatus: 'trial',
         })
 
         mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -236,7 +240,7 @@ describe('Authentication Middleware', () => {
           uid: user.uid,
           email: user.email,
           role: user.role,
-          subscriptionStatus: user.subscription.status
+          subscriptionStatus: 'trial',
         })
 
         mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -259,7 +263,7 @@ describe('Authentication Middleware', () => {
           uid: user.uid,
           email: user.email,
           role: user.role,
-          subscriptionStatus: user.subscription.status
+          subscriptionStatus: 'trial',
         })
 
         mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -284,7 +288,7 @@ describe('Authentication Middleware', () => {
           uid: user.uid,
           email: user.email,
           role: user.role,
-          subscriptionStatus: user.subscription.status
+          subscriptionStatus: 'trial',
         })
 
         mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -312,7 +316,7 @@ describe('Authentication Middleware', () => {
           uid: user.uid,
           email: user.email,
           role: user.role,
-          subscriptionStatus: user.subscription.status
+          subscriptionStatus: 'trial',
         })
 
         mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -337,7 +341,7 @@ describe('Authentication Middleware', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -375,7 +379,7 @@ describe('Authentication Middleware', () => {
         uid: adminUser.uid,
         email: adminUser.email,
         role: adminUser.role,
-        subscriptionStatus: adminUser.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -392,7 +396,7 @@ describe('Authentication Middleware', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -414,7 +418,7 @@ describe('Authentication Middleware', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -431,7 +435,7 @@ describe('Authentication Middleware', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -450,7 +454,7 @@ describe('Authentication Middleware', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetHeader.mockReturnValue(`Bearer ${token}`)
@@ -589,10 +593,8 @@ describe('Authentication Middleware', () => {
   describe('Development Authentication Fallback', () => {
     beforeEach(() => {
       // Reset runtime config mock
-      vi.mocked(useRuntimeConfig).mockReturnValue({
-        jwtSecret: mockJWTSecret,
-        public: { devAuthMock: true }
-      })
+      vi.mocked(useRuntimeConfig).mockReturnValue({jwtSecret: mockJWTSecret,public: { devAuthMock: true, stripePublishableKey: '', stripeMonthlyPriceId: '', stripeAnnualPriceId: '', appUrl: '' }
+      } as any)
     })
 
     it('should return mock user when dev auth is enabled and header present', async () => {
@@ -616,10 +618,8 @@ describe('Authentication Middleware', () => {
     })
 
     it('should return null when dev auth is disabled', async () => {
-      vi.mocked(useRuntimeConfig).mockReturnValue({
-        jwtSecret: mockJWTSecret,
-        public: { devAuthMock: false }
-      })
+      vi.mocked(useRuntimeConfig).mockReturnValue({jwtSecret: mockJWTSecret,public: { devAuthMock: false, stripePublishableKey: '', stripeMonthlyPriceId: '', stripeAnnualPriceId: '', appUrl: '' }
+      } as any)
 
       const result = await devAuthFallback(mockEvent)
 
@@ -648,10 +648,8 @@ describe('Authentication Middleware', () => {
 
   describe('authenticateWithFallback', () => {
     it('should use dev fallback when available', async () => {
-      vi.mocked(useRuntimeConfig).mockReturnValue({
-        jwtSecret: mockJWTSecret,
-        public: { devAuthMock: true }
-      })
+      vi.mocked(useRuntimeConfig).mockReturnValue({jwtSecret: mockJWTSecret,public: { devAuthMock: true, stripePublishableKey: '', stripeMonthlyPriceId: '', stripeAnnualPriceId: '', appUrl: '' }
+      } as any)
 
       const devUserData = { uid: 'dev-123', email: 'dev@example.com' }
       const encodedHeader = Buffer.from(JSON.stringify(devUserData)).toString('base64')
@@ -669,17 +667,15 @@ describe('Authentication Middleware', () => {
     })
 
     it('should fall back to JWT authentication when dev auth unavailable', async () => {
-      vi.mocked(useRuntimeConfig).mockReturnValue({
-        jwtSecret: mockJWTSecret,
-        public: { devAuthMock: false }
-      })
+      vi.mocked(useRuntimeConfig).mockReturnValue({jwtSecret: mockJWTSecret,public: { devAuthMock: false, stripePublishableKey: '', stripeMonthlyPriceId: '', stripeAnnualPriceId: '', appUrl: '' }
+      } as any)
 
       const user = createMockUser()
       const token = generateSessionToken({
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetHeader.mockImplementation((event, headerName) => {

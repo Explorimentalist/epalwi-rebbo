@@ -22,7 +22,7 @@
     <!-- Call to Action Button -->
     <button 
       v-if="ctaText" 
-      class="btn btn--primary empty-state__cta"
+      class="ds-btn-primary empty-state__cta"
       :class="ctaButtonClasses"
       :disabled="ctaLoading"
       @click="handleCtaClick"

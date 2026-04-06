@@ -1,3 +1,5 @@
+import { defineEventHandler, readBody, getHeader } from 'h3'
+
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
@@ -13,10 +15,11 @@ export default defineEventHandler(async (event) => {
     // Get additional context
     const timestamp = body.timestamp || new Date().toISOString()
     const userAgent = body.userAgent || 'Unknown'
-    const ip = getClientIP(event) || 'Unknown'
+    const forwardedFor = getHeader(event, 'x-forwarded-for')
+    const ip = typeof forwardedFor === 'string' ? forwardedFor.split(',')[0] : 'Unknown'
 
     // Prepare email content
-    const satisfactionLabels = {
+    const satisfactionLabels: Record<string, string> = {
       '5': 'Muy satisfecho 😄',
       '4': 'Satisfecho 😊', 
       '3': 'Neutral 😐',
@@ -27,7 +30,7 @@ export default defineEventHandler(async (event) => {
     const emailContent = `
 Nueva sugerencia recibida de epàlwi-rèbbo:
 
-Satisfacción: ${satisfactionLabels[body.satisfaction] || body.satisfaction}
+Satisfacción: ${satisfactionLabels[body.satisfaction as string] || body.satisfaction}
 Fecha: ${new Date(timestamp).toLocaleString('es-ES')}
 IP: ${ip}
 User Agent: ${userAgent}

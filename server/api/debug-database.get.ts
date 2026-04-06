@@ -19,9 +19,9 @@ export default defineEventHandler(async (event) => {
     console.log('🔧 Debug [debug-database]: Database URL available:', hasDatabaseUrl)
     console.log('🔧 Debug [debug-database]: Database URL length:', databaseUrlLength)
     
-    const result = {
+    const result: Record<string, any> = {
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV,
+      environment: process.env['NODE_ENV'],
       hasDatabaseUrl,
       databaseUrlLength,
       databaseUrlPrefix,
@@ -31,9 +31,9 @@ export default defineEventHandler(async (event) => {
     }
     
     if (!hasDatabaseUrl) {
-      result.error = 'DATABASE_URL environment variable not found'
-      result.connectionTest = 'SKIPPED'
-      result.queryTest = 'SKIPPED'
+      result['error'] = 'DATABASE_URL environment variable not found'
+      result['connectionTest'] = 'SKIPPED'
+      result['queryTest'] = 'SKIPPED'
       return { success: false, debug: result }
     }
     
@@ -41,12 +41,12 @@ export default defineEventHandler(async (event) => {
     console.log('🔧 Debug [debug-database]: Testing database connection...')
     try {
       const testResult = await query('SELECT 1 as test_value')
-      result.connectionTest = 'SUCCESS'
-      result.queryTest = testResult.rows[0]?.test_value === 1 ? 'SUCCESS' : 'FAILED'
+      result['connectionTest'] = 'SUCCESS'
+      result['queryTest'] = testResult.rows[0]?.['test_value'] === 1 ? 'SUCCESS' : 'FAILED'
       console.log('✅ Debug [debug-database]: Basic connection successful')
     } catch (connError: any) {
-      result.connectionTest = 'FAILED'
-      result.error = connError.message
+      result['connectionTest'] = 'FAILED'
+      result['error'] = connError.message
       console.error('❌ Debug [debug-database]: Connection failed:', connError.message)
       return { success: false, debug: result }
     }
@@ -55,12 +55,12 @@ export default defineEventHandler(async (event) => {
     console.log('🔧 Debug [debug-database]: Testing user table access...')
     try {
       const userResult = await query('SELECT COUNT(*) as user_count FROM user_profiles LIMIT 1')
-      result.userTableTest = 'SUCCESS'
-      result.userCount = parseInt(userResult.rows[0]?.user_count || '0')
+      result['userTableTest'] = 'SUCCESS'
+      result['userCount'] = parseInt(userResult.rows[0]?.['user_count'] || '0')
       console.log('✅ Debug [debug-database]: User table access successful')
     } catch (userError: any) {
-      result.userTableTest = 'FAILED'
-      result.userTableError = userError.message
+      result['userTableTest'] = 'FAILED'
+      result['userTableError'] = userError.message
       console.error('❌ Debug [debug-database]: User table access failed:', userError.message)
     }
     

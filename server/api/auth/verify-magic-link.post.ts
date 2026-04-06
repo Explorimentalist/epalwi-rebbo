@@ -128,7 +128,7 @@ export default defineEventHandler(async (event): Promise<TokenVerificationRespon
       message: 'Verificación exitosa',
       user: userProfile,
       sessionToken: sessionInfo.token,
-      expiresAt: sessionInfo.expiresAt
+      expiresAt: sessionInfo.expiresAt.getTime()
     }
 
   } catch (error: any) {

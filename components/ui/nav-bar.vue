@@ -349,20 +349,17 @@ watch(() => route.path, () => {
 </script>
 
 <style scoped>
-/* Remove focus outlines from navigation links */
-nav a:focus,
-nav button:focus {
-  outline: none;
-  box-shadow: none;
+/* Ensure visible focus styles for keyboard navigation - CRITICAL for accessibility */
+nav a:focus-visible,
+nav button:focus-visible {
+  outline: 2px solid var(--ds-ring, #D45B41);
+  outline-offset: 2px;
+  border-radius: var(--ds-radius, 0.625rem);
 }
 
 /* Remove any default link styling that might cause borders */
 nav a {
   text-decoration: none;
-}
-
-nav a:focus-visible {
-  outline: none;
 }
 
 /* Ensure mobile menu covers full screen */

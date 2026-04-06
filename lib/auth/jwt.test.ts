@@ -17,17 +17,17 @@ import type { JWTPayload } from '~/types/auth'
 
 // Mock runtime config for testing
 const mockJWTSecret = 'test-jwt-secret-for-testing-only-32-chars'
-const originalEnv = process.env.JWT_SECRET
+const originalEnv = process.env['JWT_SECRET']
 
 beforeAll(() => {
-  process.env.JWT_SECRET = mockJWTSecret
+  process.env['JWT_SECRET'] = mockJWTSecret
 })
 
 afterAll(() => {
   if (originalEnv) {
-    process.env.JWT_SECRET = originalEnv
+    process.env['JWT_SECRET'] = originalEnv
   } else {
-    delete process.env.JWT_SECRET
+    delete process.env['JWT_SECRET']
   }
 })
 
@@ -321,8 +321,8 @@ describe('JWT Utilities', () => {
 
   describe('JWT Secret Management', () => {
     it('should throw error when JWT secret is not configured', () => {
-      const originalSecret = process.env.JWT_SECRET
-      delete process.env.JWT_SECRET
+      const originalSecret = process.env['JWT_SECRET']
+      delete process.env['JWT_SECRET']
       
       expect(() => generateSessionToken({
         uid: 'test',
@@ -332,7 +332,7 @@ describe('JWT Utilities', () => {
       })).toThrow('JWT_SECRET environment variable is required')
       
       // Restore secret
-      process.env.JWT_SECRET = originalSecret
+      process.env['JWT_SECRET'] = originalSecret
     })
   })
 

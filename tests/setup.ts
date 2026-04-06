@@ -2,7 +2,7 @@
 import { vi } from 'vitest'
 
 // Set test environment variables
-process.env.NODE_ENV = 'test'
+process.env['NODE_ENV'] = 'test'
 
 // Stub Nuxt navigate and route helpers
 vi.stubGlobal('navigateTo', vi.fn())
@@ -39,7 +39,7 @@ vi.stubGlobal('useDesignSystem', () => ({
 
 // Nuxt server utilities
 vi.stubGlobal('createError', vi.fn((options) => {
-  const error = new Error(options.statusMessage || 'Error')
+  const error = new Error(options.statusMessage || 'Error') as any
   error.statusCode = options.statusCode || 500
   return error
 }))

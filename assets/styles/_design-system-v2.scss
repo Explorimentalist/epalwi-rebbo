@@ -119,6 +119,10 @@
   --ds-shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
   --ds-shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
 
+  /* Line heights - Consistent line-height values */
+  --ds-line-height-tight: 1.25;
+  --ds-line-height-normal: 1.5;
+
   /* Animation - Consistent timing */
   --ds-duration: 0.2s;
   --ds-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -520,7 +524,7 @@
   background-color: var(--ds-input);
   border: 1px solid var(--ds-border);
   border-radius: var(--ds-radius-sm);
-  color: #333333;
+  color: var(--ds-foreground);
   font-family: var(--ds-font-sans);
   font-size: 16px;
   padding: 0.8rem 1rem;

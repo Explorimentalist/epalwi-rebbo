@@ -40,7 +40,7 @@ describe('Send Magic Link API - Rate Limiting', () => {
     vi.resetModules()
     
     // Import the handler fresh for each test
-    const module = await import('./send-magic-link.post.ts')
+    const module = await import('./send-magic-link.post')
     handler = module.default
   })
 
@@ -228,7 +228,7 @@ describe('Send Magic Link API - Email Template', () => {
     vi.clearAllMocks()
     vi.resetModules()
     
-    const module = await import('./send-magic-link.post.ts')
+    const module = await import('./send-magic-link.post')
     handler = module.default
   })
 
@@ -245,7 +245,7 @@ describe('Send Magic Link API - Email Template', () => {
     await handler(mockEvent)
 
     expect(sendSpy).toHaveBeenCalledTimes(1)
-    const emailCall = sendSpy.mock.calls[0][0]
+    const emailCall = sendSpy.mock.calls[0]![0]!
 
     // Check that email contains the logo SVG
     expect(emailCall.html).toContain('<svg')

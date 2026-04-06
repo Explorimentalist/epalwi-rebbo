@@ -71,7 +71,7 @@ export const useDictionary = () => {
       let attempts = 0
       const maxAttempts = 20 // Max 10 seconds wait (500ms * 20)
       
-      while (!authStore.sessionToken && attempts < maxAttempts) {
+      while (!authStore['sessionToken'] && attempts < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, 500))
         attempts++
         if (attempts % 4 === 0) { // Log every 2 seconds
@@ -79,7 +79,7 @@ export const useDictionary = () => {
         }
       }
       
-      if (authStore.sessionToken) {
+      if (authStore['sessionToken']) {
         console.log('✅ Auth ready, proceeding with dictionary load...')
       } else {
         console.warn('⚠️ Auth not ready after 10s, proceeding anyway...')

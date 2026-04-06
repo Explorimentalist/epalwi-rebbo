@@ -15,7 +15,7 @@ import {
 } from './session'
 import { generateSessionToken, verifySessionToken } from './jwt'
 import * as databaseUtils from '~/server/utils/database'
-import type { UserProfile } from '~/types/auth'
+import type { User } from '~/types/auth'
 
 // Mock database utilities
 vi.mock('~/server/utils/database', () => ({
@@ -30,17 +30,17 @@ vi.mock('#app', () => ({
 }))
 
 const mockJWTSecret = 'test-jwt-secret-for-testing-only-32-chars'
-const originalEnv = process.env.JWT_SECRET
+const originalEnv = process.env['JWT_SECRET']
 
 beforeAll(() => {
-  process.env.JWT_SECRET = mockJWTSecret
+  process.env['JWT_SECRET'] = mockJWTSecret
 })
 
 afterAll(() => {
   if (originalEnv) {
-    process.env.JWT_SECRET = originalEnv
+    process.env['JWT_SECRET'] = originalEnv
   } else {
-    delete process.env.JWT_SECRET
+    delete process.env['JWT_SECRET']
   }
 })
 
@@ -54,16 +54,14 @@ describe('Session Management', () => {
     mockUpdateUser = vi.mocked(databaseUtils.updateUser)
   })
 
-  const createMockUser = (overrides: Partial<UserProfile> = {}): UserProfile => ({
+  const createMockUser = (overrides: Partial<User> = {}): User => ({
     uid: 'test-user-123',
     email: 'test@example.com',
+    name: undefined,
     displayName: 'Test User',
     photoURL: undefined,
     role: 'user',
-    emailVerified: true,
-    isActive: true,
-    createdAt: new Date(),
-    lastLoginAt: new Date(),
+    subscriptionStatus: 'trial',
     subscription: {
       status: 'trial'
     },
@@ -73,6 +71,8 @@ describe('Session Management', () => {
       daysRemaining: 14,
       isExpired: false
     },
+    isActive: true,
+    emailVerified: true,
     preferences: {
       defaultLanguage: 'español',
       darkMode: false,
@@ -81,8 +81,12 @@ describe('Session Management', () => {
         languageTips: true
       }
     },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    lastLogin: undefined,
+    lastLoginAt: new Date(),
     ...overrides
-  })
+  }) as User
 
   describe('createSession', () => {
     it('should create session with valid user', async () => {
@@ -146,7 +150,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetUserById.mockResolvedValue(user)
@@ -166,7 +170,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetUserById.mockResolvedValue(null)
@@ -184,7 +188,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetUserById.mockResolvedValue(user)
@@ -212,7 +216,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       }, { expiresIn: '23h' })
 
       mockGetUserById.mockResolvedValue(user)
@@ -230,7 +234,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetUserById.mockRejectedValue(new Error('Database connection failed'))
@@ -267,7 +271,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetUserById.mockResolvedValue(user)
@@ -286,7 +290,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetUserById.mockResolvedValue(null)
@@ -373,7 +377,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       // Mock updated user with active subscription
@@ -387,7 +391,7 @@ describe('Session Management', () => {
       const newSession = await refreshSessionWithLatestUser(token)
 
       expect(newSession).toBeDefined()
-      expect(newSession!.user.subscription.status).toBe('active')
+      expect(newSession!.user?.subscription?.status).toBe('active')
       expect(mockGetUserById).toHaveBeenCalledWith(user.uid)
     })
 
@@ -397,7 +401,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       const inactiveUser = createMockUser({ isActive: false })
@@ -453,7 +457,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetUserById.mockResolvedValue(user)
@@ -484,7 +488,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetUserById.mockResolvedValue(user)
@@ -533,7 +537,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetUserById.mockResolvedValue(user)
@@ -552,7 +556,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetUserById.mockResolvedValue(user)
@@ -578,7 +582,7 @@ describe('Session Management', () => {
         uid: user.uid,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscription.status
+        subscriptionStatus: 'trial',
       })
 
       mockGetUserById.mockResolvedValue(user)
