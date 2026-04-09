@@ -11,9 +11,9 @@ import {
 } from './001-initial-schema'
 import { query, closePool } from '../connection'
 
-describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
+describe.skipIf(!process.env.DATABASE_URL)('Database Migrations', () => {
   beforeAll(async () => {
-    if (!process.env['DATABASE_URL']) {
+    if (!process.env.DATABASE_URL) {
       console.log('Skipping database migration tests - DATABASE_URL not provided')
       return
     }
@@ -22,7 +22,7 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
   })
 
   afterAll(async () => {
-    if (!process.env['DATABASE_URL']) return
+    if (!process.env.DATABASE_URL) return
     await closePool()
   })
 
@@ -72,7 +72,7 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
         ORDER BY table_name
       `)
 
-      const tableNames = tableResult.rows.map(row => row['table_name'])
+      const tableNames = tableResult.rows.map(row => row.table_name)
       expect(tableNames).toContain('users')
       expect(tableNames).toContain('subscriptions')
       expect(tableNames).toContain('trials')
@@ -94,7 +94,7 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
         ORDER BY table_name
       `)
 
-      const viewNames = viewResult.rows.map(row => row['table_name'])
+      const viewNames = viewResult.rows.map(row => row.table_name)
       expect(viewNames).toContain('user_profiles')
       expect(viewNames).toContain('active_users_with_access')
     })
@@ -111,7 +111,7 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
         ORDER BY routine_name
       `)
 
-      const functionNames = functionResult.rows.map(row => row['routine_name'])
+      const functionNames = functionResult.rows.map(row => row.routine_name)
       expect(functionNames).toContain('update_updated_at_column')
       expect(functionNames).toContain('create_trial_for_new_user')
       expect(functionNames).toContain('cleanup_expired_magic_links')
@@ -129,7 +129,7 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
         ORDER BY indexname
       `)
 
-      const indexNames = indexResult.rows.map(row => row['indexname'])
+      const indexNames = indexResult.rows.map(row => row.indexname)
       expect(indexNames.some(name => name.includes('users_email'))).toBe(true)
       expect(indexNames.some(name => name.includes('subscriptions_user_id'))).toBe(true)
       expect(indexNames.some(name => name.includes('trials_user_id'))).toBe(true)
@@ -161,10 +161,10 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
       
       // Verify specific foreign keys exist
       const foreignKeys = fkResult.rows.map(row => ({
-        table: row['table_name'],
-        column: row['column_name'],
-        foreignTable: row['foreign_table_name'],
-        foreignColumn: row['foreign_column_name']
+        table: row.table_name,
+        column: row.column_name,
+        foreignTable: row.foreign_table_name,
+        foreignColumn: row.foreign_column_name
       }))
 
       expect(foreignKeys.some(fk => 
@@ -193,7 +193,7 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
         VALUES ('trial-test@example.com', 'Trial Test User') 
         RETURNING id
       `)
-      const userId = userResult.rows[0]!?.['id']
+      const userId = userResult.rows[0].id
 
       // Check that trial was automatically created
       const trialResult = await query(
@@ -201,9 +201,9 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
         [userId]
       )
 
-      expect(trialResult.rows!).toHaveLength(1)
-      expect(trialResult.rows![0]!['days_remaining']).toBeGreaterThan(0)
-      expect(trialResult.rows![0]!['is_expired']).toBe(false)
+      expect(trialResult.rows).toHaveLength(1)
+      expect(trialResult.rows[0].days_remaining).toBeGreaterThan(0)
+      expect(trialResult.rows[0].is_expired).toBe(false)
 
       // Check that user preferences were created
       const preferencesResult = await query(
@@ -211,8 +211,8 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
         [userId]
       )
 
-      expect(preferencesResult.rows!).toHaveLength(1)
-      expect(preferencesResult.rows![0]!['default_language']).toBe('español')
+      expect(preferencesResult.rows).toHaveLength(1)
+      expect(preferencesResult.rows[0].default_language).toBe('español')
 
       // Clean up
       await query('DELETE FROM users WHERE id = $1', [userId])
@@ -225,8 +225,8 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
         VALUES ('timestamp-test@example.com', 'Timestamp Test User') 
         RETURNING id, updated_at
       `)
-      const userId = userResult.rows[0]!?.['id']
-      const originalTimestamp = userResult.rows[0]!['updated_at']
+      const userId = userResult.rows[0].id
+      const originalTimestamp = userResult.rows[0].updated_at
 
       // Wait a moment
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -242,7 +242,7 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
         'SELECT updated_at FROM users WHERE id = $1',
         [userId]
       )
-      const newTimestamp = updatedResult.rows[0]!['updated_at']
+      const newTimestamp = updatedResult.rows[0].updated_at
 
       expect(new Date(newTimestamp).getTime()).toBeGreaterThan(new Date(originalTimestamp).getTime())
 
@@ -257,7 +257,7 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
         VALUES ('profile-test@example.com', 'Profile Test User', 'admin') 
         RETURNING id
       `)
-      const userId = userResult.rows[0]!?.['id']
+      const userId = userResult.rows[0].id
 
       // Get user profile from view
       const profileResult = await query(
@@ -266,15 +266,15 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
       )
 
       expect(profileResult.rows).toHaveLength(1)
-      const profile = profileResult.rows[0]!
+      const profile = profileResult.rows[0]
       
-      expect(profile['uid']).toBe(userId)
-      expect(profile['email']).toBe('profile-test@example.com')
-      expect(profile['display_name']).toBe('Profile Test User')
-      expect(profile['role']).toBe('admin')
-      expect(profile['trial']).toBeDefined()
-      expect(profile['subscription']).toBeDefined()
-      expect(profile['preferences']).toBeDefined()
+      expect(profile.uid).toBe(userId)
+      expect(profile.email).toBe('profile-test@example.com')
+      expect(profile.display_name).toBe('Profile Test User')
+      expect(profile.role).toBe('admin')
+      expect(profile.trial).toBeDefined()
+      expect(profile.subscription).toBeDefined()
+      expect(profile.preferences).toBeDefined()
 
       // Clean up
       await query('DELETE FROM users WHERE id = $1', [userId])
@@ -290,7 +290,7 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
 
       // Run cleanup function
       const cleanupResult = await query('SELECT cleanup_expired_magic_links() as deleted_count')
-      const deletedCount = cleanupResult.rows[0]!['deleted_count']
+      const deletedCount = cleanupResult.rows[0].deleted_count
 
       expect(deletedCount).toBeGreaterThanOrEqual(1)
 
@@ -300,8 +300,8 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Migrations', () => {
         ['test@example.com']
       )
 
-      expect(tokensResult.rows.some(row => row['token_hash'] === 'expired-token')).toBe(false)
-      expect(tokensResult.rows.some(row => row['token_hash'] === 'valid-token')).toBe(true)
+      expect(tokensResult.rows.some(row => row.token_hash === 'expired-token')).toBe(false)
+      expect(tokensResult.rows.some(row => row.token_hash === 'valid-token')).toBe(true)
 
       // Clean up
       await query('DELETE FROM magic_link_tokens WHERE email = $1', ['test@example.com'])

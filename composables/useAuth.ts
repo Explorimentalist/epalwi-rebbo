@@ -10,10 +10,10 @@ export const useAuth = () => {
   const authStore = useAuthStore()
   const route = import.meta.client ? useRoute() : ({} as any)
 
-  const isAuthenticated = computed(() => authStore['isAuthenticated'])
-  const canAccessFeatures = computed(() => authStore['canAccessFeatures'])
-  const subscriptionStatus = computed(() => authStore['subscriptionStatus'])
-  const trialDaysRemaining = computed(() => authStore['trialDaysRemaining'])
+  const isAuthenticated = computed(() => authStore.isAuthenticated)
+  const canAccessFeatures = computed(() => authStore.canAccessFeatures)
+  const subscriptionStatus = computed(() => authStore.subscriptionStatus)
+  const trialDaysRemaining = computed(() => authStore.trialDaysRemaining)
 
   // Grace period: 3 days after trial end (via utils)
   const isInGracePeriod = computed(() => {

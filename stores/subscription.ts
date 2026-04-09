@@ -302,7 +302,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
             updateUserSubscription(null)
           }
         },
-        { immediate: false }
+        { immediate: true }
       )
     } catch (e) {
       // optional sync

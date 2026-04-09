@@ -25,14 +25,14 @@ function getJWTSecret(): string {
   // Try runtime config first (for Nuxt context)
   try {
     const config = useRuntimeConfig()
-    const jwtSecret = config.jwtSecret || config['JWT_SECRET'] || ''
-    if (jwtSecret) return jwtSecret as string
+    const jwtSecret = config.jwtSecret || config.JWT_SECRET
+    if (jwtSecret) return jwtSecret
   } catch (error) {
     // Not in Nuxt context, fallback to environment
   }
   
   // Fallback to environment variables (for testing)
-  const jwtSecret = process.env['JWT_SECRET'] || ''
+  const jwtSecret = process.env.JWT_SECRET
   
   if (!jwtSecret) {
     throw new Error('JWT_SECRET environment variable is required')
@@ -58,7 +58,7 @@ export function verifyMagicLinkToken(token: string): JWTPayload {
 
     // Check if token is expired
     const now = Math.floor(Date.now() / 1000)
-    if (payload.exp !== undefined && payload.exp < now) {
+    if (payload.exp < now) {
       throw new Error('Token expired')
     }
 
@@ -109,7 +109,7 @@ export function generateSessionToken(
     expiresIn,
     issuer,
     audience
-  } as jwt.SignOptions)
+  })
 }
 
 /**
@@ -193,7 +193,7 @@ export function generateMagicLinkToken(
   return jwt.sign(payload, jwtSecret, {
     algorithm: 'HS256',
     expiresIn
-  } as jwt.SignOptions)
+  })
 }
 
 /**

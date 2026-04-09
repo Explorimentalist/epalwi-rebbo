@@ -12,7 +12,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   const isInitialized = (authStore as any).initialized?.value ?? false
   if (!isInitialized) {
     try {
-      await authStore['initializeAuth']()
+      await authStore.initializeAuth()
     } catch (e) {
       // Non-fatal; allow navigation while auth initializes
       console.warn('Auth initialization warning:', e)

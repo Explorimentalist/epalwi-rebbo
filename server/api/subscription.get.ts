@@ -1,7 +1,7 @@
 import { defineEventHandler, createError } from 'h3'
 import { validateUserToken } from '~/server/utils/auth'
 import { getUserById } from '~/server/utils/database'
-import type { UserSubscription, SubscriptionStatus } from '~/types/subscription'
+import type { UserSubscription } from '~/types/subscription'
 
 /**
  * GET /api/subscription
@@ -42,7 +42,8 @@ export default defineEventHandler(async (event) => {
 
     // 3. Format subscription data for response
     // The user_profiles view returns subscription as a JSON object
-    const subscriptionData = user.subscription as any
+    const subscriptionData = user.subscription
+
     if (!subscriptionData) {
       // User has no subscription record - return null subscription
       console.log(`📡 [GET /api/subscription] User ${uid} has no subscription`)
@@ -63,47 +64,20 @@ export default defineEventHandler(async (event) => {
 
     // Build the subscription response
     const subscription: UserSubscription = {
-      status: (subscriptionData?.status as SubscriptionStatus) || 'trial'
-    }
-    
-    if (subscriptionData?.planId) {
-      subscription.planId = subscriptionData.planId
-    }
-    if (subscriptionData?.planType) {
-      subscription.planType = subscriptionData.planType as 'monthly' | 'annual'
-    }
-    if (subscriptionData?.currentPeriodStart) {
-      const date = toDateOrUndefined(subscriptionData.currentPeriodStart)
-      if (date) {
-        subscription.currentPeriodStart = date
-      }
-    }
-    if (subscriptionData?.currentPeriodEnd) {
-      const date = toDateOrUndefined(subscriptionData.currentPeriodEnd)
-      if (date) {
-        subscription.currentPeriodEnd = date
-      }
-    }
-    if (subscriptionData?.cancelAtPeriodEnd !== undefined) {
-      subscription.cancelAtPeriodEnd = subscriptionData.cancelAtPeriodEnd
-    }
-    if (subscriptionData?.stripeCustomerId) {
-      subscription.stripeCustomerId = subscriptionData.stripeCustomerId
-    }
-    if (subscriptionData?.stripeSubscriptionId) {
-      subscription.stripeSubscriptionId = subscriptionData.stripeSubscriptionId
+      status: subscriptionData.status || 'trial',
+      planId: subscriptionData.planId,
+      planType: subscriptionData.planId as 'monthly' | 'annual' | undefined,
+      currentPeriodStart: toDateOrUndefined(subscriptionData.currentPeriodStart),
+      currentPeriodEnd: toDateOrUndefined(subscriptionData.currentPeriodEnd),
+      cancelAtPeriodEnd: subscriptionData.cancelAtPeriodEnd ?? false,
+      stripeCustomerId: subscriptionData.stripeCustomerId,
+      stripeSubscriptionId: subscriptionData.stripeSubscriptionId
     }
 
     // Add trial dates from user.trial if available
     if (user.trial) {
-      const trialStart = toDateOrUndefined(user.trial.startDate)
-      if (trialStart) {
-        subscription.trialStart = trialStart
-      }
-      const trialEnd = toDateOrUndefined(user.trial.endDate)
-      if (trialEnd) {
-        subscription.trialEnd = trialEnd
-      }
+      subscription.trialStart = toDateOrUndefined(user.trial.startDate)
+      subscription.trialEnd = toDateOrUndefined(user.trial.endDate)
     }
 
     console.log(`✅ [GET /api/subscription] Returning subscription for user ${uid}: status=${subscription.status}`)

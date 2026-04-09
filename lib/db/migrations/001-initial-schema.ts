@@ -120,7 +120,7 @@ export async function getMigrationsTable(): Promise<void> {
 export async function getAppliedMigrations(): Promise<string[]> {
   await getMigrationsTable()
   const result = await query('SELECT version FROM migrations ORDER BY version')
-  return result.rows.map(row => row['version'])
+  return result.rows.map(row => row.version)
 }
 
 export async function isMigrationApplied(version: string): Promise<boolean> {
@@ -145,8 +145,8 @@ export async function testDatabaseConnection(): Promise<boolean> {
   try {
     const result = await query('SELECT NOW() as current_time, version() as pg_version')
     console.log(`✅ Database connected successfully`)
-    console.log(`   Time: ${result.rows[0]?.['current_time']}`)
-    console.log(`   PostgreSQL version: ${result.rows[0]?.['pg_version'].split(' ')[0]}`)
+    console.log(`   Time: ${result.rows[0].current_time}`)
+    console.log(`   PostgreSQL version: ${result.rows[0].pg_version.split(' ')[0]}`)
     return true
   } catch (error) {
     console.error('❌ Database connection failed:', error)
@@ -211,7 +211,7 @@ export async function healthCheck(): Promise<{
     let userCount = 0
     if (tablesExist) {
       const userCountResult = await query('SELECT COUNT(*) as count FROM users')
-      userCount = parseInt(userCountResult.rows[0]?.['count'] || '0')
+      userCount = parseInt(userCountResult.rows[0].count)
     }
     
     return {

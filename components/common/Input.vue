@@ -276,8 +276,6 @@ const validationIconClasses = computed(() => {
 .input-field {
   @apply w-full px-4 py-3 bg-white text-gray-800 border border-gray-300 rounded-lg transition-all duration-200 placeholder-gray-500;
   @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
-  /* Use design system focus ring color */
-  --tw-ring-color: var(--ds-ring, #D45B41);
 }
 
 /* Responsive padding adjustments */

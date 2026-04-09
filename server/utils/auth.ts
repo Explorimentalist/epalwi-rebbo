@@ -46,11 +46,10 @@ export async function validateUserToken(event: H3Event): Promise<{ uid: string; 
       result.email = payload.email
     }
     return result
-  } catch (err: unknown) {
-    const errMsg = err instanceof Error ? err.message : String(err)
+  } catch (err) {
     console.error('❌ [validateUserToken]: Token validation failed:', err)
     console.error('❌ [validateUserToken]: Error type:', err?.constructor?.name)
-    console.error('❌ [validateUserToken]: Error message:', errMsg)
+    console.error('❌ [validateUserToken]: Error message:', err?.message)
     return null
   }
 }
@@ -89,7 +88,7 @@ export async function getUserSubscriptionStatus(uid: string): Promise<UserSubscr
   const rawStatus: string | undefined = user.subscription?.status
 
   // Convert currentPeriodEnd to Date object (PostgreSQL may return strings)
-  const currentPeriodEndRaw = (user.subscription as any)?.currentPeriodEnd
+  const currentPeriodEndRaw = user.subscription?.currentPeriodEnd
   const currentPeriodEnd: Date | null = currentPeriodEndRaw
     ? (currentPeriodEndRaw instanceof Date ? currentPeriodEndRaw : new Date(currentPeriodEndRaw))
     : null

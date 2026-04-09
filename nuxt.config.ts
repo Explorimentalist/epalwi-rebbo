@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   // Disable DevTools in production builds to avoid pulling heavy, dev-only deps
-  devtools: { enabled: process.env['NODE_ENV'] !== 'production' },
+  devtools: { enabled: process.env.NODE_ENV !== 'production' },
   
   // SSR configuration - disabled for debugging
   ssr: false,
@@ -84,7 +84,7 @@ export default defineNuxtConfig({
     // Avoid terser/minify issues during SW generation
     minify: false,
     // Allow disabling PWA (eg, in CI/dev) via env
-    disable: process.env['PWA_DISABLE'] === 'true',
+    disable: process.env.PWA_DISABLE === 'true',
     registerType: 'autoUpdate',
     workbox: {
       globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
@@ -140,7 +140,7 @@ export default defineNuxtConfig({
     optimizeDeps: {
       include: ['unhead', '@unhead/vue'],
       // Force pre-bundling of unhead modules to avoid runtime resolution issues
-      force: process.env['VERCEL'] === '1'
+      force: process.env.VERCEL === '1'
     }
   },
   
@@ -177,7 +177,7 @@ export default defineNuxtConfig({
   // Nitro configuration for serverless
   nitro: {
     // Use the correct adapter based on the platform
-    preset: process.env['VERCEL'] ? 'vercel' : 'node-server'
+    preset: process.env.VERCEL ? 'vercel' : 'node-server'
   },
 
   // Components auto-import configuration

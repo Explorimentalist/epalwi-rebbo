@@ -1,96 +1,82 @@
 /**
- * Authentication-related types and interfaces
+ * Authentication Types
+ * TypeScript definitions for the authentication system
  */
 
 /**
- * Subscription information
+ * Subscription status types
  */
-export interface Subscription {
-  status: 'trial' | 'active' | 'expired' | 'cancelled'
-  startDate?: Date
-  endDate?: Date
-}
+export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'cancelled'
+
+/**
+ * User role types
+ */
+export type UserRole = 'user' | 'admin'
 
 /**
  * Trial information
  */
-export interface Trial {
-  isExpired: boolean
+export interface TrialInfo {
+  startDate: Date
+  endDate: Date
   daysRemaining: number
-  startDate?: Date
-  endDate?: Date
+  isExpired: boolean
+}
+
+/**
+ * Subscription information
+ */
+export interface SubscriptionInfo {
+  status: SubscriptionStatus
+  planId?: string
+  currentPeriodStart?: Date
+  currentPeriodEnd?: Date
+  cancelAtPeriodEnd?: boolean
+  stripeCustomerId?: string
+  stripeSubscriptionId?: string
 }
 
 /**
  * User preferences
  */
 export interface UserPreferences {
-  defaultLanguage?: string
+  defaultLanguage: 'español' | 'ndowe'
+  // Theme intentionally out of scope; keep optional for backward compatibility
   darkMode?: boolean
-  notifications?: Record<string, boolean>
+  notifications?: {
+    productUpdates?: boolean
+    languageTips?: boolean
+  }
 }
 
 /**
- * User authentication state
+ * Extended user profile
  */
-export interface User {
+export interface UserProfile {
   uid: string
   email: string
-  name?: string
-  displayName?: string
-  photoURL?: string
-  role: 'user' | 'admin'
-  subscriptionStatus: 'trial' | 'active' | 'expired' | 'cancelled'
-  subscription?: Subscription
-  trial?: Trial
-  isActive: boolean
-  emailVerified?: boolean
-  preferences?: UserPreferences
+  displayName?: string | undefined
+  photoURL?: string | undefined
+  role: UserRole
   createdAt: Date
-  updatedAt: Date
-  lastLogin?: Date
-  lastLoginAt?: Date
+  lastLoginAt: Date
+  subscription: SubscriptionInfo
+  trial: TrialInfo
+  preferences?: UserPreferences
+  preferencesUpdatedAt?: Date
+  emailVerified: boolean
+  isActive: boolean
 }
 
 /**
- * Session data stored in browser
+ * Authentication state
  */
-export interface SessionData {
-  user: User
-  token: string
-  expiresAt: number
-  refreshToken?: string
-}
-
-/**
- * JWT payload for magic link tokens
- */
-export interface JWTPayload {
-  email: string
-  iss: string
-  aud: string
-  iat?: number
-  exp?: number
-}
-
-/**
- * Authentication request
- */
-export interface AuthRequest {
-  email: string
-  password?: string
-  token?: string
-}
-
-/**
- * Authentication response
- */
-export interface AuthResponse {
-  success: boolean
-  user?: User
-  token?: string
-  message: string
-  error?: string
+export interface AuthState {
+  user: UserProfile | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  error: string | null
+  initialized: boolean
 }
 
 /**
@@ -102,7 +88,7 @@ export interface MagicLinkRequest {
 }
 
 /**
- * Magic link response with rate limit information
+ * Magic link response
  */
 export interface MagicLinkResponse {
   success: boolean
@@ -110,12 +96,6 @@ export interface MagicLinkResponse {
   error?: string
   attemptCount?: number
   maxAttempts?: number
-  rateLimitInfo?: {
-    currentCount: number
-    maxAttempts: number
-    resetTime: number
-    isLimited?: boolean
-  }
 }
 
 /**
@@ -131,71 +111,111 @@ export interface TokenVerificationPayload {
  */
 export interface TokenVerificationResponse {
   success: boolean
-  user?: User
-  token?: string
-  sessionToken?: string
-  expiresAt?: number
+  user?: UserProfile
   error?: string
-  message?: string
+  message: string
+  sessionToken?: string
+  expiresAt?: Date
 }
 
 /**
- * Subscription status
+ * Auth error types
  */
-export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'cancelled'
+export type AuthErrorCode = 
+  | 'invalid-email'
+  | 'user-not-found'
+  | 'too-many-requests'
+  | 'invalid-token'
+  | 'expired-token'
+  | 'network-error'
+  | 'unknown-error'
 
 /**
- * User role
- */
-export type UserRole = 'user' | 'admin'
-
-/**
- * User profile - extended user information from database
- */
-export interface UserProfile extends User {
-  preferencesUpdatedAt?: Date
-}
-
-/**
- * Subscription information structure
- */
-export interface SubscriptionInfo {
-  status: SubscriptionStatus
-  planId?: string
-  planType?: 'monthly' | 'annual'
-  currentPeriodStart?: Date
-  currentPeriodEnd?: Date
-  cancelAtPeriodEnd?: boolean
-  stripeCustomerId?: string
-  stripeSubscriptionId?: string
-}
-
-/**
- * Trial information structure
- */
-export interface TrialInfo {
-  isExpired: boolean
-  daysRemaining: number
-  startDate?: Date
-  endDate?: Date
-}
-
-/**
- * Authentication error information
+ * Auth error interface
  */
 export interface AuthError {
-  code: string
+  code: AuthErrorCode
   message: string
-  statusCode?: number
+  details?: string
 }
 
 /**
- * Authentication state for stores
+ * Authentication actions
  */
-export interface AuthState {
-  user: UserProfile | null
-  token: string | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  error: AuthError | null
+export interface AuthActions {
+  signInWithMagicLink: (email: string) => Promise<MagicLinkResponse>
+  verifyMagicLink: (token: string) => Promise<TokenVerificationResponse>
+  signOut: () => Promise<void>
+  refreshUser: () => Promise<void>
+  updateProfile: (data: Partial<UserProfile>) => Promise<void>
+  deleteAccount: () => Promise<void>
 }
+
+/**
+ * Authentication composable return type
+ */
+export interface UseAuthReturn extends AuthState, AuthActions {
+  // Additional computed properties
+  isTrialActive: ComputedRef<boolean>
+  isSubscriptionActive: ComputedRef<boolean>
+  trialDaysRemaining: ComputedRef<number>
+  canAccessFeatures: ComputedRef<boolean>
+}
+
+/**
+ * JWT payload structure
+ */
+export interface JWTPayload {
+  email: string
+  iat: number
+  exp: number
+  iss: string
+  aud: string
+}
+
+/**
+ * Email template variables
+ */
+export interface EmailTemplateVariables {
+  magic_link: string
+  user_email: string
+  app_name: string
+  expires_in: string
+}
+
+/**
+ * MailerSend email parameters
+ */
+export interface MailerSendParams {
+  from: {
+    email: string
+    name?: string
+  }
+  to: Array<{
+    email: string
+    name?: string
+  }>
+  subject: string
+  template_id?: string
+  variables?: Array<{
+    email: string
+    substitutions: Array<{
+      var: string
+      value: string
+    }>
+  }>
+}
+
+
+/**
+ * Utility type for creating new users
+ */
+export type CreateUserData = Omit<UserProfile, 'uid' | 'createdAt' | 'lastLoginAt' | 'trial' | 'subscription'> & {
+  subscription?: Partial<SubscriptionInfo>
+  trial?: Partial<TrialInfo>
+}
+
+/**
+ * Utility type for updating users
+ */
+export type UpdateUserData = Partial<Omit<UserProfile, 'uid' | 'createdAt'>> 

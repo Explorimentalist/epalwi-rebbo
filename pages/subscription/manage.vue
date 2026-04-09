@@ -193,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 // Page metadata
 useHead({
@@ -333,7 +333,20 @@ const contactSupport = () => {
 
 onMounted(async () => {
   if (authStore.user?.uid) {
+    // User already available — load immediately
     await subscriptionStore.loadUserSubscription(authStore.user.uid)
+  } else {
+    // Auth hasn't restored yet — watch for the user to become available
+    const unwatch = watch(
+      () => authStore.user,
+      async (user) => {
+        if (user?.uid) {
+          unwatch()
+          await subscriptionStore.loadUserSubscription(user.uid)
+        }
+      },
+      { immediate: false }
+    )
   }
 })
 </script>

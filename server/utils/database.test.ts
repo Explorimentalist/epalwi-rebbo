@@ -24,22 +24,6 @@ import { initializeDatabase } from '~/lib/db/migrations/001-initial-schema'
 import { query, closePool } from '~/lib/db/connection'
 import type { SubscriptionStatus } from '~/types/auth'
 
-
-// Helper to create valid QueryResult mocks
-function createMockQueryResult<T extends Record<string, any> = Record<string, any>>(
-  rows: T[] = [],
-  rowCount: number | null = null,
-  command: string = 'SELECT'
-): any {
-  return {
-    command,
-    rowCount: rowCount ?? rows.length,
-    oid: 0,
-    rows,
-    fields: []
-  }
-}
-
 // ============================================
 // UNIT TESTS (Mocked Database)
 // These tests verify the function logic without requiring a database
@@ -63,7 +47,7 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
 
   describe('upsertSubscription', () => {
     it('inserts a new subscription with all fields', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([], 1))
+      mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 1 })
 
       const userId = 'user-123'
       const subscriptionData = {
@@ -79,7 +63,7 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
       await upsertSubscription(userId, subscriptionData)
 
       expect(mockQuery).toHaveBeenCalledTimes(1)
-      const [sql, params] = mockQuery.mock.calls[0]!
+      const [sql, params] = mockQuery.mock.calls[0]
 
       // Verify the SQL contains INSERT INTO subscriptions
       expect(sql).toContain('INSERT INTO subscriptions')
@@ -88,18 +72,18 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
       expect(sql).toContain('COALESCE')
 
       // Verify parameters
-      expect(params![0]).toBe(userId)
-      expect(params![1]).toBe('cus_abc123')
-      expect(params![2]).toBe('sub_xyz789')
-      expect(params![3]).toBe('active')
-      expect(params![4]).toBe('monthly')
-      expect(params![5]).toEqual(new Date('2026-01-13'))
-      expect(params![6]).toEqual(new Date('2026-02-13'))
-      expect(params![7]).toBe(false)
+      expect(params[0]).toBe(userId)
+      expect(params[1]).toBe('cus_abc123')
+      expect(params[2]).toBe('sub_xyz789')
+      expect(params[3]).toBe('active')
+      expect(params[4]).toBe('monthly')
+      expect(params[5]).toEqual(new Date('2026-01-13'))
+      expect(params[6]).toEqual(new Date('2026-02-13'))
+      expect(params[7]).toBe(false)
     })
 
     it('handles partial subscription data with COALESCE', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([], 1))
+      mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 1 })
 
       const userId = 'user-456'
       const subscriptionData = {
@@ -110,52 +94,53 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
       await upsertSubscription(userId, subscriptionData)
 
       expect(mockQuery).toHaveBeenCalledTimes(1)
-      const [sql, params] = mockQuery.mock.calls[0]!
+      const [sql, params] = mockQuery.mock.calls[0]
 
       // Verify COALESCE is used in the UPDATE clause
       expect(sql).toContain('COALESCE(EXCLUDED.stripe_customer_id, subscriptions.stripe_customer_id)')
 
       // Verify null is passed for optional fields
-      expect(params![1]).toBeNull() // stripeCustomerId
-      expect(params![2]).toBeNull() // stripeSubscriptionId
-      expect(params![3]).toBe('active') // status is required
-      expect(params![4]).toBeNull() // planId
+      expect(params[1]).toBeNull() // stripeCustomerId
+      expect(params[2]).toBeNull() // stripeSubscriptionId
+      expect(params[3]).toBe('active') // status is required
+      expect(params[4]).toBeNull() // planId
     })
 
     it('correctly passes cancelAtPeriodEnd as false by default', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([], 1))
+      mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 1 })
 
       await upsertSubscription('user-789', {
-        status: 'cancelled' as SubscriptionStatus// Should default to false
+        status: 'cancelled' as SubscriptionStatus,
+        cancelAtPeriodEnd: undefined // Should default to false
       })
 
-      const [, params] = mockQuery.mock.calls[0]! as any
-      expect(params![7]).toBe(false) // cancelAtPeriodEnd defaults to false
+      const [, params] = mockQuery.mock.calls[0]
+      expect(params[7]).toBe(false) // cancelAtPeriodEnd defaults to false
     })
 
     it('sets cancelAtPeriodEnd to true when specified', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([], 1))
+      mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 1 })
 
       await upsertSubscription('user-abc', {
         status: 'active' as SubscriptionStatus,
         cancelAtPeriodEnd: true
       })
 
-      const [, params] = mockQuery.mock.calls[0]! as any
+      const [, params] = mockQuery.mock.calls[0]
       expect(params[7]).toBe(true)
     })
   })
 
   describe('updateSubscriptionStatus', () => {
     it('updates status without periodEnd', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([], 1))
+      mockQuery.mockResolvedValueOnce({ rowCount: 1 })
 
       const result = await updateSubscriptionStatus('sub_123', 'active')
 
       expect(result).toBe(true)
       expect(mockQuery).toHaveBeenCalledTimes(1)
 
-      const [sql, params] = mockQuery.mock.calls[0]!
+      const [sql, params] = mockQuery.mock.calls[0]
       expect(sql).toContain('UPDATE subscriptions')
       expect(sql).toContain('SET status = $1')
       expect(sql).toContain('WHERE stripe_subscription_id = $2')
@@ -163,7 +148,7 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
     })
 
     it('updates status with periodEnd', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([], 1))
+      mockQuery.mockResolvedValueOnce({ rowCount: 1 })
 
       const periodEnd = new Date('2026-02-13')
       const result = await updateSubscriptionStatus('sub_456', 'active', periodEnd)
@@ -171,14 +156,14 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
       expect(result).toBe(true)
       expect(mockQuery).toHaveBeenCalledTimes(1)
 
-      const [sql, params] = mockQuery.mock.calls[0]!
+      const [sql, params] = mockQuery.mock.calls[0]
       expect(sql).toContain('SET status = $1, current_period_end = $2')
       expect(sql).toContain('WHERE stripe_subscription_id = $3')
       expect(params).toEqual(['active', periodEnd, 'sub_456'])
     })
 
     it('returns false when no rows updated', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([], 0))
+      mockQuery.mockResolvedValueOnce({ rowCount: 0 })
 
       const result = await updateSubscriptionStatus('sub_nonexistent', 'expired')
 
@@ -186,7 +171,7 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
     })
 
     it('handles null rowCount gracefully', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([], null))
+      mockQuery.mockResolvedValueOnce({ rowCount: null })
 
       const result = await updateSubscriptionStatus('sub_unknown', 'trial')
 
@@ -196,7 +181,9 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
 
   describe('getUserIdAndEmail', () => {
     it('returns user when found', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([{ id: 'user-123', email: 'test@example.com' }]))
+      mockQuery.mockResolvedValueOnce({
+        rows: [{ id: 'user-123', email: 'test@example.com' }]
+      })
 
       const result = await getUserIdAndEmail('user-123')
 
@@ -208,7 +195,7 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
     })
 
     it('returns null when user not found', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([]))
+      mockQuery.mockResolvedValueOnce({ rows: [] })
 
       const result = await getUserIdAndEmail('nonexistent-user')
 
@@ -216,20 +203,22 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
     })
 
     it('only returns active users', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([])) // Simulates inactive user filtered out
+      mockQuery.mockResolvedValueOnce({ rows: [] }) // Simulates inactive user filtered out
 
       const result = await getUserIdAndEmail('inactive-user')
 
       expect(result).toBeNull()
       // Verify the query includes is_active = true
-      const [sql] = mockQuery.mock.calls[0]!
+      const [sql] = mockQuery.mock.calls[0]
       expect(sql).toContain('is_active = true')
     })
   })
 
   describe('getUserIdByStripeCustomerId', () => {
     it('returns user_id when found', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([{ user_id: 'user-abc' }]))
+      mockQuery.mockResolvedValueOnce({
+        rows: [{ user_id: 'user-abc' }]
+      })
 
       const result = await getUserIdByStripeCustomerId('cus_stripe123')
 
@@ -241,7 +230,7 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
     })
 
     it('returns null when customer not found', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([]))
+      mockQuery.mockResolvedValueOnce({ rows: [] })
 
       const result = await getUserIdByStripeCustomerId('cus_nonexistent')
 
@@ -261,7 +250,7 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
         stripe_customer_id: 'cus_abc',
         stripe_subscription_id: 'sub_xyz'
       }
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([mockRow]))
+      mockQuery.mockResolvedValueOnce({ rows: [mockRow] })
 
       const result = await getSubscriptionByStripeId('sub_xyz')
 
@@ -279,7 +268,7 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
     })
 
     it('returns null when subscription not found', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([]))
+      mockQuery.mockResolvedValueOnce({ rows: [] })
 
       const result = await getSubscriptionByStripeId('sub_nonexistent')
 
@@ -287,11 +276,11 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
     })
 
     it('joins with users table to get user_id', async () => {
-      mockQuery.mockResolvedValueOnce(createMockQueryResult([]))
+      mockQuery.mockResolvedValueOnce({ rows: [] })
 
       await getSubscriptionByStripeId('sub_test')
 
-      const [sql] = mockQuery.mock.calls[0]!
+      const [sql] = mockQuery.mock.calls[0]
       expect(sql).toContain('JOIN users u ON s.user_id = u.id')
     })
   })
@@ -302,12 +291,12 @@ describe('server/utils/database - Unit Tests (Mocked)', () => {
 // These tests require DATABASE_URL and test against a real database
 // ============================================
 
-describe.skipIf(!process.env['DATABASE_URL'])('Database Utilities', () => {
+describe.skipIf(!process.env.DATABASE_URL)('Database Utilities', () => {
   let testUserId: string
   let testUserEmail: string
 
   beforeAll(async () => {
-    if (!process.env['DATABASE_URL']) {
+    if (!process.env.DATABASE_URL) {
       console.log('Skipping database utilities tests - DATABASE_URL not provided')
       return
     }
@@ -372,7 +361,7 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Utilities', () => {
       expect(user!.role).toBe('user')
       expect(user!.isActive).toBe(true)
       expect(user!.trial).toBeDefined()
-      expect(user!.trial?.daysRemaining).toBeGreaterThan(0)
+      expect(user!.trial.daysRemaining).toBeGreaterThan(0)
     })
 
     it('should get user by email', async () => {
@@ -424,10 +413,10 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Utilities', () => {
       await createOrUpdateSubscription(testUserId, subscriptionData)
 
       const user = await getUserById(testUserId)
-      expect((user!.subscription as any).status).toBe('active')
-      expect((user!.subscription as any).stripeCustomerId).toBe('cus_test123')
-      expect((user!.subscription as any).stripeSubscriptionId).toBe('sub_test123')
-      expect((user!.subscription as any).planId).toBe('plan_monthly')
+      expect(user!.subscription.status).toBe('active')
+      expect(user!.subscription.stripeCustomerId).toBe('cus_test123')
+      expect(user!.subscription.stripeSubscriptionId).toBe('sub_test123')
+      expect(user!.subscription.planId).toBe('plan_monthly')
     })
 
     it('should update existing subscription', async () => {
@@ -445,9 +434,9 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Utilities', () => {
       })
 
       const user = await getUserById(testUserId)
-      expect((user!.subscription as any).status).toBe('active')
-      expect((user!.subscription as any).stripeCustomerId).toBe('cus_updated123')
-      expect((user!.subscription as any).planId).toBe('plan_yearly')
+      expect(user!.subscription.status).toBe('active')
+      expect(user!.subscription.stripeCustomerId).toBe('cus_updated123')
+      expect(user!.subscription.planId).toBe('plan_yearly')
     })
   })
 
@@ -465,8 +454,8 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Utilities', () => {
       const user = await getUserById(testUserId)
       expect(user!.preferences!.defaultLanguage).toBe('ndowe')
       expect(user!.preferences!.darkMode).toBe(true)
-      expect(user!.preferences!.notifications?.["productUpdates"]).toBe(false)
-      expect(user!.preferences!.notifications?.["languageTips"]).toBe(true)
+      expect(user!.preferences!.notifications!.productUpdates).toBe(false)
+      expect(user!.preferences!.notifications!.languageTips).toBe(true)
     })
   })
 
@@ -478,10 +467,10 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Utilities', () => {
       const history = await getUserSearchHistory(testUserId)
       
       expect(history).toHaveLength(2)
-      expect(history[0]!.searchTerm).toBe('hola') // Most recent first
-      expect(history[0]!.searchLanguage).toBe('ndowe')
-      expect(history[0]!.resultCount).toBe(3)
-      expect(history[1]!.searchTerm).toBe('hello')
+      expect(history[0].searchTerm).toBe('hola') // Most recent first
+      expect(history[0].searchLanguage).toBe('ndowe')
+      expect(history[0].resultCount).toBe(3)
+      expect(history[1].searchTerm).toBe('hello')
     })
 
     it('should limit search history results', async () => {
@@ -611,7 +600,7 @@ describe.skipIf(!process.env['DATABASE_URL'])('Database Utilities', () => {
         expect(false).toBe(true) // Should not reach here
       } catch (error) {
         expect(error).toBeDefined()
-        expect((error as any).code).toBe('23505') // PostgreSQL unique violation
+        expect(error.code).toBe('23505') // PostgreSQL unique violation
       }
     })
   })

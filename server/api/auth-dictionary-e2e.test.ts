@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { generateSessionToken, verifySessionToken, generateMagicLinkToken, verifyMagicLinkToken } from '~/lib/auth/jwt'
 
 // Mock environment for testing
-process.env['JWT_SECRET'] = 'test_jwt_secret_key_for_development_only_32_chars'
+process.env.JWT_SECRET = 'test_jwt_secret_key_for_development_only_32_chars'
 
 describe('End-to-End Authentication and Dictionary Access Flow', () => {
   beforeEach(() => {
@@ -285,10 +285,10 @@ describe('End-to-End Authentication and Dictionary Access Flow', () => {
         
         // Verify proper HTTP status codes
         if (scenario.statusCode === 401) {
-          expect(scenario.error).toMatch(/credentials|Invalid/)
+          expect(scenario.error).toContain('credentials') || expect(scenario.error).toContain('Invalid')
         }
         if (scenario.statusCode === 403) {
-          expect(scenario.error).toMatch(/Subscription|access/)
+          expect(scenario.error).toContain('Subscription') || expect(scenario.error).toContain('access')
         }
         if (scenario.statusCode === 503) {
           expect(scenario.error.toLowerCase()).toMatch(/(failed|unavailable)/)

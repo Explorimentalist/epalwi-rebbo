@@ -1,10 +1,10 @@
 import { generateSessionToken, verifySessionToken, refreshSessionToken, type JWTSessionPayload } from './jwt'
 import { getUserById, updateUser } from '~/server/utils/database'
-import type { User } from '~/types/auth'
+import type { UserProfile } from '~/types/auth'
 
 export interface SessionInfo {
   token: string
-  user: User
+  user: UserProfile
   expiresAt: Date
   refreshToken?: string
 }
@@ -16,7 +16,7 @@ export interface CreateSessionOptions {
 
 export interface SessionValidationResult {
   valid: boolean
-  user?: User
+  user?: UserProfile
   token?: string
   error?: string
   needsRefresh?: boolean
@@ -29,7 +29,7 @@ export interface SessionValidationResult {
  * @returns Session information with JWT token
  */
 export async function createSession(
-  user: User,
+  user: UserProfile,
   options: CreateSessionOptions = {}
 ): Promise<SessionInfo> {
   const { expiresIn = '7d', remember = false } = options
@@ -43,7 +43,7 @@ export async function createSession(
       uid: user.uid,
       email: user.email,
       role: user.role,
-      subscriptionStatus: user.subscriptionStatus
+      subscriptionStatus: user.subscription.status
     },
     { 
       expiresIn: remember ? '30d' : expiresIn // Extended session for "remember me"
@@ -97,7 +97,7 @@ export async function validateSession(token: string): Promise<SessionValidationR
 
     // If session needs refresh, generate new token
     if (needsRefresh) {
-      refreshedToken = refreshSessionToken(token) || undefined
+      refreshedToken = refreshSessionToken(token)
     }
 
     return {
@@ -121,7 +121,7 @@ export async function validateSession(token: string): Promise<SessionValidationR
  * In production, you might want to implement a token blacklist
  * @param user - User profile
  */
-export async function invalidateSession(user: User): Promise<void> {
+export async function invalidateSession(user: UserProfile): Promise<void> {
   // Update user's last activity timestamp
   await updateUser(user.uid, { lastLoginAt: new Date() })
   
@@ -166,21 +166,30 @@ export async function getSessionInfo(token: string): Promise<SessionInfo | null>
  * @param user - User profile
  * @returns Access permission details
  */
-export function checkSubscriptionAccess(user: User): {
+export function checkSubscriptionAccess(user: UserProfile): {
   hasAccess: boolean
   reason: 'active_subscription' | 'trial_active' | 'expired' | 'cancelled'
   daysRemaining?: number
 } {
   // Check active subscription
-  if (user.subscriptionStatus === 'active') {
+  if (user.subscription.status === 'active') {
     return {
       hasAccess: true,
       reason: 'active_subscription'
     }
   }
 
+  // Check trial period
+  if (!user.trial.isExpired && user.trial.daysRemaining > 0) {
+    return {
+      hasAccess: true,
+      reason: 'trial_active',
+      daysRemaining: user.trial.daysRemaining
+    }
+  }
+
   // Access expired
-  const reason = user.subscriptionStatus === 'cancelled' ? 'cancelled' : 'expired'
+  const reason = user.subscription.status === 'cancelled' ? 'cancelled' : 'expired'
   return {
     hasAccess: false,
     reason
@@ -268,17 +277,10 @@ export async function getSessionStats(userId?: string): Promise<{
   
   if (userId) {
     const user = await getUserById(userId)
-    const result: {
-      userCount?: number
-      lastLogin?: Date
-      sessionCount?: number
-    } = {
+    return {
+      lastLogin: user?.lastLoginAt,
       sessionCount: 1 // Placeholder
     }
-    if (user?.lastLoginAt) {
-      result.lastLogin = user.lastLoginAt
-    }
-    return result
   }
 
   // For all users, this would require additional tracking
@@ -295,7 +297,7 @@ export async function getSessionStats(userId?: string): Promise<{
  * @returns User profile if session valid and has access
  */
 export async function verifySessionWithAccess(token: string): Promise<{
-  user?: User
+  user?: UserProfile
   hasAccess: boolean
   error?: string
   accessReason?: string

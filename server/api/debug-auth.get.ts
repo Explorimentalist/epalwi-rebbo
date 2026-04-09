@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     const authHeader = getHeader(event, 'authorization')
     const token = extractBearerToken(authHeader)
     
-    const debugInfo: Record<string, any> = {
+    const debugInfo = {
       timestamp: new Date().toISOString(),
       nodeVersion: process.version,
       hasJwtSecret: hasSecret,
@@ -32,16 +32,16 @@ export default defineEventHandler(async (event) => {
     if (token) {
       try {
         const payload = verifySessionToken(token)
-        debugInfo['jwtVerificationResult'] = 'SUCCESS'
-        debugInfo['tokenUid'] = payload.uid?.substring(0, 8) + '...'
-        debugInfo['tokenEmail'] = payload.email
-        debugInfo['tokenExp'] = payload.exp
-        debugInfo['currentTimestamp'] = Math.floor(Date.now() / 1000)
-        debugInfo['isExpired'] = payload.exp < Math.floor(Date.now() / 1000)
+        debugInfo.jwtVerificationResult = 'SUCCESS'
+        debugInfo.tokenUid = payload.uid?.substring(0, 8) + '...'
+        debugInfo.tokenEmail = payload.email
+        debugInfo.tokenExp = payload.exp
+        debugInfo.currentTimestamp = Math.floor(Date.now() / 1000)
+        debugInfo.isExpired = payload.exp < Math.floor(Date.now() / 1000)
       } catch (err: any) {
-        debugInfo['jwtVerificationResult'] = 'FAILED'
-        debugInfo['jwtError'] = err.message
-        debugInfo['jwtErrorType'] = err.constructor.name
+        debugInfo.jwtVerificationResult = 'FAILED'
+        debugInfo.jwtError = err.message
+        debugInfo.jwtErrorType = err.constructor.name
       }
     }
     

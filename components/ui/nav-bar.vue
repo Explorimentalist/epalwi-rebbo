@@ -81,7 +81,7 @@
             @click.stop
           >
             <NuxtLink 
-              to="/perfil" 
+              to="/account" 
               class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors"
             >
               <Icon name="user" size="sm" />
@@ -95,7 +95,7 @@
               Suscripción
             </NuxtLink>
             <NuxtLink 
-              to="/configuracion" 
+              to="/account" 
               class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors"
             >
               <Icon name="settings" size="sm" />
@@ -188,7 +188,7 @@
               <!-- Mobile Auth Section -->
               <div v-if="isAuthenticated" class="space-y-2">
                 <NuxtLink 
-                  to="/perfil" 
+                  to="/account" 
                   @click="closeMobileMenu"
                   class="flex items-center gap-3 px-4 py-4 text-white text-base font-medium transition-colors hover:bg-white/10 min-h-[48px]"
                 >
@@ -204,7 +204,7 @@
                   Suscripción
                 </NuxtLink>
                 <NuxtLink 
-                  to="/configuracion" 
+                  to="/account" 
                   @click="closeMobileMenu"
                   class="flex items-center gap-3 px-4 py-4 text-white text-base font-medium transition-colors hover:bg-white/10 min-h-[48px]"
                 >

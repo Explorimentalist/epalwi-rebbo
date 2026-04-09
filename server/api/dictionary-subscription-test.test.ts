@@ -293,8 +293,8 @@ describe('Dictionary Subscription Access Control', () => {
       }
 
       // Should safely handle null/undefined values
-      const hasActiveSubscription = (malformedUserData.subscription as any)?.status === 'active'
-      const isTrialActive = (malformedUserData.trial as any)?.end_date > new Date()
+      const hasActiveSubscription = malformedUserData.subscription?.status === 'active'
+      const isTrialActive = malformedUserData.trial?.end_date > new Date()
 
       expect(hasActiveSubscription).toBe(false)
       expect(isTrialActive).toBe(false)

@@ -13,9 +13,7 @@ import type {
   TokenVerificationResponse,
   SubscriptionStatus,
   UserRole,
-  AuthError,
-  Subscription,
-  Trial
+  AuthError
 } from '~/types/auth'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -87,27 +85,22 @@ export const useAuthStore = defineStore('auth', () => {
     return {
       uid,
       email,
-      name: undefined,
       displayName: undefined,
       photoURL: undefined,
       role: 'user' as UserRole,
-      subscriptionStatus: "trial",
+      createdAt: now,
+      lastLoginAt: now,
       subscription: {
         status: 'trial' as SubscriptionStatus
-      } as Subscription,
+      },
       trial,
-      isActive: true,
-      emailVerified: true,
       preferences: {
         defaultLanguage: 'español',
         darkMode: false
       },
-      createdAt: now,
-      updatedAt: now,
-      lastLogin: undefined,
-      lastLoginAt: now,
-      preferencesUpdatedAt: undefined
-    } as unknown as UserProfile
+      emailVerified: true,
+      isActive: true
+    }
   }
 
   // Actions
@@ -261,17 +254,15 @@ export const useAuthStore = defineStore('auth', () => {
           // Ensure dates are proper Date objects (they may have been serialized as strings)
           trial = {
             ...trial,
-            startDate: trial.startDate instanceof Date ? trial.startDate : trial.startDate ? new Date(trial.startDate) : undefined,
-            endDate: trial.endDate instanceof Date ? trial.endDate : trial.endDate ? new Date(trial.endDate) : undefined
-          } as Trial
+            startDate: trial.startDate instanceof Date ? trial.startDate : new Date(trial.startDate),
+            endDate: trial.endDate instanceof Date ? trial.endDate : new Date(trial.endDate)
+          }
           // Recalculate daysRemaining and isExpired to ensure they're current
           const now = new Date()
-          const daysRemaining = trial?.endDate ? Math.max(0, Math.ceil((trial.endDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))) : 0
-          const isExpired = trial?.endDate ? now > trial.endDate : false
-          if (trial) {
-            trial.daysRemaining = daysRemaining
-            trial.isExpired = isExpired
-          }
+          const daysRemaining = Math.max(0, Math.ceil((trial.endDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)))
+          const isExpired = now > trial.endDate
+          trial.daysRemaining = daysRemaining
+          trial.isExpired = isExpired
           console.log('🔧 Debug: Using trial info from API response (dates normalized):', trial)
         }
         
@@ -280,8 +271,8 @@ export const useAuthStore = defineStore('auth', () => {
         
         user.value = {
           ...response.user,
-          trial: trial || response.user.trial
-        } as unknown as UserProfile
+          trial
+        }
 
         // Persist auth state across navigations
         try {
@@ -331,8 +322,8 @@ export const useAuthStore = defineStore('auth', () => {
         const trial = calculateTrialInfo(response.user.createdAt)
         user.value = {
           ...response.user,
-          trial: trial || response.user.trial
-        } as unknown as UserProfile
+          trial
+        }
       }
     } catch (err) {
       console.error('Error refreshing user:', err)
